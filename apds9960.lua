@@ -141,8 +141,6 @@ local DEFAULT_GCONF3 = 0       -- All photodiodes active during gesture
 local DEFAULT_GIEN = 0       -- Disable gesture interrupts
 
 
-local i2c_bus
-
 -- @brief Reads and returns the contents of the ENABLE register
 -- @return Contents of the ENABLE register. nil on error
 local function get_mode()
@@ -272,9 +270,6 @@ end
 
 
 function M.init()
-  -- Initialize I2C --
-  local I2C_K_Hz = 400
-  i2c_bus = i2c.attach(i2c.I2C0, i2c.MASTER, I2C_K_Hz * 1000)
 
   -- Read ID register and check against known values for APDS-9960
   local id = read_data_byte(APDS9960_ID)
@@ -290,7 +285,6 @@ function M.init()
   if not set_mode(ALL, false) then
     return false, "Disabling all features"
   end
-
   -- Set default values for ambient light and proximity registers
   if not write_data_byte(APDS9960_ATIME, DEFAULT_ATIME) then
     return false, "Setting ambient light and proximity registers"
@@ -316,19 +310,19 @@ function M.init()
   if not M.proximity.set_gain(DEFAULT_PGAIN) then
     return false, "Setting proximity gain"
   end
-  if not M.set_ambient_light_gain(DEFAULT_AGAIN) then
+  if not M.light.set_ambient_gain(DEFAULT_AGAIN) then
     return false, "Setting ambient light gain"
   end
-  if not M.set_prox_int_low_thresh(DEFAULT_PILT) then
+  if not M.proximity.set_int_low_thresh(DEFAULT_PILT) then
     return false, "Setting proximity int low threshold"
   end
-  if not M.set_prox_int_high_thresh(DEFAULT_PIHT) then
+  if not M.proximity.set_int_high_thresh(DEFAULT_PIHT) then
     return false, "Setting proximity int high threshold"
   end
-  if not M.set_light_int_low_threshold(DEFAULT_AILT) then
+  if not M.light.set_int_low_threshold(DEFAULT_AILT) then
     return false, "Setting light int low threshold"
   end
-  if not M.set_light_int_high_threshold(DEFAULT_AIHT) then
+  if not M.light.set_int_high_threshold(DEFAULT_AIHT) then
     return false, "Setting light int high threshold"
   end
   if not write_data_byte(APDS9960_PERS, DEFAULT_PERS) then
@@ -341,10 +335,10 @@ function M.init()
     return false, "Setting APDS9960_CONFIG3"
   end
   -- Set default values for gesture sense registers --
-  if not M.set_gesture_enter_thresh(DEFAULT_GPENTH) then
+  if not M.gesture.set_enter_thresh(DEFAULT_GPENTH) then
     return false, "Setting gesture enter threshold"
   end
-  if not M.set_gesture_exit_thresh(DEFAULT_GEXTH) then
+  if not M.gesture.set_exit_thresh(DEFAULT_GEXTH) then
     return false, "Setting gesture exit threshold"
   end
   if not write_data_byte(APDS9960_GCONF1, DEFAULT_GCONF1) then
@@ -485,6 +479,7 @@ function M.proximity.enable_sensor(interrupts)
     return false, "Setting proximity mode"
   end
 
+
   return true
 end -- end enable_proximity_sensor
 
@@ -516,7 +511,7 @@ end -- set_prox_int_high_thresh
 -- @return True if sensor enabled correctly. False on error.
 function M.light.enable_sensor(interrupts)
   -- Set default gain, interrupts, enable power, and enable sensor
-  if not M.set_ambient_light_gain(DEFAULT_AGAIN) then
+  if not M.light.set_ambient_gain(DEFAULT_AGAIN) then
     return false
   end
   if not set_ambient_light_int_enable(interrupts) then
@@ -526,7 +521,9 @@ function M.light.enable_sensor(interrupts)
     return false, "Enabling power"
   end
 
-  return set_mode(AMBIENT_LIGHT, true)
+  local ret = set_mode(AMBIENT_LIGHT, true)
+
+  return ret
 end
 
 
@@ -548,7 +545,6 @@ function M.light.set_ambient_gain(drive)
   }
   drive = tonumber(drive) or assert(AGAIN[drive])
 
-  
   -- Read value from CONTROL register --
   local val = read_data_byte(APDS9960_CONTROL)
   if not val then
@@ -559,7 +555,7 @@ function M.light.set_ambient_gain(drive)
   drive = drive & 0x3 --0b00000011;
   val = val & 0xFC --0b1111 1100;
   val = val | drive;
-
+  
   -- Write register value back into CONTROL register
   return write_data_byte(APDS9960_CONTROL, val)
 end
@@ -728,7 +724,7 @@ function M.gesture.set_wait_time(time)
     ['WTIME_30_8MS'] = 6,
     ['WTIME_39_2MS'] = 7,
   }
-  time = tonumber(drive) or assert(WTIME[time])
+  time = tonumber(time) or assert(WTIME[time])
 
   -- Read value from GCONF2 register
   local val = read_data_byte(APDS9960_GCONF2)

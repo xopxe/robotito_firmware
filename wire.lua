@@ -18,8 +18,8 @@ return function (device_addr, freq)
   -- TODO: Capturar excepciones de escritura y lectura de i2c
   local function read_data_byte(reg)
     local val
-    try {
-      function()
+    --try(
+    --  function()
         -- Indicate which register we want to read from --
         i2c_bus:start()
         i2c_bus:address(DEVICE_ADDR, false)
@@ -28,47 +28,37 @@ return function (device_addr, freq)
         i2c_bus:address(DEVICE_ADDR, true)
         val = i2c_bus:read()
         i2c_bus:stop()
-      end, 
-      function()
-        val=nil
-      end
-    }
+    --  end, 
+    --  function()
+    --    val=nil
+    --  end
+    --)
     return val
   end -- read_data_byte
   M.read_data_byte = read_data_byte
 
   function M.write_data_byte(reg, val)
     local success
-    try {
-      function()
+    --try(
+    --  function()
         i2c_bus:start()
         i2c_bus:address(DEVICE_ADDR, false)
         i2c_bus:write(reg, val) -- Indicate which register we want to write to and the value
         i2c_bus:stop()
         success=true
-      end,
-    }
+    --  end
+    --)
     return success
   end -- write_data_byte
 
   function M.read_word(rlow, rhigh)
-    local val
-    try {
-      function()
-        -- Read value from clear channel, low byte register
-        local val_l = read_data_byte(DEVICE_ADDR, rlow)
-        -- Read value from clear channel, high byte register
-        local val_h = read_data_byte(DEVICE_ADDR, rhigh)
-        
-        if not val_l or not val_h then
-          return
-        end
-        val = val_l + (val_h << 8)
-      end, 
-      function()
-        val=nil
-      end
-    }
+    local val_l = read_data_byte(rlow)
+    local val_h = read_data_byte(rhigh)
+    
+    if not val_l or not val_h then
+      return
+    end
+    local val = val_l + (val_h << 8)
  
     return val
   end
