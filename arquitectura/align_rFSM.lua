@@ -8,7 +8,7 @@ local distC = apds.proximity
 assert(distC.enable())
 
 local ms = 50  -- period of distance measurements
-local thershold = 251
+local threshold = 251
 local histeresis = 3
 local W_ROTATE = 0.008
 
