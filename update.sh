@@ -1,6 +1,6 @@
 #!/bin/bash
 
-MODULES_DIR="arquitectura/Modules"
+MODULES_DIR="arquitectura/modules"
 UTILS_DIR="utils"
 
 wcc -p /dev/ttyUSB0 -up $MODULES_DIR/fsm_align.lua fsm_align.lua
