@@ -3,8 +3,7 @@ local rfsm_timeevent = require("rfsm_timeevent")
 local robot = require("robot")
 
 rfsm_timeevent.set_gettime_hook(function() 
-  local up = os.uptime(true)
-  return up.secs, 0
+  return  os.gettime(true)
 end)
 
 local ROTATION_SPEED = 0.008
@@ -24,10 +23,10 @@ end
 
 local align = rfsm.csta:new{
    
-  stop = rfsm.sista:new{},
+  stop = rfsm.sista:new{print("STOP")},
   rotate = rfsm.sista:new{},
   pan = rfsm.sista:new{},
-  back = rfsm.sista:new{},
+  back = rfsm.sista:new{print("BACK")},
 
   rfsm.trans:new{ 
     src='rotate', 
@@ -55,7 +54,7 @@ local align = rfsm.csta:new{
   },
   rfsm.trans:new{ 
     src='initial',
-    tgt='rotate',
+    tgt='back',
     effect=function() set_w(0) end,
   }
 }
