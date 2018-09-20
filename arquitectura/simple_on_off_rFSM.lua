@@ -1,15 +1,15 @@
-local rfsm = require("rfsm")
+
+
 -- require("fsmdbg")
 
 local omni=require('omni')
 local apds = assert(require('apds9960')) -- init apsd
+
 assert(apds.init())
 local distC = apds.proximity
 assert(distC.enable())
 
-local ms = 50  -- period of distance measurements
-local thershold = 251
-local histeresis = 3
+
 
 local enable_motors = function()
   local W_ROTATE = 0.008
@@ -47,7 +47,7 @@ local dump_dist = function(b)
 end
 
 -- enable distC change monitoring
--- distC.get_dist_thresh(ms, thershold, histeresis, dump_dist)
+distC.get_dist_thresh(ms, thershold, histeresis, dump_dist)
 
 -- local rfsm2uml = require("rfsm2uml")
 -- rfsm2uml.rfsm2uml(fsm, 'png', "fsm.png", "Figure caption")
