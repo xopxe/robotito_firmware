@@ -12,10 +12,16 @@ end
 
 -- Attach an encoder with A=pio.GPIO26, B=pio.GPIO14, SW=pio.GPIO21.
 -- Using a calback for get the encoder changes.
+---[[
 enc0 = encoder.attach(pio.GPIO39, pio.GPIO37, 0, callback0)
 enc1 = encoder.attach(pio.GPIO38, pio.GPIO36, 0, callback1)
 enc2 = encoder.attach(pio.GPIO34, pio.GPIO35, 0, callback2)
-
+--]]
+--[[
+enc0 = encoder.attach(pio.GPIO37, pio.GPIO39, 0, callback0)
+enc1 = encoder.attach(pio.GPIO36, pio.GPIO38, 0, callback1)
+enc2 = encoder.attach(pio.GPIO35, pio.GPIO34, 0, callback2)
+--]]
 
 
 

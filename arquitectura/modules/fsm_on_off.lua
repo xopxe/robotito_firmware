@@ -2,6 +2,7 @@ local rfsm = require("rfsm")
 local robot = require("robot")
 
 local enable_motors = function()
+  robot.omni.drive(0,0,0.008)
   robot.omni.set_enable()
 end
 

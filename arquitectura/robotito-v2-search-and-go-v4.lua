@@ -168,7 +168,9 @@ local led_ring_colors = {
 
 local first_led = {0, 20, 16, 12, 8, 4}
 
-local neo = neopixel.attach(neopixel.WS2812B, ledpin, n_pins)
+local led_const = require('led_ring')
+
+local neo = led_const(pio.GPIO19, 24, 50)
 
 local enabled = false
 
@@ -214,7 +216,7 @@ local function indexsort(tbl)
 end
 
 local update_led_ring = function(intensity)
-  for i = 1,N_SENSORS do
+--[[  for i = 1,N_SENSORS do
     local color = {
       math.floor(intensity[i]*led_ring_colors[i][1]),
       math.floor(intensity[i]*led_ring_colors[i][2]),
@@ -225,6 +227,11 @@ local update_led_ring = function(intensity)
     end
   end
   neo:update()
+--]]
+    neo.clear()
+  for i = 1,N_SENSORS do
+    neo.set_segment(i, (intensity[i] ~= 0))
+  end
 end -- update_led_ring
 
 local compute_velocity = function(dist)
