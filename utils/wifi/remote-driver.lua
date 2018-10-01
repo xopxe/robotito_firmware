@@ -6,6 +6,7 @@
 local socket = require("__socket")
 local omni=require('omni')
 
+local table, print, math, type = table, print, math, type
 
 local ms = 200  -- period of distance measurements
 
@@ -34,20 +35,19 @@ local N_SENSORS = 6
 
 local dmin = 80
 local dmax = 600
-local d_range = dmax - dmin
-local d_last = 0
+--local d_range = dmax - dmin
+--local d_last = 0
 local act_d = {0, 0, 0, 0, 0, 0}
 
 local VEL_CMD = 'speed'
 
-local socket = require("__socket")
-local host = "192.168.4.1"
+local ip = "192.168.4.1"
 local port = 2018
 local has_remote_cliente = false
 
-print("Binding to host '" ..host.. "' and port " ..port.. "...")
-udp = assert(socket.udp())
-assert(udp:setsockname(host, port))
+print("Binding to host '" ..ip.. "' and port " ..port.. "...")
+local udp = assert(socket.udp())
+assert(udp:setsockname(ip, port))
 -- assert(udp:settimeout(5))
 ip, port = udp:getsockname()
 assert(ip, port)
@@ -81,6 +81,7 @@ local median = function (numlist)
     return numlist[math.ceil(#numlist/2)]
 end
 
+--[[
 local max = function (numlist)
     if type(numlist) ~= 'table' then return numlist end
     table.sort(numlist)
@@ -95,9 +96,9 @@ local function indexsort(tbl)
   -- return the sorted indexes
   return (table.unpack or unpack)(idx)
 end
+--]]
 
-
-function implode(delimiter, list)
+local function implode(delimiter, list)
   local len = #list
   if len == 0 then
     return ""
@@ -113,7 +114,7 @@ end
 local dist_callback= function(d1, d2, d3, d4, d5, d6)
   local alpha_lpf = 1 -- low pass filter update parameter
   local MASK_ON_SENSORS = {true, true, true, true, true, true}
-  act_ori={d1, d2, d3, d4, d5, d6}
+  local act_ori={d1, d2, d3, d4, d5, d6}
   local norm_d = {0, 0, 0, 0, 0, 0}
   -- apply distance data filter and update LEDs ring
   for i = 1,N_SENSORS do
@@ -128,13 +129,13 @@ local dist_callback= function(d1, d2, d3, d4, d5, d6)
   current_wp = (current_wp + 1) % WIN_SIZE
   if has_remote_cliente then
     -- sens_str = implode('*', norm_d)
-    sens_str = implode('*', act_d)
+    local sens_str = implode('*', act_d)
     udp:sendto(sens_str, ip, port)
   end
 end
 
-function split(s, delimiter)
-    result = {};
+local function split(s, delimiter)
+    local result = {};
     for match in (s..delimiter):gmatch("(.-)"..delimiter) do
         table.insert(result, match)
     end
@@ -146,14 +147,15 @@ omni.set_enable()
 vlring.get_continuous(ms, dist_callback)
 
 thread.start(function()
+  local dgram, enable
   while 1 do
   	dgram, ip, port = assert(udp:receivefrom())
   	if dgram then
   		print("Echoing '" .. dgram .. "' to " .. ip .. ":" .. port)
-      cmd = split(dgram, '*')
+      local cmd = split(dgram, '*')
       if cmd[1] == VEL_CMD then
         if #cmd == 5 then
-          autonomous = false
+          --autonomous = false
           has_remote_cliente = true
           xdot = cmd[2]
           ydot = cmd[3]
