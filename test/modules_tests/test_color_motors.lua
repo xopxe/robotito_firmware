@@ -45,7 +45,7 @@ end
 
 
 change_direction = function(c, s, v)
-  print('color', c, 'sv', s, v)
+  --print('color', c, 'sv', s, v)
   if c == "red" then
     m.drive(0.05,0,0)
     turn_all_leds(50,0,0)
@@ -58,8 +58,8 @@ change_direction = function(c, s, v)
   elseif c == 'yellow'  then
     m.drive(0,-0.05,0)
     turn_all_leds(255,255,0)
-  else
-    turn_all_leds(0,0,0)
+  --else
+    --turn_all_leds(0,0,0)
   end
 
 end
@@ -81,9 +81,10 @@ color.get_change(ms, change_direction)
 
 
 -- run for x seconds
-tmr.sleepms(60*10000)
---while true
---end
+--tmr.sleepms(60*10000)
+while true do
+  tmr.sleepms(60*1000)
+end
 -- stop monitoring distances
 color.get_continuous(false)
 color.get_change(false)
