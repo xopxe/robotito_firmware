@@ -1,23 +1,36 @@
-local rfsm = require("rfsm")
+local ahsm = require("ahsm")
 local robot = require("robot")
 
---local model = assert(rfsm.load("fsm_on_off.lua"))
-local model = assert(rfsm.load("fsm_align.lua"))
-local fsm = rfsm.init(model)
+local align = require("fsm_align")
+--local model = assert(rfsm.load("fsm_align.lua"))
 
 robot.init()
+robot.omni.set_enable()
+
+local fsm = ahsm.init( align )
 
 -- Events for fsm_on_off
---[[
+---[[
 local height_period = 50 -- period of distance measurements
 local height_threshold = 251
 local height_histeresis = 3
 
+---[[
+local function send(e)
+  print('<', e)
+  fsm.send_event(e)
+end
+local function loop(e)
+  print( '===', fsm.loop())
+end
+--]]
+
+--[[
 local dump_dist = function(b)
     if b then
-      rfsm.send_events(fsm, 'e_on')
+      send('e_floor')
     else
-      rfsm.send_events(fsm, 'e_off')
+      send('e_not_floor')
     end
 end
 
@@ -29,15 +42,14 @@ robot.height.get_dist_thresh(height_period, height_threshold, height_histeresis,
 ---[[
 local no_object = function(norm_d, id_align)
   if (norm_d[id_align] == 0) then
-    rfsm.send_events(fsm, 'no_object')
-    --print("no_object")
+    send('no_object')
   end
 end
 robot.laser_ring.no_object = no_object
 
 local find_object = function(norm_d, id_align)
   if (norm_d[id_align] ~= 0) then
-    rfsm.send_events(fsm, 'find_object')
+    send('find_object')
     --print("find_object")
   end
 end
@@ -45,7 +57,7 @@ robot.laser_ring.find_object = find_object
 
 local loosing_object = function(norm_d, id_align, previous_d)
   if (previous_d[id_align] > norm_d[id_align]) then
-    rfsm.send_events(fsm, 'loosing_object')
+    send('loosing_object')
     --print("loosing_object")
   end
 end
@@ -53,13 +65,24 @@ robot.laser_ring.loosing_object = loosing_object
 --]]
 
 
----[[
+--[[
 local function main()
   while true do
-    idle = rfsm.step(fsm, 10)
+    --print("step in")
+    idle = rfsm.step(fsm, 1)
+    --print("step out")
     tmr.sleepms(10)
+    --thread.list(false, false, true)
   end
 end
 --]]
 
-main()
+---[[
+
+while 1 do 
+    fsm.loop()
+    tmr.sleepms(10)
+end
+--]]
+
+--main()
