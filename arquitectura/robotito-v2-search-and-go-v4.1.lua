@@ -6,15 +6,15 @@ local thershold = 251
 local histeresis = 3
 
 local N_SENSORS = 6
-local MIN_W_ROTATE = 0.007
+local MIN_W_ROTATE = 0.008
 local MAX_W_ROTATE = 0.1
-local STEP_W_ROTATE = 0.01
+local STEP_W_ROTATE = 0 -- do not increment angular velocity 0.01
 local INI_W_ROTATE = MIN_W_ROTATE
 
 local MIN_L_VEL = 0.01
 local MAX_L_VEL = 0.3
-local STEP_L_VEL = 0 -- debug
-local INI_MAX_L_VEL = 0.1
+local STEP_L_VEL = 0.02
+local INI_MAX_L_VEL = 0.2
 local INI_MIN_L_VEL = 0.01
 
 local w_rotate = INI_W_ROTATE
@@ -90,7 +90,10 @@ local dump_color_change = function(c, s, v)
       cur_min_l_vel = cur_min_l_vel + STEP_L_VEL -- incrments only if cur_max_l_vel is updated
     end
     last_color = c
+  elseif c == "wi" then
+
   end
+
 end
 
 --power on led

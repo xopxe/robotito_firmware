@@ -9,7 +9,6 @@ local N_SENSORS = 6
 local W_ROTATE = 0.008
 
 local MAX_TICS_TIMEOUT_SEARCH = 1.2 * 1000 / ms -- 1 seg
-local MAX_TICS_TIMEOUT_WAIT = 2 * 1000 / ms -- 1 seg
 
 -- global, store history distance values to compute low pass filter
 local WIN_SIZE = 3
@@ -82,7 +81,6 @@ local ROTATE = {"ROTATE"}
 local BACK = {"BACK"}
 local PAN = {"PAN"}
 local H_OFF = {"H_OFF"}
-local H_WAIT = {"H_WAIT"}
 local H_ALIGN = {"H_ALIGN"}
 local H_GO = {"H_GO"}
 local H_SEARCH = {"H_SEARCH"}
@@ -100,9 +98,7 @@ local s_state = S_PAN_60
 local h_state = H_OFF
 
 local tics_timeout_search  = 0
-local tics_timeout_wait  = 0
 local tics_timeout_a_init = 0
-local tics_timeout_teleop = 0
 
 local init_h_search = function()
   for i=1,N_SENSORS do
@@ -122,8 +118,12 @@ end
 -- will be called when the robot is over threshold high
 local dump_dist = function(b)
     if b then
-      tics_timeout_wait = 0
-      h_state = H_WAIT
+      -- h_state = H_ALIGN
+      -- a_state = STOP
+      h_state = H_SEARCH
+      init_h_search()
+      a_state = STOP
+      cur_wdot = -W_ROTATE -- oposite rotate direction respect to the initial rotation in the align state
     else
       h_state = H_OFF
       xdot = 0
@@ -166,8 +166,10 @@ local led_ring_colors = {
  {max_bright/2, 0, max_bright/2},
 }
 
--- local neo = neopixel.attach(neopixel.WS2812B, ledpin, n_pins)
+local first_led = {4, 0, 20, 16, 12, 8}
+
 local led_const = require('led_ring')
+
 local neo = led_const(pio.GPIO19, 24, 50)
 
 local enabled = false
@@ -304,17 +306,7 @@ local dist_callback= function(d1, d2, d3, d4, d5, d6)
       autonomous = true
     end
   else
-    if h_state == H_WAIT then
-      tics_timeout_wait = tics_timeout_wait + 1
-      if tics_timeout_wait >= MAX_TICS_TIMEOUT_WAIT then
-        -- h_state = H_ALIGN
-        -- a_state = STOP
-        h_state = H_SEARCH
-        init_h_search()
-        a_state = STOP
-        cur_wdot = -W_ROTATE -- oposite rotate direction respect to the initial rotation in the align state
-      end
-    elseif h_state == H_SEARCH then
+    if h_state == H_SEARCH then
       if s_state == S_PAN_60 then
         local sensors_ready = 0
 
@@ -482,6 +474,18 @@ vlring.get_continuous(false)
 omni.set_enable(false)
 --vlring.release()
 --]]
+local time = 0
+while true do
+  -- print('hz: ', tic/time, xdot, ydot, w, '-', 'dist(act_d):', table.unpack(act_d))
+  if id_align>0 then
+    -- print(h_state[1], s_state[1], a_state[1], 'd_align: ', norm_d[id_align], 'drive: ', xdot, ydot, w ) --, '-', 'dist(d..):', table.unpack(d))
+    print(h_state[1], s_state[1], a_state[1], 'id_align: ', id_align, 'd_align: ', norm_d[id_align], 'd_last: ', d_last) --, '-', 'dist(d..):', table.unpack(d))
+  else
+    print(h_state[1], s_state[1], a_state[1], xdot, ydot, w) --, '-', 'dist(d..):', table.unpack(d))
+  end
+  tmr.sleepms(500)
+  time = time + 1
+end
 
 function split(s, delimiter)
     result = {};
@@ -494,10 +498,12 @@ end
 local VEL_CMD = 'speed'
 
 local socket = require("__socket")
-local host = "192.168.4.1"
-local port = 2018
-local has_remote_cliente = false
-
+host = host or "192.168.4.1"
+port = port or 2018
+if arg then
+    host = arg[1] or host
+    port = arg[2] or port
+end
 print("Binding to host '" ..host.. "' and port " ..port.. "...")
 udp = assert(socket.udp())
 assert(udp:setsockname(host, port))
@@ -505,37 +511,26 @@ assert(udp:setsockname(host, port))
 ip, port = udp:getsockname()
 assert(ip, port)
 print("Waiting packets on " .. ip .. ":" .. port .. "...")
-
-thread.start(function()
-  while 1 do
-  	dgram, ip, port = assert(udp:receivefrom())
-  	if dgram then
-  		print("Echoing '" .. dgram .. "' to " .. ip .. ":" .. port)
-      cmd = split(dgram, '*')
-      if cmd[1] == VEL_CMD then
-        if #cmd == 5 then
-          autonomous = false
-          tics_timeout_teleop = 0
-          has_remote_cliente = true
-          xdot = cmd[2]
-          ydot = cmd[3]
-          w = cmd[4]
-          omni.drive(xdot,ydot,w)
-          local nxt_enable = not (xdot==0 and ydot==0 and w ==0)
-          if nxt_enable ~= enable then
-            enable = nxt_enable
-            omni.set_enable(enable)
-          end
-
-          udp:sendto('[INFO] Speed command received (' .. xdot .. ', ' .. ydot .. ')', ip, port)
-        else
-          udp:sendto('[ERROR] Malformed command.', ip, port)
-        end
+while 1 do
+	dgram, ip, port = assert(udp:receivefrom())
+	if dgram then
+		print("Echoing '" .. dgram .. "' to " .. ip .. ":" .. port)
+    cmd = split(dgram, '*')
+    if cmd[1] == VEL_CMD then
+      if #cmd == 5 then
+        autonomous = false
+        xdot = cmd[2]
+        ydot = cmd[3]
+        w = cmd[4]
+        omni.drive(xdot,ydot,w)
+        udp:sendto('[INFO] Speed command received (' .. xdot .. ', ' .. ydot .. ')', ip, port)
       else
-        udp:sendto('[ERROR] Unknown command: ' .. cmd[1], ip, port)
+        udp:sendto('[ERROR] Malformed command.', ip, port)
       end
-  	else
-      print(ip)
+    else
+      udp:sendto('[ERROR] Unknown command: ' .. cmd[1], ip, port)
     end
+	else
+    print(ip)
   end
-end)
+end
