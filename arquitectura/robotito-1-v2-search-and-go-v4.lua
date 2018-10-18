@@ -6,20 +6,7 @@ local thershold = 251
 local histeresis = 3
 
 local N_SENSORS = 6
-local MIN_W_ROTATE = 0.008
-local MAX_W_ROTATE = 0.1
-local STEP_W_ROTATE = 0 -- do not increment angular velocity 0.01
-local INI_W_ROTATE = MIN_W_ROTATE
-
-local MIN_L_VEL = 0.01
-local MAX_L_VEL = 0.3
-local STEP_L_VEL = 0.02
-local INI_MAX_L_VEL = 0.2
-local INI_MIN_L_VEL = 0.01
-
-local w_rotate = INI_W_ROTATE
-local cur_max_l_vel = INI_MAX_L_VEL
-local cur_min_l_vel = INI_MIN_L_VEL
+local W_ROTATE = 0.008
 
 local MAX_TICS_TIMEOUT_SEARCH = 1.2 * 1000 / ms -- 1 seg
 
@@ -66,35 +53,9 @@ local last_color = "none"
 -- color: one of "red", "yellow", "green", "cyan", "blue", "magenta"
 -- s,v: 0..255
 local dump_color_change = function(c, s, v)
-  if c == "red" then
-    w_rotate = w_rotate - STEP_W_ROTATE
-    if w_rotate <= MIN_W_ROTATE then
-      w_rotate = MIN_W_ROTATE
-    end
-    cur_min_l_vel = cur_min_l_vel - STEP_L_VEL
-    if cur_min_l_vel <= MIN_L_VEL then
-      cur_min_l_vel = MIN_L_VEL
-    else
-      cur_max_l_vel = cur_max_l_vel - STEP_L_VEL -- decrements only if cur_min_l_vel is updated
-    end
-    last_color = c
-  elseif c == "green" then
-    w_rotate = w_rotate + STEP_W_ROTATE
-    if w_rotate >= MAX_W_ROTATE then
-      w_rotate = MAX_W_ROTATE
-    end
-    cur_max_l_vel = cur_max_l_vel + STEP_L_VEL
-    if cur_max_l_vel >= MAX_L_VEL then
-      cur_max_l_vel = MAX_L_VEL
-    else
-      cur_min_l_vel = cur_min_l_vel + STEP_L_VEL -- incrments only if cur_max_l_vel is updated
-    end
-    last_color = c
-  elseif c == "wi" then
-
-  end
-
+  last_color = c
 end
+
 
 --power on led
 local led_pin = pio.GPIO32
@@ -146,7 +107,7 @@ local init_h_search = function()
   end
   s_state = S_PAN_60
   a_state = STOP
-  cur_wdot = -w_rotate -- not oposite rotate direction respect to the initial rotation in the align state
+  cur_wdot = -W_ROTATE -- not oposite rotate direction respect to the initial rotation in the align state
   xdot = 0
   ydot = 0
   tics_timeout_search = 0
@@ -159,15 +120,10 @@ local dump_dist = function(b)
     if b then
       -- h_state = H_ALIGN
       -- a_state = STOP
-      -- tmr.sleepms(2000) -- do not start immediately
-
       h_state = H_SEARCH
       init_h_search()
       a_state = STOP
-      w_rotate = INI_W_ROTATE
-      cur_max_l_vel = INI_MAX_L_VEL
-      cur_min_l_vel = INI_MIN_L_VEL
-      cur_wdot = -w_rotate -- oposite rotate direction respect to the initial rotation in the align state
+      cur_wdot = -W_ROTATE -- oposite rotate direction respect to the initial rotation in the align state
     else
       h_state = H_OFF
       xdot = 0
@@ -210,9 +166,11 @@ local led_ring_colors = {
  {max_bright/2, 0, max_bright/2},
 }
 
-local first_led = {0, 20, 16, 12, 8, 4}
+local first_led = {4, 0, 20, 16, 12, 8}
 
-local neo = neopixel.attach(neopixel.WS2812B, ledpin, n_pins)
+local led_const = require('led_ring')
+
+local neo = led_const(pio.GPIO19, 24, 50)
 
 local enabled = false
 
@@ -258,7 +216,7 @@ local function indexsort(tbl)
 end
 
 local update_led_ring = function(intensity)
-  for i = 1,N_SENSORS do
+--[[  for i = 1,N_SENSORS do
     local color = {
       math.floor(intensity[i]*led_ring_colors[i][1]),
       math.floor(intensity[i]*led_ring_colors[i][2]),
@@ -269,6 +227,11 @@ local update_led_ring = function(intensity)
     end
   end
   neo:update()
+--]]
+    neo.clear()
+  for i = 1,N_SENSORS do
+    neo.set_segment(i, (intensity[i] ~= 0))
+  end
 end -- update_led_ring
 
 local compute_velocity = function(dist)
@@ -387,13 +350,13 @@ local dist_callback= function(d1, d2, d3, d4, d5, d6)
     elseif h_state == H_ALIGN then
       -- execute alingn state machine
       -- if norm_d[id_align] == 0 then
-      --   -- cur_wdot = -w_rotate -- oposite rotate direction respect to the initial rotation in the align state
+      --   -- cur_wdot = -W_ROTATE -- oposite rotate direction respect to the initial rotation in the align state
       --   h_state = H_DEBUG
       --   cur_wdot = 0
         -- h_state = H_SEARCH
         -- init_h_search()
       if a_state == STOP then
-        cur_wdot = w_rotate
+        cur_wdot = W_ROTATE
         a_state = INIT
         tics_timeout_a_init = 0
       elseif a_state == INIT then
@@ -405,9 +368,9 @@ local dist_callback= function(d1, d2, d3, d4, d5, d6)
         end
       elseif a_state == ROTATE then
         if norm_d[id_align] == 0 then
-          cur_wdot = -w_rotate
+          cur_wdot = -W_ROTATE
         else
-          cur_wdot = w_rotate
+          cur_wdot = W_ROTATE
         end
         a_state = PAN
         d_last = norm_d[id_align]
@@ -436,9 +399,11 @@ local dist_callback= function(d1, d2, d3, d4, d5, d6)
       --   xdot = 0
       --   ydot = 0
       else
+        local MAX_VEL = 0.2
+        local MIN_VEL = 0.01
         foo = {0, 0, 0, 0, 0, 0}
-        foo[id_align] = line(1, cur_max_l_vel, 0, 0, norm_d[id_align])
-        if foo[id_align] < cur_min_l_vel then foo[id_align] = cur_min_l_vel end -- lineal with step
+        foo[id_align] = line(1, MAX_VEL, 0, 0, norm_d[id_align])
+        if foo[id_align] < MIN_VEL then foo[id_align] = MIN_VEL end -- lineal with step
         compute_velocity(foo)
       end
       d_last = norm_d[id_align]
@@ -512,13 +477,12 @@ omni.set_enable(false)
 local time = 0
 while true do
   -- print('hz: ', tic/time, xdot, ydot, w, '-', 'dist(act_d):', table.unpack(act_d))
-  print('hz: ', tic/time, 'cur_min_l_vel', cur_min_l_vel, 'last_color', last_color)
-  -- if id_align>0 then
-  --   -- print(h_state[1], s_state[1], a_state[1], 'd_align: ', norm_d[id_align], 'drive: ', xdot, ydot, w ) --, '-', 'dist(d..):', table.unpack(d))
-  --   print(h_state[1], s_state[1], a_state[1], 'id_align: ', id_align, 'd_align: ', norm_d[id_align], 'd_last: ', d_last) --, '-', 'dist(d..):', table.unpack(d))
-  -- else
-  --   print(h_state[1], s_state[1], a_state[1], xdot, ydot, w) --, '-', 'dist(d..):', table.unpack(d))
-  -- end
+  if id_align>0 then
+    -- print(h_state[1], s_state[1], a_state[1], 'd_align: ', norm_d[id_align], 'drive: ', xdot, ydot, w ) --, '-', 'dist(d..):', table.unpack(d))
+    print(h_state[1], s_state[1], a_state[1], 'id_align: ', id_align, 'd_align: ', norm_d[id_align], 'd_last: ', d_last) --, '-', 'dist(d..):', table.unpack(d))
+  else
+    print(h_state[1], s_state[1], a_state[1], xdot, ydot, w) --, '-', 'dist(d..):', table.unpack(d))
+  end
   tmr.sleepms(500)
   time = time + 1
 end

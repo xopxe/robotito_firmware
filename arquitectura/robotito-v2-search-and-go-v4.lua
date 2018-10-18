@@ -37,6 +37,8 @@ local colors = {
   {"magenta", 300, 360},
 }
 
+local autonomous = true
+
 assert(apds.init())
 local distC = apds.proximity
 assert(distC.enable())
@@ -99,6 +101,7 @@ local h_state = H_OFF
 
 local tics_timeout_search  = 0
 local tics_timeout_a_init = 0
+local tics_timeout_teleop = 0
 
 local init_h_search = function()
   for i=1,N_SENSORS do
@@ -117,19 +120,21 @@ end
 -- callback for distC.get_dist_thresh
 -- will be called when the robot is over threshold high
 local dump_dist = function(b)
-    if b then
-      -- h_state = H_ALIGN
-      -- a_state = STOP
-      h_state = H_SEARCH
-      init_h_search()
-      a_state = STOP
-      cur_wdot = -W_ROTATE -- oposite rotate direction respect to the initial rotation in the align state
-    else
-      h_state = H_OFF
-      xdot = 0
-      ydot = 0
-      cur_wdot = 0
-      omni.drive(xdot,ydot,cur_wdot)
+    if autonomous then
+      if b then
+        -- h_state = H_ALIGN
+        -- a_state = STOP
+        h_state = H_SEARCH
+        init_h_search()
+        a_state = STOP
+        cur_wdot = -W_ROTATE -- oposite rotate direction respect to the initial rotation in the align state
+      else
+        h_state = H_OFF
+        xdot = 0
+        ydot = 0
+        cur_wdot = 0
+        omni.drive(xdot,ydot,cur_wdot)
+      end
     end
 end
 
@@ -272,7 +277,6 @@ local act_d = {0, 0, 0, 0, 0, 0}
 local current_wp = 0
 
 local id_align = 1
-local autonomous = true
 local norm_d = {0, 0, 0, 0, 0, 0}
 
 -- the callback will be called with all sensor readings
@@ -297,14 +301,16 @@ local dist_callback= function(d1, d2, d3, d4, d5, d6)
   end
   current_wp = (current_wp + 1) % WIN_SIZE
 
-  update_led_ring(norm_d)
 
   if not autonomous then
-    tics_timeout_teleop = tics_timeout_teleop  + 1
-    if tics_timeout_teleop >= MAX_TICS_TIMEOUT_TELEOP then
-      tics_timeout_teleop = 0
-      autonomous = true
-    end
+    norm_d={0, 1, 0, 0, 0, 0} -- switch on ahead leds only
+
+    -- TODO: dont return to autonomous
+    -- tics_timeout_teleop = tics_timeout_teleop  + 1
+    -- if tics_timeout_teleop >= MAX_TICS_TIMEOUT_TELEOP then
+    --   tics_timeout_teleop = 0
+    --   autonomous = true
+    -- end
   else
     if h_state == H_SEARCH then
       if s_state == S_PAN_60 then
@@ -421,6 +427,8 @@ local dist_callback= function(d1, d2, d3, d4, d5, d6)
     end
     tic = tic + 1
   end -- not autonomous
+
+  update_led_ring(norm_d)
   -- omni.drive(0,0,0.01)
 end
 
@@ -473,19 +481,19 @@ print("off")
 vlring.get_continuous(false)
 omni.set_enable(false)
 --vlring.release()
---]]
-local time = 0
-while true do
-  -- print('hz: ', tic/time, xdot, ydot, w, '-', 'dist(act_d):', table.unpack(act_d))
-  if id_align>0 then
-    -- print(h_state[1], s_state[1], a_state[1], 'd_align: ', norm_d[id_align], 'drive: ', xdot, ydot, w ) --, '-', 'dist(d..):', table.unpack(d))
-    print(h_state[1], s_state[1], a_state[1], 'id_align: ', id_align, 'd_align: ', norm_d[id_align], 'd_last: ', d_last) --, '-', 'dist(d..):', table.unpack(d))
-  else
-    print(h_state[1], s_state[1], a_state[1], xdot, ydot, w) --, '-', 'dist(d..):', table.unpack(d))
-  end
-  tmr.sleepms(500)
-  time = time + 1
-end
+-- --]]
+-- local time = 0
+-- while true do
+--   -- print('hz: ', tic/time, xdot, ydot, w, '-', 'dist(act_d):', table.unpack(act_d))
+--   if id_align>0 then
+--     -- print(h_state[1], s_state[1], a_state[1], 'd_align: ', norm_d[id_align], 'drive: ', xdot, ydot, w ) --, '-', 'dist(d..):', table.unpack(d))
+--     print(h_state[1], s_state[1], a_state[1], 'id_align: ', id_align, 'd_align: ', norm_d[id_align], 'd_last: ', d_last) --, '-', 'dist(d..):', table.unpack(d))
+--   else
+--     print(h_state[1], s_state[1], a_state[1], xdot, ydot, w) --, '-', 'dist(d..):', table.unpack(d))
+--   end
+--   tmr.sleepms(500)
+--   time = time + 1
+-- end
 
 function split(s, delimiter)
     result = {};

@@ -38,19 +38,44 @@ local d_range = dmax - dmin
 local d_last = 0
 local act_d = {0, 0, 0, 0, 0, 0}
 
+-- start neo led ring
+local max_bright = 70
+local led_ring_colors = {
+ {max_bright, 0, 0},
+ {max_bright/2, max_bright/2, 0},
+ {0, max_bright, 0},
+ {0, max_bright/2, max_bright/2},
+ {0, 0, max_bright},
+ {max_bright/2, 0, max_bright/2},
+}
+
+-- local neo = neopixel.attach(neopixel.WS2812B, ledpin, n_pins)
+local led_const = require('led_ring')
+local neo = led_const(pio.GPIO19, 24, 50)
+
+local update_led_ring = function(intensity)
+  neo.clear()
+  for i = 1,N_SENSORS do
+    neo.set_segment(i, (intensity[i] ~= 0))
+  end
+end -- update_led_ring
+-- end neo led ring
+
 local VEL_CMD = 'speed'
 
-local socket = require("__socket")
 local host = "192.168.4.1"
+local ip
 local port = 2018
 local has_remote_cliente = false
 
 print("Binding to host '" ..host.. "' and port " ..port.. "...")
-udp = assert(socket.udp())
+local udp = assert(socket.udp())
 assert(udp:setsockname(host, port))
 -- assert(udp:settimeout(5))
+
 ip, port = udp:getsockname()
 assert(ip, port)
+
 print("Waiting packets on " .. ip .. ":" .. port .. "...")
 
 -- global, store history distance values to compute low pass filter
@@ -81,22 +106,6 @@ local median = function (numlist)
     return numlist[math.ceil(#numlist/2)]
 end
 
-local max = function (numlist)
-    if type(numlist) ~= 'table' then return numlist end
-    table.sort(numlist)
-    return numlist[#numlist]
-end
-
-local function indexsort(tbl)
-  local idx = {}
-  for i = 1, #tbl do idx[i] = i end -- build a table of indexes
-  -- sort the indexes, but use the values as the sorting criteria
-  table.sort(idx, function(a, b) return tbl[a] > tbl[b] end)
-  -- return the sorted indexes
-  return (table.unpack or unpack)(idx)
-end
-
-
 function implode(delimiter, list)
   local len = #list
   if len == 0 then
@@ -113,39 +122,38 @@ end
 local dist_callback= function(d1, d2, d3, d4, d5, d6)
   local alpha_lpf = 1 -- low pass filter update parameter
   local MASK_ON_SENSORS = {true, true, true, true, true, true}
-  act_ori={d1, d2, d3, d4, d5, d6}
-  local norm_d = {0, 0, 0, 0, 0, 0}
+  local act_ori={d1, d2, d3, d4, d5, d6}
   -- apply distance data filter and update LEDs ring
   for i = 1,N_SENSORS do
     sensors_win[i][current_wp] = act_ori[i]
     act_d[i] = act_d[i] + alpha_lpf*(median(sensors_win[i])-act_d[i])
-    if act_d[i] > dmin and act_d[i] < dmax and MASK_ON_SENSORS[i] then
-      norm_d[i] = line(dmin, 0, dmax, 1, act_d[i])   -- 0..1}
-    else
-      norm_d[i] = 0
-    end
   end
+  
   current_wp = (current_wp + 1) % WIN_SIZE
   if has_remote_cliente then
     -- sens_str = implode('*', norm_d)
-    sens_str = implode('*', act_d)
+    local sens_str = implode('*', act_d)
     udp:sendto(sens_str, ip, port)
   end
 end
 
 function split(s, delimiter)
-    result = {};
+    local result = {};
     for match in (s..delimiter):gmatch("(.-)"..delimiter) do
         table.insert(result, match)
     end
     return result
 end
 
+local leds_on = {0, 1, 0, 0, 0, 0}
+update_led_ring(leds_on)
 
 omni.set_enable()
+local enable = true
 vlring.get_continuous(ms, dist_callback)
 
 thread.start(function()
+  local dgram, cmd
   while 1 do
   	dgram, ip, port = assert(udp:receivefrom())
   	if dgram then
@@ -153,17 +161,17 @@ thread.start(function()
       cmd = split(dgram, '*')
       if cmd[1] == VEL_CMD then
         if #cmd == 5 then
-          autonomous = false
           has_remote_cliente = true
           xdot = cmd[2]
           ydot = cmd[3]
-          w = cmd[4]
-          omni.drive(xdot,ydot,w)
+          w = cmd[4]dofile("robotito.lua")
+
           local nxt_enable = not (xdot==0 and ydot==0 and w ==0)
           if nxt_enable ~= enable then
             enable = nxt_enable
-            omni.set_enable(enable)
+            -- omni.set_enable(enable)
           end
+          omni.drive(xdot,ydot,w)
           udp:sendto('[INFO] Speed command received (' .. xdot .. ', ' .. ydot .. ')', ip, port)
         else
           udp:sendto('[ERROR] Malformed command.', ip, port)
