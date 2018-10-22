@@ -19,19 +19,23 @@ assert(color.set_color_table(colors))
 assert(color.set_sv_limits(min_sat,min_val,max_val))
 assert(color.enable())
 
-neo = neo or neopixel.attach(neopixel.WS2812B, ledpin, n_pins)
-m=m or require('omni')
+local led_const = require('led_ring')
+
+local neo = led_const(pio.GPIO19, 24, 20)
+
+
+local m = require('omni')
 m.set_enable()
 
-ms = ms or 100
+local ms = 100
 
-function turn_all_leds(r,g,b) 
+function turn_all_leds(r,g,b)
+  neo.clear()
   for pixel=0,24 do
-    neo:setPixel(pixel, r, g, b)
---    tmr.delayms(100)  
+    neo.set_led(pixel, r, g, b, true)
+--    tmr.delayms(100)
   end
-  neo:update()
-end 
+end
 
 -- callback for color.get_continuous
 -- will be called with (r,g,b,a [,h,s,v])
@@ -49,7 +53,7 @@ change_direction = function(c, s, v)
   if c == "red" then
     m.drive(0.05,0,0)
     turn_all_leds(50,0,0)
-  elseif c == 'blue' then 
+  elseif c == 'blue' then
     m.drive(-0.05,0,0)
     turn_all_leds(0,0,50)
   elseif c == 'green' then
@@ -78,15 +82,3 @@ m.set_enable()
 
 -- enable color change monitoring, enable hsv mode
 color.get_change(ms, change_direction)
-
-
--- run for x seconds
---tmr.sleepms(60*10000)
-while true do
-  tmr.sleepms(60*1000)
-end
--- stop monitoring distances
-color.get_continuous(false)
-color.get_change(false)
-
-pio.pin.setlow(led_pin)

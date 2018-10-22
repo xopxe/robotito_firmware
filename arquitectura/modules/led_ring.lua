@@ -1,8 +1,8 @@
 local F = function ( ledpin, n_leds, pow )
   local M = {}
 
-  M.power = pow or 20
-  
+  M.power = pow
+
   local colors = {
     {M.power, 0, 0},
     {0, M.power, 0},
@@ -11,8 +11,15 @@ local F = function ( ledpin, n_leds, pow )
     {0, M.power//2, M.power//2},
     {M.power//2, 0, M.power//2},
   }
-  local first_led = {12, 8, 4, 0, 20, 16}
-  local segment_length = n_leds // #colors
+
+  local colors_message = {
+    {M.power, 0, 0}, -- NO OBJECT
+    {0, M.power, 0},
+    {0, 0, M.power},
+  }
+
+  local first_led = {8, 4, 0, 20, 16, 12}
+  local segment_length = (n_leds // #colors) - 2
 
   local glow_id = nil
   local glow_power = 0
@@ -29,7 +36,7 @@ local F = function ( ledpin, n_leds, pow )
   M.set_color_table = function (c, f)
     colors = c
     first_led = f
-    segment_length = n_leds // #colors
+    segment_length = (n_leds // #colors) - 2
   end
 
   M.clear = function ()
@@ -46,11 +53,31 @@ local F = function ( ledpin, n_leds, pow )
       r, g, b = table.unpack(colors[segment])
     end
     for i = first, first + segment_length-1 do
-      neo:setPixel(i, r, g, b)
+      local ind = i % 24
+      neo:setPixel(ind, r, g, b)
     end
     neo:update()
   end
 
+  M.set_led = function (led, r, g, b, enable)
+    if enable then
+      neo:setPixel(led, r, g, b)
+    else
+      neo:setPixel(led, 0,0,0)
+    end
+    neo:update()
+  end
+
+  M.print_message = function(color_num)
+    local r, g, b = table.unpack(colors_message[color_num])
+    for i = 1, n_leds do
+      neo:setPixel(i-1, r, g, b)
+    end
+    neo:update()
+    for i = 1 , 6 do
+      M.set_segment(i, false)
+    end
+  end
 
   return M
 end

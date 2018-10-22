@@ -123,11 +123,10 @@ end
 -- callback for distC.get_dist_thresh
 -- will be called when the robot is over threshold high
 local dump_dist = function(b)
+    if autonomous then
       if b then
-        if autonomous then
-          tics_timeout_wait = 0
-          h_state = H_WAIT
-        end
+        tics_timeout_wait = 0
+        h_state = H_WAIT
       else
         h_state = H_OFF
         xdot = 0
@@ -135,6 +134,7 @@ local dump_dist = function(b)
         cur_wdot = 0
         omni.drive(xdot,ydot,cur_wdot)
       end
+    end
 end
 
 -- enable distC change monitoring
@@ -276,6 +276,10 @@ local current_wp = 0
 local id_align = 1
 local norm_d = {0, 0, 0, 0, 0, 0}
 
+local see_far_object = function (idx)
+    return act_d[idx]<7999 and act_d[idx]>=dmax
+end
+
 -- the callback will be called with all sensor readings
 local dist_callback= function(d1, d2, d3, d4, d5, d6)
   local alpha_lpf = 1 -- low pass filter update parameter
@@ -302,16 +306,12 @@ local dist_callback= function(d1, d2, d3, d4, d5, d6)
   if not autonomous then
     norm_d={0, 1, 0, 0, 0, 0} -- switch on ahead leds only
 
-    tics_timeout_teleop = tics_timeout_teleop  + 1
-    if tics_timeout_teleop >= MAX_TICS_TIMEOUT_TELEOP then
-      tics_timeout_teleop = 0
-      xdot = 0
-      ydot = 0
-      cur_wdot = 0
-      omni.drive(xdot,ydot,cur_wdot)
-      -- TODO: dont return to autonomous
-      -- autonomous = true
-    end
+    -- TODO: dont return to autonomous
+    -- tics_timeout_teleop = tics_timeout_teleop  + 1
+    -- if tics_timeout_teleop >= MAX_TICS_TIMEOUT_TELEOP then
+    --   tics_timeout_teleop = 0
+    --   autonomous = true
+    -- end
   else
     if h_state == H_WAIT then
       tics_timeout_wait = tics_timeout_wait + 1
@@ -375,22 +375,17 @@ local dist_callback= function(d1, d2, d3, d4, d5, d6)
       if a_state == STOP then
         cur_wdot = W_ROTATE
         a_state = INIT
-        tics_timeout_a_init = 0
+        d_last = norm_d[id_align]
       elseif a_state == INIT then
-        if tics_timeout_a_init >= MAX_TICS_TIMEOUT_A_INIT or norm_d[id_align] ~= 0 then
-          cur_wdot = 0
-          a_state = ROTATE
-        else
-          tics_timeout_a_init = tics_timeout_a_init + 1
-        end
-      elseif a_state == ROTATE then
-        if norm_d[id_align] == 0 then
+        if (d_last > norm_d[id_align]) or see_far_object(id_align) then -- ojo no comparar con norm_d
           cur_wdot = -W_ROTATE
         else
           cur_wdot = W_ROTATE
         end
         a_state = PAN
-        d_last = norm_d[id_align]
+        if norm_d[id_align] ~= 0 then
+          d_last = norm_d[id_align]
+        end
       elseif a_state == PAN then
         if d_last < norm_d[id_align] then
           a_state = BACK
@@ -400,21 +395,23 @@ local dist_callback= function(d1, d2, d3, d4, d5, d6)
       elseif a_state == BACK then
         cur_wdot = 0
         a_state = STOP
-        -- h_state = H_GO
-        h_state = H_DEBUG
+        h_state = H_GO
+        -- h_state = H_DEBUG
       end
       omni.drive(0,0,cur_wdot)
-      d_last = norm_d[id_align]
+      if norm_d[id_align] ~= 0 then
+        d_last = norm_d[id_align]
+      end
     elseif h_state == H_GO then
-      if norm_d[id_align] == 0 then
+      if act_d[id_align] <= dmin then -- ojo no comparar con norm_d
         h_state = H_SEARCH
         init_h_search()
-      -- elseif ((d_last - norm_d[id_align]) < TOL_APROACH) then
-      --   h_state = H_ALIGN
-      --   a_state = STOP
-      --   cur_wdot = 0
-      --   xdot = 0
-      --   ydot = 0
+      elseif (d_last - norm_d[id_align]) <  0 or see_far_object(id_align) then
+        h_state = H_ALIGN
+        a_state = STOP
+        cur_wdot = 0
+        xdot = 0
+        ydot = 0
       else
         local MAX_VEL = 0.2
         local MIN_VEL = 0.01
@@ -439,14 +436,6 @@ local dist_callback= function(d1, d2, d3, d4, d5, d6)
     tic = tic + 1
   end -- not autonomous
 
-  -- los leds reflean distancia aun si es menor a dmin
-  for i = 1,N_SENSORS do
-    if act_d[i] > dmax then
-      norm_d[i] = 0
-    else
-      norm_d[i] = line(0, 0, dmax, 1, act_d[i])   -- 0..1
-    end
-  end
   update_led_ring(norm_d)
   -- omni.drive(0,0,0.01)
 end

@@ -128,7 +128,7 @@ local dist_callback= function(d1, d2, d3, d4, d5, d6)
     sensors_win[i][current_wp] = act_ori[i]
     act_d[i] = act_d[i] + alpha_lpf*(median(sensors_win[i])-act_d[i])
   end
-  
+
   current_wp = (current_wp + 1) % WIN_SIZE
   if has_remote_cliente then
     -- sens_str = implode('*', norm_d)
