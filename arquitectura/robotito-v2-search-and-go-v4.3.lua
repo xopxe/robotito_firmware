@@ -231,6 +231,15 @@ local see_far_object = function (idx)
     return act_d[idx]<7999 and act_d[idx]>=dmax
 end
 
+local norm_d_with_far = function (idx)
+  local result
+  if see_far_object(idx) then
+    result = 1
+  else
+    result = norm_d[id_align]
+  end
+  return result
+end
 -- the callback will be called with all sensor readings
 local dist_callback= function(d1, d2, d3, d4, d5, d6)
   local alpha_lpf = 1 -- low pass filter update parameter
@@ -291,11 +300,13 @@ local dist_callback= function(d1, d2, d3, d4, d5, d6)
           cur_w = -cur_w
         end
       elseif s_state == S_FIND_MAX_MIN then
+        local TOL_MIN_ALIGN = 0.03
         -- if (norm_d[id_align] + TOL_APROACH) > d_last and norm_d[id_align] > 0 then
-        if norm_d[id_align] > 0 then
-          h_state = H_ALIGN
-          a_state = PAN
-          d_last = norm_d[id_align]
+        if math.abs(norm_d[id_align] - sensors_min_read[id_align]) < TOL_MIN_ALIGN then
+          h_state = H_GO
+          ar_state = AR_IZQ
+          d_last = norm_d_with_far(id_align)
+          cur_w = 0
         end
       end
       omni.drive(0,0,cur_w)
@@ -336,24 +347,31 @@ local dist_callback= function(d1, d2, d3, d4, d5, d6)
         d_last = norm_d[id_align]
       end
     elseif h_state == H_GO then
-      if act_d[id_align] <= dmin then -- ojo no comparar con norm_d
+      if norm_d[id_align] == 0 then -- ojo no comparar con norm_d
+      -- if act_d[id_align] <= dmin then -- ojo no comparar con norm_d
         h_state = H_SEARCH
         init_h_search()
-      elseif (d_last <  norm_d[id_align]) or see_far_object(id_align) then
-        h_state = H_ALIGN
-        a_state = STOP
-        cur_w = 0
-        xdot = 0
-        ydot = 0
       else
+        local d_cur = norm_d_with_far(id_align)
+
         local MAX_VEL = 0.2
         local MIN_VEL = 0.01
         local foo = {0, 0, 0, 0, 0, 0}
         foo[id_align] = line(1, MAX_VEL, 0, 0, norm_d[id_align])
         if foo[id_align] < MIN_VEL then foo[id_align] = MIN_VEL end -- lineal with step
-        compute_velocity(foo)
+        compute_velocity(foo) -- zero cur_w
+
+        if d_cur >= d_last then -- loosing object?
+          if ar_state == AR_IZQ then
+            ar_state = AR_DER
+            cur_w = -0.004
+          else
+            ar_state = AR_IZQ
+            cur_w = 0.004
+          end
+        end
+        d_last = d_cur
       end
-      d_last = norm_d[id_align]
       omni.drive(xdot,ydot,cur_w)
     elseif h_state == H_DEBUG then
       -- if norm_d[id_align] == 0 then

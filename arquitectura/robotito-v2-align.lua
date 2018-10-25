@@ -231,6 +231,15 @@ local see_far_object = function (idx)
     return act_d[idx]<7999 and act_d[idx]>=dmax
 end
 
+local norm_d_with_far = function (idx)
+  local result
+  if see_far_object(idx) then
+    result = 1
+  else
+    result = norm_d[id_align]
+  end
+  return result
+end
 -- the callback will be called with all sensor readings
 local dist_callback= function(d1, d2, d3, d4, d5, d6)
   local alpha_lpf = 1 -- low pass filter update parameter
@@ -264,97 +273,36 @@ local dist_callback= function(d1, d2, d3, d4, d5, d6)
     if h_state == H_WAIT then
       tics_timeout_wait = tics_timeout_wait + 1
       if tics_timeout_wait >= MAX_TICS_TIMEOUT_WAIT then
-        -- h_state = H_ALIGN
-        -- a_state = STOP
-        h_state = H_SEARCH
-        init_h_search()
+        h_state = H_ALIGN
+        a_state = STOP
       end
-    elseif h_state == H_SEARCH then
-      if s_state == S_PAN_60 then
-        tics_timeout_search = tics_timeout_search + 1
-        for i=1,N_SENSORS do
-          if (sensors_min_read[i] == 0 or (sensors_min_read[i] > norm_d[i]) and norm_d[i] > 0) then -- and  state_sensors_read[i] == SS_START then
-            sensors_min_read[i] = norm_d[i]
-          -- else
-          --   state_sensors_read[i] = SS_END
-          -- end
-          -- if state_sensors_read[i] == SS_END then
-          --   sensors_ready = sensors_ready + 1
-          end
-        end
-
-        -- if (sensors_ready == N_SENSORS) then -- tienen el problema que un sensor se queda con el objeto que encuentra primero pero ... probar
-        if tics_timeout_search >= MAX_TICS_TIMEOUT_SEARCH then
-          s_state = S_FIND_MAX_MIN
-          id_align = indexsort(sensors_min_read)
-          d_last = norm_d[id_align] --sensors_min_read[id_align]
-          cur_w = -cur_w
-        end
-      elseif s_state == S_FIND_MAX_MIN then
-        -- if (norm_d[id_align] + TOL_APROACH) > d_last and norm_d[id_align] > 0 then
-        if norm_d[id_align] > 0 then
-          h_state = H_ALIGN
-          a_state = PAN
-          d_last = norm_d[id_align]
-        end
-      end
-      omni.drive(0,0,cur_w)
     elseif h_state == H_ALIGN then
-      -- execute alingn state machine
-      -- if norm_d[id_align] == 0 then
-      --   -- cur_w = -W_ROTATE -- oposite rotate direction respect to the initial rotation in the align state
-      --   h_state = H_DEBUG
-      --   cur_w = 0
-        -- h_state = H_SEARCH
-        -- init_h_search()
       if a_state == STOP then
         cur_w = W_ROTATE
         a_state = INIT
-        d_last = norm_d[id_align]
       elseif a_state == INIT then
-        if (d_last > norm_d[id_align]) or not see_far_object(id_align) then -- are loosing object?
+        if (d_last == 0 and norm_d[id_align] == 0) or (norm_d[id_align] > d_last) then
           cur_w = -cur_w
         end
-        a_state = PAN
         if norm_d[id_align] ~= 0 then
-          d_last = norm_d[id_align]
+          a_state = PAN
         end
       elseif a_state == PAN then
         if d_last < norm_d[id_align] then
           a_state = BACK
           cur_w = -cur_w
         end
-        d_last = norm_d[id_align]
       elseif a_state == BACK then
         cur_w = 0
         a_state = STOP
-        h_state = H_GO
+        h_state = H_DEBUG
         -- h_state = H_DEBUG
       end
       omni.drive(0,0,cur_w)
-      if norm_d[id_align] ~= 0 then
-        d_last = norm_d[id_align]
-      end
-    elseif h_state == H_GO then
-      if act_d[id_align] <= dmin then -- ojo no comparar con norm_d
-        h_state = H_SEARCH
-        init_h_search()
-      elseif (d_last <  norm_d[id_align]) or see_far_object(id_align) then
-        h_state = H_ALIGN
-        a_state = STOP
-        cur_w = 0
-        xdot = 0
-        ydot = 0
-      else
-        local MAX_VEL = 0.2
-        local MIN_VEL = 0.01
-        local foo = {0, 0, 0, 0, 0, 0}
-        foo[id_align] = line(1, MAX_VEL, 0, 0, norm_d[id_align])
-        if foo[id_align] < MIN_VEL then foo[id_align] = MIN_VEL end -- lineal with step
-        compute_velocity(foo)
-      end
       d_last = norm_d[id_align]
-      omni.drive(xdot,ydot,cur_w)
+      -- if norm_d[id_align] ~= 0 then
+      --   d_last = norm_d[id_align]
+      -- end
     elseif h_state == H_DEBUG then
       -- if norm_d[id_align] == 0 then
       --   id_align = 1 -- indexsort(norm_d)

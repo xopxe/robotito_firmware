@@ -8,8 +8,8 @@ local histeresis = 3
 local N_SENSORS = 6
 local W_ROTATE = 0.008
 
-local MAX_TICS_TIMEOUT_SEARCH = 1.2 * 1000 / ms -- 1 seg
-local MAX_TICS_TIMEOUT_WAIT = 2 * 1000 / ms -- 1 seg
+local MAX_TICS_TIMEOUT_SEARCH = 1 * 1000 / ms -- 1.5 seg
+local MAX_TICS_TIMEOUT_WAIT = 2 * 1000 / ms -- 2 seg
 
 -- global, store history distance values to compute low pass filter
 local WIN_SIZE = 3
@@ -25,55 +25,20 @@ for i=1,N_SENSORS do
   end
 end
 
-local min_sat = 50
-local min_val = 20
-local max_val = 200
-
-local colors = {
-  {"red", 0, 60},
-  {"yellow", 60, 120},
-  {"green", 120, 180},
-  {"cyan", 180, 240},
-  {"blue", 240, 300},
-  {"magenta", 300, 360},
-}
-
 local autonomous = true
 
 assert(apds.init())
 local distC = apds.proximity
 assert(distC.enable())
 
-local color = apds.color
-assert(color.set_color_table(colors))
-assert(color.set_sv_limits(min_sat,min_val,max_val))
-assert(color.enable())
-
-local last_color = "none"
-
--- callback for get_change
--- will be called with (color, s, v)
--- color: one of "red", "yellow", "green", "cyan", "blue", "magenta"
--- s,v: 0..255
-local dump_color_change = function(c, s, v)
-  last_color = c
-end
-
-
 --power on led
 local led_pin = pio.GPIO32
 pio.pin.setdir(pio.OUTPUT, led_pin)
 pio.pin.sethigh(led_pin)
 
--- enable raw color monitoring, enable hsv mode
---color.get_continuous(ms, dump_rgb, true)
-
--- enable color change monitoring, enable hsv mode
-color.get_change(ms, dump_color_change)
-
 local xdot = 0
 local ydot = 0
-local cur_wdot = 0
+local cur_w = 0
 
 -- local w = 0
 
@@ -94,7 +59,6 @@ local S_PAN_60 = {"S_PAN_60"}
 local S_FIND_MAX_MIN = {"S_FIND_MAX_MIN"}
 local S_BACK = {"S_BACK"}
 local SS_START = {"SS_START"}
-local SS_END = {"SS_END"}
 
 -- machine state
 local a_state = STOP
@@ -108,16 +72,16 @@ local tics_timeout_teleop = 0
 
 local init_h_search = function()
   for i=1,N_SENSORS do
-    sensors_min_read[i] = 0 -- 0, centinela, max value norm
+    sensors_min_read[i] = 1 -- 1, centinela, max value norm
     state_sensors_read[i] = SS_START
   end
   s_state = S_PAN_60
   a_state = STOP
-  cur_wdot = -W_ROTATE -- not oposite rotate direction respect to the initial rotation in the align state
+  cur_w = -W_ROTATE -- not oposite rotate direction respect to the initial rotation in the align state
   xdot = 0
   ydot = 0
   tics_timeout_search = 0
-  omni.drive(xdot,ydot,cur_wdot)
+  omni.drive(xdot,ydot,cur_w)
 end
 
 -- callback for distC.get_dist_thresh
@@ -132,13 +96,13 @@ local dump_dist = function(b)
         h_state = H_OFF
         xdot = 0
         ydot = 0
-        cur_wdot = 0
-        omni.drive(xdot,ydot,cur_wdot)
+        cur_w = 0
+        omni.drive(xdot,ydot,cur_w)
       end
 end
 
 -- enable distC change monitoring
-distC.get_dist_thresh(ms, thershold, histeresis, dump_dist)
+distC.get_dist_thresh(4*ms, thershold, histeresis, dump_dist)
 
 -- end init apsd
 -- { {xshutpin, [newadddr]}, ... }
@@ -159,20 +123,9 @@ vlring.set_measurement_timing_budget(5000);
 
 local ledpin = pio.GPIO19
 local n_pins = 24
-
-local max_bright = 70
-local led_ring_colors = {
- {max_bright, 0, 0},
- {max_bright/2, max_bright/2, 0},
- {0, max_bright, 0},
- {0, max_bright/2, max_bright/2},
- {0, 0, max_bright},
- {max_bright/2, 0, max_bright/2},
-}
-
+local max_bright = 50
 local led_const = require('led_ring')
-
-local neo = led_const(pio.GPIO19, 24, 50)
+local neo = led_const(ledpin, n_pins, max_bright)
 
 local enabled = false
 
@@ -180,14 +133,6 @@ local button = sensor.attach("PUSH_SWITCH", pio.GPIO0)
 
 local sin60 = math.sqrt(3)/2
 local sin30 = 1/2
-local N_SENSORS = 6
-
--- sensor index to follow
-local id_max_ds = -1
-
--- search behavior vars
-local max_tics = 1
-local cur_tics = 0
 
 -- evalua la funcion de una recta en x dado dos puntos (x1, y1) y (x2, y2)
 local line = function(x1, y1, x2, y2, x)
@@ -259,14 +204,13 @@ local compute_velocity = function(dist)
       ydot = -FIXED_VEL
     end
   end
-  cur_wdot = 0 -- follow
+  cur_w = 0 -- follow
 end
 
 local tic = 0
 
 local dmin = 80
 local dmax = 600
-local d_range = dmax - dmin
 local d_last = 0
 local act_d = {0, 0, 0, 0, 0, 0}
 
@@ -274,30 +218,36 @@ local act_d = {0, 0, 0, 0, 0, 0}
 local current_wp = 0
 
 local id_align = 1
-local norm_d = {0, 0, 0, 0, 0, 0}
 
 -- the callback will be called with all sensor readings
 local dist_callback= function(d1, d2, d3, d4, d5, d6)
+  local norm_d = {0, 0, 0, 0, 0, 0}
   local alpha_lpf = 1 -- low pass filter update parameter
-  local TOL_APROACH = 100
   local MASK_ON_SENSORS = {true, true, true, true, true, true}
   -- local MASK_ON_SENSORS = {true, false, false, false, false, false}
   local MAX_TICS_TIMEOUT_TELEOP = 10 * 1000 / ms -- 10 seg
   local MAX_TICS_TIMEOUT_A_INIT = 3 -- 3 ms
-  act_ori={d1, d2, d3, d4, d5, d6}
+  local act_ori={d1, d2, d3, d4, d5, d6}
+
+  local filters_on = false
 
   -- apply distance data filter and update LEDs ring
   for i = 1,N_SENSORS do
-    sensors_win[i][current_wp] = act_ori[i]
-    act_d[i] = act_d[i] + alpha_lpf*(median(sensors_win[i])-act_d[i])
+    if filters_on then
+      sensors_win[i][current_wp] = act_ori[i]
+      act_d[i] = act_d[i] + alpha_lpf*(median(sensors_win[i])-act_d[i])
+    else
+      act_d[i] = act_ori[i]
+    end
+
     if act_d[i] > dmin and act_d[i] < dmax and MASK_ON_SENSORS[i] then
       norm_d[i] = line(dmin, 0, dmax, 1, act_d[i])   -- 0..1
     else
       norm_d[i] = 0
     end
   end
-  current_wp = (current_wp + 1) % WIN_SIZE
 
+  current_wp = (current_wp + 1) % WIN_SIZE
 
   if not autonomous then
     norm_d={0, 1, 0, 0, 0, 0} -- switch on ahead leds only
@@ -307,8 +257,8 @@ local dist_callback= function(d1, d2, d3, d4, d5, d6)
       tics_timeout_teleop = 0
       xdot = 0
       ydot = 0
-      cur_wdot = 0
-      omni.drive(xdot,ydot,cur_wdot)
+      cur_w = 0
+      omni.drive(xdot,ydot,cur_w)
       -- TODO: dont return to autonomous
       -- autonomous = true
     end
@@ -321,15 +271,13 @@ local dist_callback= function(d1, d2, d3, d4, d5, d6)
         h_state = H_SEARCH
         init_h_search()
         a_state = STOP
-        cur_wdot = -W_ROTATE -- oposite rotate direction respect to the initial rotation in the align state
+        cur_w = -W_ROTATE -- oposite rotate direction respect to the initial rotation in the align state
       end
     elseif h_state == H_SEARCH then
+      tics_timeout_search = tics_timeout_search + 1
       if s_state == S_PAN_60 then
-        local sensors_ready = 0
-
-        tics_timeout_search = tics_timeout_search + 1
         for i=1,N_SENSORS do
-          if (sensors_min_read[i] == 0 or sensors_min_read[i] > norm_d[i]) and norm_d[i] > 0 then -- and  state_sensors_read[i] == SS_START then
+          if sensors_min_read[i] > norm_d[i] and norm_d[i] ~=0 then -- and  state_sensors_read[i] == SS_START then
             sensors_min_read[i] = norm_d[i]
           -- else
           --   state_sensors_read[i] = SS_END
@@ -341,69 +289,97 @@ local dist_callback= function(d1, d2, d3, d4, d5, d6)
 
         -- if (sensors_ready == N_SENSORS) then -- tienen el problema que un sensor se queda con el objeto que encuentra primero pero ... probar
         if tics_timeout_search >= MAX_TICS_TIMEOUT_SEARCH then
-          s_state = S_FIND_MAX_MIN
+          for i=1,N_SENSORS do
+            if sensors_min_read[i] == 1 then -- do not find any object
+              sensors_min_read[i] = 0 -- do not find in indexsort!
+            end
+          end
           id_align = indexsort(sensors_min_read)
-          d_last = norm_d[id_align] --sensors_min_read[id_align]
-          cur_wdot = -cur_wdot
+          -- print("max:", norm_d[id_align], "id: ", id_align)
+          if sensors_min_read[id_align] == 0 then -- do not find any object
+            init_h_search()
+            h_state = H_SEARCH
+            cur_w = -W_ROTATE -- oposite rotate direction respect to the initial rotation in the align state
+          else
+            d_last = norm_d[id_align] --sensors_min_read[id_align]
+            s_state = S_FIND_MAX_MIN
+            tics_timeout_search = 0 -- timeout to find the object again
+            cur_w = -cur_w
+          end
         end
       elseif s_state == S_FIND_MAX_MIN then
         -- if (norm_d[id_align] + TOL_APROACH) > d_last and norm_d[id_align] > 0 then
-        if norm_d[id_align] > 0 then
-          s_state = S_BACK
-          cur_wdot = -cur_wdot
+        local TOL_MIN_ALIGN = 0.005
+        if tics_timeout_search >= MAX_TICS_TIMEOUT_SEARCH then -- search for a new object
+          -- init_h_search()
+          -- h_state = H_SEARCH
+          -- cur_w = -W_ROTATE -- oposite rotate direction respect to the initial rotation in the align state
+          -- TODO: debug
+          if autonomous then
+            tics_timeout_wait = 0
+            cur_w = 0
+            h_state = H_WAIT
+          end
+
+        elseif norm_d[id_align] < (sensors_min_read[id_align] + TOL_MIN_ALIGN) and norm_d[id_align] ~= 0 then
+          cur_w = 0
+          h_state = H_GO
+          -- d_last = norm_d[id_align]
+          -- s_state = S_BACK
+          -- cur_w = -cur_w
           -- a_state = PAN
           -- h_state = H_ALIGN
           -- d_last = norm_d[id_align]
         end
       elseif s_state == S_BACK then
-        cur_wdot = 0
+        cur_w = 0
         -- h_state = H_ALIGN
         a_state = STOP
         -- a_state = INIT
         h_state = H_GO
         d_last = norm_d[id_align]
       end
-      omni.drive(0,0,cur_wdot)
+      omni.drive(0,0,cur_w)
     elseif h_state == H_ALIGN then
       -- execute alingn state machine
       -- if norm_d[id_align] == 0 then
-      --   -- cur_wdot = -W_ROTATE -- oposite rotate direction respect to the initial rotation in the align state
+      --   -- cur_w = -W_ROTATE -- oposite rotate direction respect to the initial rotation in the align state
       --   h_state = H_DEBUG
-      --   cur_wdot = 0
+      --   cur_w = 0
         -- h_state = H_SEARCH
         -- init_h_search()
       if a_state == STOP then
-        cur_wdot = W_ROTATE
+        cur_w = W_ROTATE
         a_state = INIT
         tics_timeout_a_init = 0
       elseif a_state == INIT then
         if tics_timeout_a_init >= MAX_TICS_TIMEOUT_A_INIT or norm_d[id_align] ~= 0 then
-          cur_wdot = 0
+          cur_w = 0
           a_state = ROTATE
         else
           tics_timeout_a_init = tics_timeout_a_init + 1
         end
       elseif a_state == ROTATE then
         if norm_d[id_align] == 0 then
-          cur_wdot = -W_ROTATE
+          cur_w = -W_ROTATE
         else
-          cur_wdot = W_ROTATE
+          cur_w = W_ROTATE
         end
         a_state = PAN
         d_last = norm_d[id_align]
       elseif a_state == PAN then
         if d_last < norm_d[id_align] then
           a_state = BACK
-          cur_wdot = -cur_wdot
+          cur_w = -cur_w
         end
         d_last = norm_d[id_align]
       elseif a_state == BACK then
-        cur_wdot = 0
+        cur_w = 0
         a_state = STOP
         -- h_state = H_GO
         h_state = H_DEBUG
       end
-      omni.drive(0,0,cur_wdot)
+      omni.drive(0,0,cur_w)
       d_last = norm_d[id_align]
     elseif h_state == H_GO then
       if norm_d[id_align] == 0 then
@@ -412,19 +388,19 @@ local dist_callback= function(d1, d2, d3, d4, d5, d6)
       -- elseif ((d_last - norm_d[id_align]) < TOL_APROACH) then
       --   h_state = H_ALIGN
       --   a_state = STOP
-      --   cur_wdot = 0
+      --   cur_w = 0
       --   xdot = 0
       --   ydot = 0
       else
         local MAX_VEL = 0.2
         local MIN_VEL = 0.01
-        foo = {0, 0, 0, 0, 0, 0}
+        local foo = {0, 0, 0, 0, 0, 0}
         foo[id_align] = line(1, MAX_VEL, 0, 0, norm_d[id_align])
         if foo[id_align] < MIN_VEL then foo[id_align] = MIN_VEL end -- lineal with step
         compute_velocity(foo)
       end
       d_last = norm_d[id_align]
-      omni.drive(xdot,ydot,cur_wdot)
+      omni.drive(xdot,ydot,cur_w)
     elseif h_state == H_DEBUG then
       -- if norm_d[id_align] == 0 then
       --   id_align = 1 -- indexsort(norm_d)
@@ -437,16 +413,16 @@ local dist_callback= function(d1, d2, d3, d4, d5, d6)
       end
     end
     tic = tic + 1
+    -- los leds reflean distancia aun si es menor a dmin
+    for i = 1,N_SENSORS do
+      if act_d[i] > dmax then
+        norm_d[i] = 0
+      else
+        norm_d[i] = line(0, 0, dmax, 1, act_d[i])   -- 0..1
+      end
+    end
   end -- not autonomous
 
-  -- los leds reflean distancia aun si es menor a dmin
-  for i = 1,N_SENSORS do
-    if act_d[i] > dmax then
-      norm_d[i] = 0
-    else
-      norm_d[i] = line(0, 0, dmax, 1, act_d[i])   -- 0..1
-    end
-  end
   update_led_ring(norm_d)
   -- omni.drive(0,0,0.01)
 end
@@ -468,60 +444,15 @@ local function button_callback(data)
   end
 end
 
-
 button:callback(button_callback)
 
 print("on")
 omni.set_enable()
+
 vlring.get_continuous(ms, dist_callback)
--- local readings = {6}
--- while true do
---     for i= 1, #sensors do
---         readings[i] = vlring.get(i)
---     end
---     print (table.unpack(d))
---     tmr.sleepms(100*1000)
--- end
---
--- local w = 3
--- while true do
---     print ('w: ', w)
---     omni.drive(0,0,w)
---     tmr.sleepms(3*1000)
---     w = -w
--- end
-
-
-
---[[
-tmr.sleepms(20*1000)
-
-print("off")
-vlring.get_continuous(false)
-omni.set_enable(false)
---vlring.release()
--- --]]
--- local time = 0
--- while true do
---   -- print('hz: ', tic/time, xdot, ydot, w, '-', 'dist(act_d):', table.unpack(act_d))
---   if id_align>0 then
---     -- print(h_state[1], s_state[1], a_state[1], 'd_align: ', norm_d[id_align], 'drive: ', xdot, ydot, w ) --, '-', 'dist(d..):', table.unpack(d))
---     print(h_state[1], s_state[1], a_state[1], 'id_align: ', id_align, 'd_align: ', norm_d[id_align], 'd_last: ', d_last) --, '-', 'dist(d..):', table.unpack(d))
---   else
---     print(h_state[1], s_state[1], a_state[1], xdot, ydot, w) --, '-', 'dist(d..):', table.unpack(d))
---   end
---   tmr.sleepms(500)
---   time = time + 1
--- end
-
--- -- TODO: OJO WHILE TRUE
--- while true do
---   tmr.sleepms(1000)
---   print(".")
--- end
 
 function split(s, delimiter)
-    result = {};
+    local result = {};
     for match in (s..delimiter):gmatch("(.-)"..delimiter) do
         table.insert(result, match)
     end
@@ -534,6 +465,9 @@ local socket = require("__socket")
 local host = "192.168.4.1"
 local port = 2018
 local has_remote_cliente = false
+local udp
+local ip
+local dgram
 
 print("Binding to host '" ..host.. "' and port " ..port.. "...")
 udp = assert(socket.udp())
@@ -544,6 +478,9 @@ assert(ip, port)
 print("Waiting packets on " .. ip .. ":" .. port .. "...")
 
 thread.start(function()
+  local cmd
+  local enable = false
+
   while 1 do
   	dgram, ip, port = assert(udp:receivefrom())
   	if dgram then
@@ -556,9 +493,9 @@ thread.start(function()
           has_remote_cliente = true
           xdot = cmd[2]
           ydot = cmd[3]
-          w = cmd[4]
-          omni.drive(xdot,ydot,w)
-          local nxt_enable = not (xdot==0 and ydot==0 and w ==0)
+          cur_w = cmd[4]
+          omni.drive(xdot,ydot,cur_w)
+          local nxt_enable = not (xdot==0 and ydot==0 and cur_w ==0)
           if nxt_enable ~= enable then
             enable = nxt_enable
             omni.set_enable(enable)

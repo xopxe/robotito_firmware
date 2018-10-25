@@ -1,18 +1,21 @@
 local apds = assert(require('apds9960'))
 local ledpin = pio.GPIO19
 local n_pins = 24
+local led_pow = 10
 
-local min_sat = 100
-local min_val = 20
-local max_val = 200
+local min_sat = 60
+local min_val = 40
+local max_val = 270
 
 local colors = {
-  {"yellow", 21, 60},
-  {"green", 120, 200},
-  {"blue", 200, 220},
-  {"red", 300, 360},
-  {"orange", 0, 20},
-  {"violet", 221, 240},
+  -- {"orange", 12, 17}, -- 12
+  {"yellow", 22, 65},
+  {"green", 165, 185},
+  {"blue", 209, 215}, -- 210
+  {"rose", 255, 300}, -- 265
+  {"red", 339 , 360}, -- 353
+
+  -- {"violet", 221, 240},
 }
 
 assert(apds.init())
@@ -25,15 +28,13 @@ assert(color.set_sv_limits(min_sat,min_val,max_val))
 assert(color.enable())
 
 local led_const = require('led_ring')
-
-local neo = led_const(pio.GPIO19, 24, 10)
-
+local neo = led_const(ledpin, n_pins, led_pow)
 
 local m = require('omni')
 m.set_enable()
 
 local ms_dist = 400
-local ms_color = 100
+local ms_color = 80
 local thershold = 251
 local histeresis = 3
 
@@ -41,14 +42,29 @@ local H_OFF = {"H_OFF"}
 local H_ON = {"H_ON"}
 local h_state = H_OFF
 
+local last_color = "NONE"
+local tics_same_color = 0
+local TICS_NEW_COLOR = 5
+
+local x_dot = 0
+local y_dot = 0
+local w = 0
+
 -- callback for distC.get_dist_thresh
 -- will be called when the robot is over threshold high
 local dump_dist = function(b)
       if b then
+        last_color = "NONE"
+        tics_same_color = 0
         h_state = H_ON
       else
+        x_dot = 0
+        y_dot = 0
+        w = 0
+        m.drive(x_dot,y_dot,w)
+        -- neo.clear()
+        turn_all_leds(0,0,0)
         h_state = H_OFF
-        m.drive(0,0,0)
       end
 end
 
@@ -56,39 +72,62 @@ end
 distC.get_dist_thresh(ms_dist, thershold, histeresis, dump_dist)
 
 function turn_all_leds(r,g,b)
-  -- neo.clear()
-  for pixel=0,24 do
-    neo.set_led(pixel, r, g, b, true)
-    tmr.delayms(1)
-  end
-end
-
-set_motors_from_color = function(c)
-  local MAX_VEL = 0.08
-  if h_state == H_ON then
-    --print('color', c, 'sv', s, v)
-    if c == "red" then
-      m.drive(MAX_VEL,0,0)
-      turn_all_leds(50,0,0)
-    elseif c == 'blue' then
-      m.drive(-MAX_VEL,0,0)
-      turn_all_leds(0,0,50)
-    elseif c == 'green' then
-      m.drive(0,MAX_VEL,0)
-      turn_all_leds(0,50,0)
-    elseif c == 'orange'  then
-      m.drive(0,-MAX_VEL,0)
-      turn_all_leds(255,70,0) -- orange
-      -- turn_all_leds(255,0,255) -- violet
-      -- turn_all_leds(255,255,0) -- yellow
-    --else
-      --turn_all_leds(0,0,0)
+  if (r + g + b) == 0 then  -- draw axis
+    neo.clear()
+    neo.set_led(8, 50,0,0, true)
+    neo.set_led(14,0,50,0 , true)
+    neo.set_led(20, 0,0,50 , true)
+    neo.set_led(2,160 , 100, 0, true)
+  else
+    for pixel= 0, 24 do
+      neo.set_led(pixel, r, g, b, true)
     end
   end
 end
 
-change_direction = function(c, s, v)
-  set_motors_from_color(c)
+dump_rgb = function(r,g,b,a,h,s,v, c)
+  -- print('ambient:', a, 'rgb:', r, g, b,'hsv:', h, s, v, 'name:', name)
+  local MAX_VEL = 0.08
+
+  if h_state == H_ON then
+    --print('color', c, 'sv', s, v)
+    if last_color == c then
+      if tics_same_color < TICS_NEW_COLOR then
+        tics_same_color = tics_same_color + 1
+      elseif tics_same_color == TICS_NEW_COLOR then
+        -- print('new color')
+        if c == "red" then
+          x_dot = MAX_VEL
+          y_dot = 0
+          w = 0
+          turn_all_leds(50,0,0)
+        elseif c == 'blue' then
+          x_dot = -MAX_VEL
+          y_dot = 0
+          w = 0
+          turn_all_leds(0,0,50)
+        elseif c == 'green' then
+          x_dot = 0
+          y_dot = MAX_VEL
+          w = 0
+          turn_all_leds(0,50,0)
+        elseif c == 'yellow' then --or c == 'orange'  then
+          x_dot = 0
+          y_dot = -MAX_VEL
+          w = 0
+          -- turn_all_leds(255,0,140) -- violet
+          -- turn_all_leds(255,70,0) -- orange
+          turn_all_leds(160,100,0) -- yellow
+        -- else
+        --   turn_all_leds(0,0,0)
+        end
+        m.drive(x_dot,y_dot,w)
+      end
+    else
+      last_color = c
+      tics_same_color = 0
+    end
+  end
 end
 
 -- callback for color.get_continuous
@@ -97,10 +136,6 @@ end
 -- r,g,b,a : 16 bits
 -- h: 0..360
 -- s,v: 0..255
-dump_rgb = function(r,g,b,a,h,s,v, name)
-  -- print('ambient:', a, 'rgb:', r, g, b,'hsv:', h, s, v, 'name:', name)
-  set_motors_from_color(name)
-end
 
 --power on led
 local led_color_pin = pio.GPIO32
@@ -109,6 +144,7 @@ pio.pin.sethigh(led_color_pin)
 
 m.set_enable()
 
+turn_all_leds(0,0,0)
 
 -- enable raw color monitoring, enable hsv mode
 color.get_continuous(ms_color, dump_rgb, true)
