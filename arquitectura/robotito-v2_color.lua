@@ -10,10 +10,10 @@ local max_val = 270
 local colors = {
   -- {"orange", 12, 17}, -- 12
   {"yellow", 22, 65},
-  {"green", 165, 185},
+  {"green", 159, 180},
   {"blue", 209, 215}, -- 210
   {"rose", 255, 300}, -- 265
-  {"red", 339 , 360}, -- 353
+  {"red", 351 , 359}, -- 353
 
   -- {"violet", 221, 240},
 }
@@ -44,7 +44,7 @@ local h_state = H_OFF
 
 local last_color = "NONE"
 local tics_same_color = 0
-local TICS_NEW_COLOR = 5
+local TICS_NEW_COLOR = 7
 
 local x_dot = 0
 local y_dot = 0
@@ -74,10 +74,14 @@ distC.get_dist_thresh(ms_dist, thershold, histeresis, dump_dist)
 function turn_all_leds(r,g,b)
   if (r + g + b) == 0 then  -- draw axis
     neo.clear()
-    neo.set_led(8, 50,0,0, true)
-    neo.set_led(14,0,50,0 , true)
-    neo.set_led(20, 0,0,50 , true)
-    neo.set_led(2,160 , 100, 0, true)
+    -- neo.set_led(8, 50,0,0, true)
+    -- neo.set_led(14,0,50,0 , true)
+    -- neo.set_led(20, 0,0,50 , true)
+    -- neo.set_led(2,160 , 100, 0, true)
+    neo.set_led(2, 50,0,0, true)
+    neo.set_led(8,0,50,0 , true)
+    neo.set_led(14, 0,0,50 , true)
+    neo.set_led(20,160 , 100, 0, true)
   else
     for pixel= 0, 24 do
       neo.set_led(pixel, r, g, b, true)
@@ -87,7 +91,7 @@ end
 
 dump_rgb = function(r,g,b,a,h,s,v, c)
   -- print('ambient:', a, 'rgb:', r, g, b,'hsv:', h, s, v, 'name:', name)
-  local MAX_VEL = 0.08
+  local MAX_VEL = 0.06
 
   if h_state == H_ON then
     --print('color', c, 'sv', s, v)
