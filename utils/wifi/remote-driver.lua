@@ -35,8 +35,8 @@ assert(color.set_color_table(colors))
 assert(color.set_sv_limits(min_sat,min_val,max_val))
 assert(color.enable())
 
-local ms_laser = 100  -- period of distance measurements
-local ms_color = 100  -- period of color measurements
+local ms_laser = 200  -- period of distance measurements
+local ms_color = 200  -- period of color measurements
 
 -- { {xshutpin, [newadddr]}, ... }
 local sensors = {
@@ -144,7 +144,7 @@ local dist_callback= function(d1, d2, d3, d4, d5, d6)
 
   current_wp = (current_wp + 1) % WIN_SIZE
   -- send laser measurements update
-  local sens_str = LASER_CMD .. implode(DELIMITER, act_ori) -- act_d
+  local sens_str = LASER_CMD .. DELIMITER .. implode(DELIMITER, act_ori) -- act_d
   -- send laser measurements update
   udp:sendto(sens_str, ip_broadcast, port)
 end
@@ -183,6 +183,8 @@ color.get_continuous(ms_color, dump_rgb, true)
 thread.start(function()
   local dgram, cmd
   local ip_remote
+  local parameter, namespace, value
+  local msg
 
   while 1 do
   	dgram, ip_remote, port = assert(udp:receivefrom())
@@ -201,32 +203,36 @@ thread.start(function()
             -- omni.set_enable(enable)
           end
           omni.drive(xdot,ydot,w)
-          udp:sendto('[INFO] Speed command received (' .. xdot .. ', ' .. ydot .. ')', ip, port)
+          msg = '[INFO] Speed command received (' .. xdot .. ', ' .. ydot .. ')'
         else
-          udp:sendto('[ERROR] Malformed command.', ip, port)
+          msg = '[ERROR] Malformed command.'
         end
       elseif cmd[1] == SET_PARAM then
         if #cmd == 4 then
           namespace = cmd[2]
           parameter = cmd[3]
           value = cmd[4]
-          nvs.write(namespace, parameter, value)
-          udp:sendto('[INFO] Set parameter command received (' .. namespace .. ', ' .. parameter .. ', ' .. value .. ')', ip, port)
+          -- nvs.write(namespace, parameter, value)
+          msg = '[INFO] Set parameter command received (' .. namespace .. ', ' .. parameter .. ', ' .. value .. ')'
         else
-          udp:sendto('[ERROR] Malformed command.', ip, port)
+          msg = '[ERROR] Malformed command.'
         end
       elseif cmd[1] == GET_PARAM then
         if #cmd == 3 then
           namespace = cmd[2]
-          parameter = cmd[3]
-          value = nvs.read(namespace, parameter)
-          udp:sendto('[INFO] Get parameter command received (' .. namespace .. ', ' .. parameter .. ', ' .. value .. ')', ip, port)
+          parameter = string.gsub(cmd[3], "\n", "")
+          print(parameter, '....', namespace)
+
+          value = nvs.read(namespace, parameter, 'key not found')
+          msg = '[INFO] Get parameter command received (' .. namespace .. ', ' .. parameter .. ', ' .. value .. ')'
         else
-          udp:sendto('[ERROR] Malformed command.', ip, port)
+          msg = '[ERROR] Malformed command.'
         end
       else
-        udp:sendto('[ERROR] Unknown command: ' .. cmd[1], ip, port)
+        msg = '[ERROR] Unknown command: ' .. cmd[1]
       end
+      -- print(msg)
+      udp:sendto(msg, ip_broadcast, port)
   	else
       print(ip)
     end

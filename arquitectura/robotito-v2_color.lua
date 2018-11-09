@@ -9,9 +9,9 @@ local max_val = 270
 
 local colors = {
   -- {"orange", 12, 17}, -- 12
-  {"yellow", 22, 65},
+  {"yellow", 5, 70},
   {"green", 159, 180},
-  {"blue", 209, 215}, -- 210
+  {"blue", 200, 225}, -- 210
   {"rose", 255, 300}, -- 265
   {"red", 351 , 359}, -- 353
 
@@ -44,7 +44,7 @@ local h_state = H_OFF
 
 local last_color = "NONE"
 local tics_same_color = 0
-local TICS_NEW_COLOR = 7
+local TICS_NEW_COLOR = 4
 
 local x_dot = 0
 local y_dot = 0
@@ -90,7 +90,6 @@ function turn_all_leds(r,g,b)
 end
 
 dump_rgb = function(r,g,b,a,h,s,v, c)
-  -- print('ambient:', a, 'rgb:', r, g, b,'hsv:', h, s, v, 'name:', name)
   local MAX_VEL = 0.06
 
   if h_state == H_ON then
@@ -132,6 +131,7 @@ dump_rgb = function(r,g,b,a,h,s,v, c)
       tics_same_color = 0
     end
   end
+  -- print('ambient:', a, 'rgb:', r, g, b,'hsv:', h, s, v, 'name:', name)
 end
 
 -- callback for color.get_continuous
@@ -155,3 +155,5 @@ color.get_continuous(ms_color, dump_rgb, true)
 
 -- enable color change monitoring, enable hsv mode
 -- color.get_change(ms, change_direction)
+
+print("ready to playt with colors")
