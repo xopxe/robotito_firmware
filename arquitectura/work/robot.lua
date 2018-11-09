@@ -1,7 +1,7 @@
 local M = {}
 
 local omni=require('omni')
-local apds = assert(require('apds9960'))
+local apds = assert(require('apds'))
 local laser_ring = require('laser_ring')
 local led_ring = require'led_ring'(pio.GPIO19, 24, 50)
 
@@ -13,12 +13,9 @@ M.led_ring = led_ring
 
 M.init = function()
 
-  assert(apds.init())
-  assert(apds.proximity.enable())
-
+  apds.init()
   laser_ring.init()  --init(true)
-  laser_ring.cb_list.add( laser_ring.get_reading_cb() )
-
+  laser_ring.cb_list.append( laser_ring.get_reading_cb() )
   omni.set_enable()
 
 end
