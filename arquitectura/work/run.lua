@@ -1,4 +1,4 @@
-
+  --[[
 -- Initializing WIFI
 net.wf.setup(
   net.wf.mode.AP,
@@ -25,22 +25,29 @@ local udp = assert(socket.udp())
 udp:setoption('broadcast', true)
 assert(udp:setsockname(host, port))
 
+FUNCTION TO SEND BROADCAST
+
+  udp:sendto(message_id .. ' :: ' .. msg, ip_broadcast, port)
+  message_id = message_id + 1
+  --]]
+
 -- END Socket UDP
 
-local ahsm = require 'ahsm'
+ahsm = require 'ahsm'
 ahsm.get_time = assert(os.gettime)
 
 local debugger=require 'debug_plain'
 debugger.print = function (msg)
-  udp:sendto(message_id .. ' :: ' .. msg, ip_broadcast, port)
-  message_id = message_id + 1
+  --uart.lock(uart.CONSOLE)
+  uart.write(uart.CONSOLE, msg..'\r\n')
+  --uart.unlock(uart.CONSOLE)
+
 end
 
 ahsm.debug = debugger.out
 
-local robot = require 'robot'
+robot = require 'robot'
 robot.init()
-robot.omni.set_enable()
 
 -- get parameters
 local filename = 'fsm_on_off.lua'
@@ -50,8 +57,11 @@ local root = assert(dofile(filename))
 local hsm = ahsm.init( root )  -- create fsm from root composite state
 robot.fsm = hsm
 
+
+--[[
 -- run hsm
 repeat
-  local next_t = hsm.loop()
-
+  --local next_t = hsm.loop()
+  tmr.sleepms(1)
 until false --next_t
+--]]

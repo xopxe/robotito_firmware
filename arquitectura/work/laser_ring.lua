@@ -1,6 +1,6 @@
 local M = {}
 
-local cb_list = require'cb_list'.get_list --list of callbacks for readings
+local cb_list = require'cb_list'.get_list() --list of callbacks for readings
 
 local vlring=require('vl53ring')
 
