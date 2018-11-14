@@ -1,6 +1,6 @@
 local M = {}
 
-local cb_list = require'cb_list'.get_list --list of callbacks for readings
+local cb_list = require'cb_list'.get_list() --list of callbacks for readings
 
 local vlring=require('vl53ring')
 
@@ -104,7 +104,7 @@ M.init = function()
   vlring.init(sensors)
   vlring.set_measurement_timing_budget(5000)
 
-  vlring.get_continuous(rate, cb_list) 
+  vlring.get_continuous(rate, cb_list.call) 
   
 end
 
