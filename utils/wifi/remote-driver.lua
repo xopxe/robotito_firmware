@@ -189,7 +189,7 @@ thread.start(function()
   while 1 do
   	dgram, ip_remote, port = assert(udp:receivefrom())
   	if dgram then
-  		-- print("Echoing '" .. dgram .. "' to " .. ip .. ":" .. port)
+  		print("Echoing '" .. dgram .. "' to " .. ip .. ":" .. port)
       cmd = split(dgram, '*')
       if cmd[1] == VEL_CMD then
         if #cmd == 5 then

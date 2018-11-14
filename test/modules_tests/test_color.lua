@@ -19,7 +19,7 @@ assert(color.set_color_table(colors))
 assert(color.set_sv_limits(min_sat,min_val,max_val))
 assert(color.enable())
 
-ms = ms or 100
+ms = 100
 
 
 
@@ -47,11 +47,12 @@ local led_pin = pio.GPIO32
 pio.pin.setdir(pio.OUTPUT, led_pin)
 pio.pin.sethigh(led_pin)
 
+print('Start color monitoring')
 -- enable raw color monitoring, enable hsv mode
---color.get_continuous(ms, dump_rgb, true)
+color.get_continuous(ms, dump_rgb, true)
 
 -- enable color change monitoring, enable hsv mode
-color.get_change(ms, dump_color_change)
+-- color.get_change(ms, dump_color_change)
 
 --[[
 while true do
@@ -68,3 +69,5 @@ color.get_continuous(false)
 color.get_change(false)
 
 pio.pin.setlow(led_pin)
+
+print('Stop color monitoring')
