@@ -24,15 +24,15 @@ local colors = {
   -- robotito 5, 2, 0
   -- {"orange", 12, 17}, -- 12
   {"yellow", 45, 62},   --53-55,  46 - 48, 61 ;: todos
-  {"green", 159, 165}, -- 162-164, 183, x  ;: todos 159, 185
+  {"green", 159, 185}, -- 162-164, 183, x  ;: todos 159, 185
   {"blue", 208, 216}, -- 208-210, 212 - 213, x ;: todos 208, 216
   {"rose", 250, 271}, -- 264 - 268, 257, 250  ;: todos 250, 271
-  {"red", 343 , 359}, -- 355 - 357, 343 - 346, x ;: todos 343 , 359
+  {"red", 351 , 353}, -- 355 - 357, 343 - 346, x ;: todos 343 , 359
 
   -- {"violet", 221, 240},
 }
 
-local offset_led = 20    -- robotito 5 (20), robotito 1 y 3 (2), robotito 2 (5), robotito 0 (8)
+local offset_led = 2    -- robotito 5 (20), robotito 1,3, 8 (2), robotito 2 (5), robotito 0 (8)
 
 assert(apds.init())
 local distC = apds.proximity
@@ -49,7 +49,7 @@ local neo = led_const(ledpin, n_pins, led_pow)
 local m = require('omni')
 m.set_enable()
 
-local ms_dist = 400
+local ms_dist = 200
 local ms_color = 80
 local thershold = 251
 local histeresis = 3
@@ -79,6 +79,7 @@ local dump_dist = function(b)
         w = 0
         m.drive(x_dot,y_dot,w)
         h_state = H_OFF
+        turn_all_leds(0,0,0)
       end
 end
 
@@ -98,8 +99,9 @@ function turn_all_leds(r,g,b)
     -- neo.set_led(14, 0,0,50 , true)
     -- neo.set_led(20,160 , 100, 0, true)
   else
-    for pixel= 0, 24 do
-      neo.set_led(pixel, r, g, b, true)
+    for pixel= offset_led, offset_led+24, 6 do
+      neo.set_led((pixel+2)%24, r, g, b, true)
+      neo.set_led((pixel+3)%24, r, g, b, true)
     end
   end
 end
@@ -163,8 +165,6 @@ dump_rgb = function(r,g,b,a,h,s,v, c)
       tics_same_color = 0
     end
     -- neo.clear()
-  else
-    turn_all_leds(0,0,0)
   end
 
   local sens_str = COLOR_CMD .. DELIMITER .. r .. DELIMITER .. g .. DELIMITER .. b .. DELIMITER .. a .. DELIMITER .. h .. DELIMITER .. s .. DELIMITER .. v .. DELIMITER .. c
@@ -185,8 +185,6 @@ pio.pin.setdir(pio.OUTPUT, led_color_pin)
 pio.pin.sethigh(led_color_pin)
 
 m.set_enable()
-
-turn_all_leds(0,0,0)
 
 -- enable raw color monitoring, enable hsv mode
 color.get_continuous(ms_color, dump_rgb, true)
@@ -216,6 +214,8 @@ assert(udp:setsockname(host, port))
 ip, port = udp:getsockname()
 assert(ip, port)
 print("Waiting packets on " .. ip .. ":" .. port .. "...")
+
+turn_all_leds(0,0,0)
 
 thread.start(function()
   local cmd

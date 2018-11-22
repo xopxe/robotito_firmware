@@ -28,8 +28,34 @@ ms = ms or 100
 -- r,g,b,a : 16 bits
 -- h: 0..360
 -- s,v: 0..255
+
+local led_pin = pio.GPIO32
+pio.pin.setdir(pio.OUTPUT, led_pin)
+
+local led_on = false
+local dif_h = 0
+local pre_h = 0
+
 dump_rgb = function(r,g,b,a,h,s,v, name)
   -- print('ambient:', a, 'rgb:', r, g, b,'hsv:', h, s, v, 'name:', name)
+  -- uart.write(uart.CONSOLE, 'ambient: ' .. a .. '. color: ' .. name .. '. h: ' .. h .. '. s: ' .. s .. '. v: ' .. v .. '\r\n')
+  uart.write(uart.CONSOLE, 'ambient: ' .. a .. '. color: ' .. name .. '. h: ' .. h .. '. s: ' .. s .. '. v: ' .. v ..  '. dif_h: ' .. dif_h .. '\r\n')
+  if led_on then
+    dif_h = h - pre_h
+    --power on led
+    pio.pin.setlow(led_pin)
+  else
+    pre_h = h
+    --power on led
+    pio.pin.sethigh(led_pin)
+  end
+
+  led_on = not led_on
+end
+
+dump_rgb_simple = function(r,g,b,a,h,s,v, name)
+  -- print('ambient:', a, 'rgb:', r, g, b,'hsv:', h, s, v, 'name:', name)
+  -- uart.write(uart.CONSOLE, 'ambient: ' .. a .. '. color: ' .. name .. '. h: ' .. h .. '. s: ' .. s .. '. v: ' .. v .. '\r\n')
   uart.write(uart.CONSOLE, 'ambient: ' .. a .. '. color: ' .. name .. '. h: ' .. h .. '. s: ' .. s .. '. v: ' .. v .. '\r\n')
 end
 
@@ -40,12 +66,6 @@ end
 dump_color_change = function(c, s, v)
   print('color', c, 'sv', s, v)
 end
-
-
---power on led
-local led_pin = pio.GPIO32
-pio.pin.setdir(pio.OUTPUT, led_pin)
-pio.pin.sethigh(led_pin)
 
 print('Start color monitoring')
 -- enable raw color monitoring, enable hsv mode

@@ -19,7 +19,8 @@ ms = ms or 1000  -- period of distance measurements
 
 -- the callback will be called with all sensor readings
 local dist_callback= function(d1, d2, d3, d4, d5, d6)
-    print('dist:', d1, d2, d3, d4, d5, d6)
+    -- print('dist (cm): ', d1, d2, d3, d4, d5, d6)
+    uart.write(uart.CONSOLE, 'dist (cm): ' .. d1 .. ', ' ..  d2..  ', ' ..  d3 .. ', ' ..  d4 .. ', ' ..  d5 ..  ', ' .. d6 .. '\r\n')
 end
 
 -- start monitoring distances

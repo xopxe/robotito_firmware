@@ -212,7 +212,7 @@ thread.start(function()
           namespace = cmd[2]
           parameter = cmd[3]
           value = cmd[4]
-          -- nvs.write(namespace, parameter, value)
+          nvs.write(namespace, parameter, value)
           msg = '[INFO] Set parameter command received (' .. namespace .. ', ' .. parameter .. ', ' .. value .. ')'
         else
           msg = '[ERROR] Malformed command.'
@@ -221,7 +221,7 @@ thread.start(function()
         if #cmd == 3 then
           namespace = cmd[2]
           parameter = string.gsub(cmd[3], "\n", "")
-          print(parameter, '....', namespace)
+          -- print(parameter, '....', namespace)
 
           value = nvs.read(namespace, parameter, 'key not found')
           msg = '[INFO] Get parameter command received (' .. namespace .. ', ' .. parameter .. ', ' .. value .. ')'

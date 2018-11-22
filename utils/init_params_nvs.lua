@@ -1,3 +1,12 @@
+local robot_id = 7
+
+nvs.write("robot","id", robot_id)
+nvs.write("robot","behavior", "robotito.lua")
+
+nvs.write("wifi","ssid", "robotito-" .. robot_id)
+nvs.write("wifi","passwd", "robotito")
+nvs.write("wifi","channel", robot_id)
+
 nvs.write("color_sensor","min_sat", 24)
 nvs.write("color_sensor","min_val", 40)
 nvs.write("color_sensor","max_val", 270)

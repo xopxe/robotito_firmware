@@ -1,12 +1,13 @@
+local robot_ssid =
 net.wf.setup(
   net.wf.mode.AP,
 --  "manuela",
-  "robotito-7",
-  "robotito",
+  nvs.read("wifi","ssid"),
+  nvs.read("wifi","passwd"),
   --net.packip(192,168,2,1), net.packip(255,255,255,0),
   -- net.wf.powersave.MODEM
   net.wf.powersave.NONE, -- default
-  7 -- channel
+  nvs.read("wifi","channel") -- channel
 )
 
 net.wf.start()
@@ -15,5 +16,6 @@ net.wf.start()
 
 -- dofile("remote-driver.lua")
 
-dofile('robotito.lua')
+dofile(nvs.read("robot", "behavior"))
+
 -- dofile("echosrvr.lua")
