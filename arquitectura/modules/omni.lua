@@ -1,3 +1,7 @@
+--- Omnidirectional platform.
+-- @module omni
+-- @alias M
+
 local WHEEL_DIAMETER   = 0.038   --m
 local ROBOT_RADIUS = 0.0675 --m
 

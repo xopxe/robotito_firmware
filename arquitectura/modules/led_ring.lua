@@ -1,3 +1,7 @@
+--- LED ring.
+-- @module led_ring
+-- @alias M
+
 local F = function ( ledpin, n_leds, pow )
   local M = {}
 

@@ -1,0 +1,326 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>Reference</title>
+    <link rel="stylesheet" href="../ldoc.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>robotito firmware</h1>
+
+<ul>
+  <li><a href="../index.html">Index</a></li>
+</ul>
+
+<h2>Contents</h2>
+<ul>
+<li><a href="#Functions">Functions</a></li>
+<li><a href="#Fields">Fields</a></li>
+</ul>
+
+
+<h2>Modules</h2>
+<ul class="nowrap">
+  <li><a href="../modules/robot.html">robot</a></li>
+  <li><strong>apds</strong></li>
+  <li><a href="../modules/laser_ring.html">laser_ring</a></li>
+  <li><a href="../modules/omni.html">omni</a></li>
+  <li><a href="../modules/led_ring.html">led_ring</a></li>
+  <li><a href="../modules/cb_list.html">cb_list</a></li>
+</ul>
+<h2>Topics</h2>
+<ul class="">
+  <li><a href="../topics/README.md.html">README</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+<h1>Module <code>apds</code></h1>
+<p>Module for the apds9960 color/distance/gesture sensor.</p>
+<p>
+
+</p>
+
+
+<h2><a href="#Functions">Functions</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#M.proximity.threshold.enable">M.proximity.threshold.enable (mode)</a></td>
+	<td class="summary">Enables the proximity threshold callback.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#M.color.change.enable">M.color.change.enable (mode)</a></td>
+	<td class="summary">Enables the proximity threshold callback.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#init">init ()</a></td>
+	<td class="summary">Initialization.</td>
+	</tr>
+</table>
+<h2><a href="#Fields">Fields</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#M.proximity.device">M.proximity.device</a></td>
+	<td class="summary">The native C firmware module.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#M.proximity.period">M.proximity.period</a></td>
+	<td class="summary">Period of proximity measures in ms.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#M.proximity.thresh">M.proximity.thresh</a></td>
+	<td class="summary">Threshold for triggering <a href="../modules/apds.html#M.proximity.threshold.cb">M.proximity.threshold.cb</a>.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#M.proximity.hysteresis">M.proximity.hysteresis</a></td>
+	<td class="summary">Hysteresis for triggering <a href="../modules/apds.html#M.proximity.threshold.cb">M.proximity.threshold.cb</a>.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#M.proximity.threshold.cb">M.proximity.threshold.cb</a></td>
+	<td class="summary">The callback module for the proximity sensor.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#M.color.device">M.color.device</a></td>
+	<td class="summary">The native C firmware module.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#M.color.period">M.color.period</a></td>
+	<td class="summary">Period of color measures in ms.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#M.color.change.cb">M.color.change.cb</a></td>
+	<td class="summary">The callback module for the color change sensor.</td>
+	</tr>
+</table>
+
+<br/>
+<br/>
+
+
+    <h2 class="section-header "><a name="Functions"></a>Functions</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "M.proximity.threshold.enable"></a>
+    <strong>M.proximity.threshold.enable (mode)</strong>
+    </dt>
+    <dd>
+    Enables the proximity threshold callback.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">mode</span>
+         true value to enable, false value to disable.
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "M.color.change.enable"></a>
+    <strong>M.color.change.enable (mode)</strong>
+    </dt>
+    <dd>
+    Enables the proximity threshold callback.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">mode</span>
+         true value to enable, false value to disable.
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "init"></a>
+    <strong>init ()</strong>
+    </dt>
+    <dd>
+    Initialization.
+ This configures and starts the sensors.
+
+
+
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Fields"></a>Fields</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "M.proximity.device"></a>
+    <strong>M.proximity.device</strong>
+    </dt>
+    <dd>
+    The native C firmware module.
+ This can be used to access low level functionality from <code>apds9969.proximity</code>. FIXME: docs
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "M.proximity.period"></a>
+    <strong>M.proximity.period</strong>
+    </dt>
+    <dd>
+    Period of proximity measures in ms.  Applied on <a href="../modules/apds.html#M.proximity.threshold.enable">M.proximity.threshold.enable</a>
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "M.proximity.thresh"></a>
+    <strong>M.proximity.thresh</strong>
+    </dt>
+    <dd>
+    Threshold for triggering <a href="../modules/apds.html#M.proximity.threshold.cb">M.proximity.threshold.cb</a>.  Applied on <a href="../modules/apds.html#M.proximity.threshold.enable">M.proximity.threshold.enable</a>
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "M.proximity.hysteresis"></a>
+    <strong>M.proximity.hysteresis</strong>
+    </dt>
+    <dd>
+    Hysteresis for triggering <a href="../modules/apds.html#M.proximity.threshold.cb">M.proximity.threshold.cb</a>.  Applied on <a href="../modules/apds.html#M.proximity.threshold.enable">M.proximity.threshold.enable</a>
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "M.proximity.threshold.cb"></a>
+    <strong>M.proximity.threshold.cb</strong>
+    </dt>
+    <dd>
+    The callback module for the proximity sensor.
+ This is a callback list attached to the distance sensor, see <a href="../modules/cb_list.html#">cb_list</a>.
+This call triggers on threshold crossing, see <a href="../modules/apds.html#M.proximity.thresh">M.proximity.thresh</a> and
+ <a href="../modules/apds.html#M.proximity.hysteresis">M.proximity.hysteresis</a>
+
+
+    <ul>
+        <li><span class="parameter">v</span>
+         true if distance is greater than threshold, false otherwise.
+        </li>
+    </ul>
+
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> <span class="keyword">local</span> apds = <span class="global">require</span><span class="string">'apds'</span>
+apds.proximity.threshold.cb.append( <span class="keyword">function</span> (v) <span class="global">print</span>(<span class="string">"greater:"</span>, v) <span class="keyword">end</span> )</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "M.color.device"></a>
+    <strong>M.color.device</strong>
+    </dt>
+    <dd>
+    The native C firmware module.
+ This can be used to access low level functionality from <code>apds9969.color</code>. FIXME: docs
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "M.color.period"></a>
+    <strong>M.color.period</strong>
+    </dt>
+    <dd>
+    Period of color measures in ms.  Applied on <a href="../modules/apds.html#M.color.change.enable">M.color.change.enable</a>
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "M.color.change.cb"></a>
+    <strong>M.color.change.cb</strong>
+    </dt>
+    <dd>
+    The callback module for the color change sensor.
+ This is a callback list attached to the color sensor, see <a href="../modules/cb_list.html#">cb_list</a>.
+
+
+
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> <span class="keyword">local</span> apds = <span class="global">require</span><span class="string">'apds'</span>
+apds.color.change.cb.append( <span class="keyword">function</span> (color, s, v) <span class="global">print</span>(color, s, v) <span class="keyword">end</span> )</pre>
+    </ul>
+
+</dd>
+</dl>
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
+<i style="float:right;">Last updated 2018-11-27 15:42:47 </i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>
