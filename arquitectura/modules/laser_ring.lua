@@ -11,7 +11,7 @@ local table_sort = table.sort
 local N_SENSORS = 6
 local N_SENSORS_2= N_SENSORS/2
 assert(N_SENSORS %2 == 0, 'median optimized for par N_SENSORS')
-local WIN_SIZE = 3            -- global, store history distance values to compute low pass filter
+local WIN_SIZE = 3   --  store history distance values to compute low pass filter
 local dmin = 80
 local dmax = 600
 local alpha_lpf = 1           -- low pass filter update parameter
@@ -28,17 +28,16 @@ local sensors = {
 }
 
 -- VARIABLES
-local sensors_win = {}                  -- create sensors readings matrix
-local current_wp = 0                    -- global, curren position in the sensor readings history window
-local act_d = {0, 0, 0, 0, 0, 0}        -- measures filtered 
 local norm_d = {0, 0, 0, 0, 0, 0}       -- normalized measurements
 local previous_d = {0, 0, 0, 0, 0, 0}   -- previous norm_d
-local id_align = 1                      -- sensor used to align the robot
 
 --- The last reading.
--- It's an array with length 6.
+-- It's an array with length 6. For this to be upgdated, you must register and 
+-- enable a callback (see @{get_reading_cb} and @{get_filtering_cb})
 M.norm_d = norm_d
 
+--- The previous reading.
+-- It's an array with length 6.
 M.previous_d = previous_d
 
 local line = function(x1, y1, x2, y2, x)  -- evalua la funcion de una recta en x dado dos puntos (x1, y1) y (x2, y2)
@@ -52,6 +51,8 @@ M.cb = require'cb_list'.get_list()
 
 --- Factory for a linear range callback.
 -- The output is written to @{norm_d}
+-- @usage local laser=require('laser_ring')
+--laser.cb.append(laser.get_reading_cb())
 M.get_reading_cb = function ()
   local dist_callback = function(d1,d2,d3,d4,d5,d6)
     --uart.write(uart.CONSOLE, '!get_reading_cb callback\r\n')
@@ -84,6 +85,8 @@ end
 
 --- Factory for a filtering range callback.
 -- The output is written to @{norm_d}
+-- @usage local laser=require('laser_ring')
+--laser.cb.append(laser.get_filtering_cb())
 M.get_filtering_cb = function ()
   local sensors_win = {}            -- create sensors readings matrix
   local current_wp = 0              -- global, curren position in the sensor readings history window
@@ -127,10 +130,12 @@ M.enable = function (on)
 end
 
 --- Initialization.
--- This configures and starts the sensors.  
+-- This configures and starts the sensors. The timing budget for the measurement
+-- is read from `nvs.read("laser_range","time_budget")`, deafults to 5000.
 M.init = function()
   vlring.init(sensors)
-  vlring.set_measurement_timing_budget(5000) 
+  local time_budget = nvs.read("laser_range","time_budget", 5000) or 5000
+  vlring.set_measurement_timing_budget(time_budget) 
 end
 
 return M

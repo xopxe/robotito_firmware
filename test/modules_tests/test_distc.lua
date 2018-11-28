@@ -1,4 +1,4 @@
---- Test prosimity sensor.
+--- Test proximity sensor.
 
 local TEST_SEC = 10 -- test for 10 seconds
 

@@ -15,6 +15,8 @@ file = {
 examples={
     "test/modules_tests/test_color.lua", 
     "test/modules_tests/test_distc.lua", 
-    "test/modules_tests/test_laser_ring.lua", }
+    "test/modules_tests/test_laser_ring.lua",
+    "test/modules_tests/test_led_ring.lua",
+}
 
 
