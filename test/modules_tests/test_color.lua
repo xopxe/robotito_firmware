@@ -1,73 +1,41 @@
-local apds = assert(require('apds9960'))
+--- Test color sensor.
 
-local min_sat = nvs.read("color_sensor","min_sat")
-local min_val = nvs.read("color_sensor","min_val")
-local max_val = nvs.read("color_sensor","max_val")
+local TEST_SEC = 10 -- test for 10 seconds
 
-local colors = {
-  {"red", nvs.read("color_sensor","min_h_red"), nvs.read("color_sensor","max_h_red")},
-  {"yellow", nvs.read("color_sensor","min_h_yellow"), nvs.read("color_sensor","max_h_green")},
-  {"green", nvs.read("color_sensor","min_h_green"), nvs.read("color_sensor","max_h_green")},
-  {"blue", nvs.read("color_sensor","min_h_blue"), nvs.read("color_sensor","max_h_blue")},
-  {"magenta", nvs.read("color_sensor","min_h_magenta"), nvs.read("color_sensor","max_h_magenta")},
-}
+local apds = require('apds')
+apds.init()
 
-assert(apds.init())
 local color = apds.color
-assert(color.set_color_table(colors))
-assert(color.set_sv_limits(min_sat,min_val,max_val))
-assert(color.enable())
+local uart_write, uart_CONSOLE = uart.write, uart.CONSOLE
 
-ms = ms or 100
-
-
-
--- callback for color.get_continuous
--- will be called with (r,g,b,a [,h,s,v])
--- hsv will be provided if enabled on color.get_continuous
--- r,g,b,a : 16 bits
--- h: 0..360
--- s,v: 0..255
-dump_rgb = function(r,g,b,a,h,s,v, name)
-  -- print('ambient:', a, 'rgb:', r, g, b,'hsv:', h, s, v, 'name:', name)
-  uart.write(uart.CONSOLE, 'ambient: ' .. a .. '. color: ' .. name .. '. h: ' .. h .. '. s: ' .. s .. '. v: ' .. v .. '\r\n')
+local dump_rgb = function(r,g,b,a,h,s,v, name)
+  --print('argb:', a, r, g, b,'hsvc:', h, s, v, name)
+  uart_write(uart_CONSOLE, 'ambient='..tostring(a)..' (r,g,b)=(' 
+    ..tostring(r)..','..tostring(g)..','..tostring(b)..') (h,s,v)=('
+    ..tostring(h)..','..tostring(s)..','..tostring(v)..') color='
+    ..tostring(name)..'\r\n')
 end
 
--- callback for get_change
--- will be called with (color, s, v)
--- color: one of "red", "yellow", "green", "cyan", "blue", "magenta"
--- s,v: 0..255
-dump_color_change = function(c, s, v)
-  print('color', c, 'sv', s, v)
+local dump_color_change = function(name, s, v)
+  --print('color', c, 'sv', s, v)
+  uart_write(uart_CONSOLE, 'color='..tostring(name)..' (s,v)=('
+    ..tostring(s)..','..tostring(v)..')\r\n')
 end
 
+color.light(true) --power on led
 
---power on led
-local led_pin = pio.GPIO32
-pio.pin.setdir(pio.OUTPUT, led_pin)
-pio.pin.sethigh(led_pin)
+color.continuous.cb.append(dump_rgb)
+color.change.cb.append(dump_color_change)
 
-print('Start color monitoring')
--- enable raw color monitoring, enable hsv mode
-color.get_continuous(ms, dump_rgb, true)
+print('Start color monitoring for '..TEST_SEC..'s')
+color.continuous.enable(true, true)
+color.change.enable(true)
 
--- enable color change monitoring, enable hsv mode
--- color.get_change(ms, dump_color_change)
+-- run for TEST_SEC seconds
+tmr.sleepms(TEST_SEC*1000)
 
---[[
-while true do
-  tmr.sleepms(50)
-  print (color.get_rgb())
-end
---]]
+print('Done color monitoring')
+color.continuous.enable(false)
+color.change.enable(false)
 
--- run for 60 seconds
-tmr.sleepms(60*1000)
-
--- stop monitoring distances
-color.get_continuous(false)
-color.get_change(false)
-
-pio.pin.setlow(led_pin)
-
-print('Stop color monitoring')
+color.light(false)

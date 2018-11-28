@@ -1,10 +1,7 @@
---- laser_ring Distance sensor ring module.
+--- Range sensor ring module.
 -- @module laser_ring
 -- @alias M
-
 local M = {}
-
-local cb_list = require'cb_list'.get_list() --list of callbacks for readings
 
 local vlring=require('vl53ring')
 
@@ -19,9 +16,9 @@ local dmin = 80
 local dmax = 600
 local alpha_lpf = 1           -- low pass filter update parameter
 local MASK_ON_SENSORS = {true, true, true, true, true, true}
-local rate = 50               -- actualization rate in seconds
 
-local sensors = {             -- sensors ports
+-- { {xshutpin, [newadddr]}, ... }
+local sensors = {
   {16},
   {17},
   {2},
@@ -38,17 +35,26 @@ local norm_d = {0, 0, 0, 0, 0, 0}       -- normalized measurements
 local previous_d = {0, 0, 0, 0, 0, 0}   -- previous norm_d
 local id_align = 1                      -- sensor used to align the robot
 
+--- The last reading.
+-- It's an array with length 6.
 M.norm_d = norm_d
+
 M.previous_d = previous_d
-M.cb_list = cb_list
 
 local line = function(x1, y1, x2, y2, x)  -- evalua la funcion de una recta en x dado dos puntos (x1, y1) y (x2, y2)
   local y = (y2-y1)/(x2-x1)*(x-x1)+y1
   return y
 end
 
+--- The callback module for the range sensor ring.
+-- This is a callback list attached to the range sensor, see @{cb_list}.
+M.cb = require'cb_list'.get_list()
+
+--- Factory for a linear range callback.
+-- The output is written to @{norm_d}
 M.get_reading_cb = function ()
   local dist_callback = function(d1,d2,d3,d4,d5,d6)
+    --uart.write(uart.CONSOLE, '!get_reading_cb callback\r\n')
     local laser_data = {d1,d2,d3,d4,d5,d6}
     for i = 1,N_SENSORS do
       previous_d[i] = norm_d[i]
@@ -62,12 +68,7 @@ M.get_reading_cb = function ()
   return dist_callback
 end
 
-M.get_filtering_cb = function ()
-  local sensors_win = {}                  -- create sensors readings matrix
-  local current_wp = 0                    -- global, curren position in the sensor readings history window
-  local act_d = {0, 0, 0, 0, 0, 0}        -- measures filtered 
-
-  --[[
+--[[
 local median = function (numlist)
   if type(numlist) ~= 'table' then return numlist end
   table.sort(numlist)
@@ -75,11 +76,18 @@ local median = function (numlist)
   return numlist[math.ceil(#numlist/2)]
 end
 --]]
--- version optimizada para #numlist = N_SENSORS
-  local median = function (numlist)
-    table_sort(numlist)
-    return (numlist[N_SENSORS_2] + numlist[N_SENSORS_2]) / 2
-  end
+-- version optimizada para #numlist == N_SENSORS
+local median = function (numlist)
+  table_sort(numlist)
+  return (numlist[N_SENSORS_2] + numlist[N_SENSORS_2]) / 2
+end
+
+--- Factory for a filtering range callback.
+-- The output is written to @{norm_d}
+M.get_filtering_cb = function ()
+  local sensors_win = {}            -- create sensors readings matrix
+  local current_wp = 0              -- global, curren position in the sensor readings history window
+  local act_d = {0, 0, 0, 0, 0, 0}  -- measures filtered 
 
   -- init sensors window
   for i=1,N_SENSORS do
@@ -106,14 +114,23 @@ end
   return dist_callback_filter
 end
 
+--- Enables the range monitoring callback. 
+-- See @{cb}. The period in ms to use is read from `nvs.read("laser_range","period")`, deafults to 100.  
+--@param on true value to enable, false value to disable.
+M.enable = function (on)
+  if on then
+    local period = nvs.read("laser_range","period", 100) or 100
+    vlring.get_continuous(period, M.cb.call)
+  else
+    vlring.get_continuous(nil)
+  end
+end
 
+--- Initialization.
+-- This configures and starts the sensors.  
 M.init = function()
-
   vlring.init(sensors)
-  vlring.set_measurement_timing_budget(5000)
-
-  vlring.get_continuous(rate, cb_list.call) 
-  
+  vlring.set_measurement_timing_budget(5000) 
 end
 
 return M

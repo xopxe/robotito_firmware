@@ -50,6 +50,12 @@
 <ul class="">
   <li><a href="../topics/README.md.html">README</a></li>
 </ul>
+<h2>Examples</h2>
+<ul class="nowrap">
+  <li><a href="../examples/test_color.lua.html">test_color.lua</a></li>
+  <li><a href="../examples/test_distc.lua.html">test_distc.lua</a></li>
+  <li><a href="../examples/test_laser_ring.lua.html">test_laser_ring.lua</a></li>
+</ul>
 
 </div>
 
@@ -65,12 +71,20 @@
 <h2><a href="#Functions">Functions</a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#M.proximity.threshold.enable">M.proximity.threshold.enable (mode)</a></td>
+	<td class="name" nowrap><a href="#M.proximity.threshold.enable">M.proximity.threshold.enable (on)</a></td>
 	<td class="summary">Enables the proximity threshold callback.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#M.color.change.enable">M.color.change.enable (mode)</a></td>
-	<td class="summary">Enables the proximity threshold callback.</td>
+	<td class="name" nowrap><a href="#M.color.light">M.color.light (on)</a></td>
+	<td class="summary">Control the LED light for the color sensor.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#M.color.change.enable">M.color.change.enable (on)</a></td>
+	<td class="summary">Enables the color change callback.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#M.color.continuous.enable">M.color.continuous.enable (on, hsv)</a></td>
+	<td class="summary">Enables the color monitoring callback.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#init">init ()</a></td>
@@ -84,18 +98,6 @@
 	<td class="summary">The native C firmware module.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#M.proximity.period">M.proximity.period</a></td>
-	<td class="summary">Period of proximity measures in ms.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#M.proximity.thresh">M.proximity.thresh</a></td>
-	<td class="summary">Threshold for triggering <a href="../modules/apds.html#M.proximity.threshold.cb">M.proximity.threshold.cb</a>.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#M.proximity.hysteresis">M.proximity.hysteresis</a></td>
-	<td class="summary">Hysteresis for triggering <a href="../modules/apds.html#M.proximity.threshold.cb">M.proximity.threshold.cb</a>.</td>
-	</tr>
-	<tr>
 	<td class="name" nowrap><a href="#M.proximity.threshold.cb">M.proximity.threshold.cb</a></td>
 	<td class="summary">The callback module for the proximity sensor.</td>
 	</tr>
@@ -104,12 +106,12 @@
 	<td class="summary">The native C firmware module.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#M.color.period">M.color.period</a></td>
-	<td class="summary">Period of color measures in ms.</td>
-	</tr>
-	<tr>
 	<td class="name" nowrap><a href="#M.color.change.cb">M.color.change.cb</a></td>
 	<td class="summary">The callback module for the color change sensor.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#M.color.continuous.cb">M.color.continuous.cb</a></td>
+	<td class="summary">The callback module for the color monitoring sensor.</td>
 	</tr>
 </table>
 
@@ -122,15 +124,16 @@
     <dl class="function">
     <dt>
     <a name = "M.proximity.threshold.enable"></a>
-    <strong>M.proximity.threshold.enable (mode)</strong>
+    <strong>M.proximity.threshold.enable (on)</strong>
     </dt>
     <dd>
     Enables the proximity threshold callback.
+ See <a href="../modules/apds.html#M.proximity.threshold.cb">M.proximity.threshold.cb</a>. The period in ms to use is read from <code>nvs.read(&quot;proximity_sensor&quot;,&quot;period&quot;)</code> (deafults to 100), the threshold is is read from <code>nvs.read(&quot;proximity_sensor&quot;,&quot;threshold&quot;)</code> (deafults to 250) and the hysteresis is read from <code>nvs.read(&quot;proximity_sensor&quot;,&quot;hysteresis&quot;)</code> (deafults to 3).
 
 
     <h3>Parameters:</h3>
     <ul>
-        <li><span class="parameter">mode</span>
+        <li><span class="parameter">on</span>
          true value to enable, false value to disable.
         </li>
     </ul>
@@ -141,17 +144,62 @@
 
 </dd>
     <dt>
-    <a name = "M.color.change.enable"></a>
-    <strong>M.color.change.enable (mode)</strong>
+    <a name = "M.color.light"></a>
+    <strong>M.color.light (on)</strong>
     </dt>
     <dd>
-    Enables the proximity threshold callback.
+    Control the LED light for the color sensor.
 
 
     <h3>Parameters:</h3>
     <ul>
-        <li><span class="parameter">mode</span>
+        <li><span class="parameter">on</span>
+         true to switch on, false to switch off.
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "M.color.change.enable"></a>
+    <strong>M.color.change.enable (on)</strong>
+    </dt>
+    <dd>
+    Enables the color change callback.
+ See <a href="../modules/apds.html#M.color.change.cb">M.color.change.cb</a>. The period in ms to use is read from <code>nvs.read(&quot;color_sensor&quot;,&quot;period&quot;)</code>, deafults to 100.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">on</span>
          true value to enable, false value to disable.
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "M.color.continuous.enable"></a>
+    <strong>M.color.continuous.enable (on, hsv)</strong>
+    </dt>
+    <dd>
+    Enables the color monitoring callback. <br/>
+ See <a href="../modules/apds.html#M.color.continuous.cb">M.color.continuous.cb</a>. The period in ms to use is read from <code>nvs.read(&quot;color_sensor&quot;,&quot;period&quot;)</code>, deafults to 100.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">on</span>
+         true value to enable, false value to disable.
+        </li>
+        <li><span class="parameter">hsv</span>
+         true to set HSV mode (see <a href="../modules/apds.html#M.color.continuous.cb">M.color.continuous.cb</a>)
         </li>
     </ul>
 
@@ -166,7 +214,8 @@
     </dt>
     <dd>
     Initialization.
- This configures and starts the sensors.
+ This configures and starts the sensors. <br/>
+ The color sensor is configured with a color table. TODO docs.
 
 
 
@@ -195,56 +244,13 @@
 
 </dd>
     <dt>
-    <a name = "M.proximity.period"></a>
-    <strong>M.proximity.period</strong>
-    </dt>
-    <dd>
-    Period of proximity measures in ms.  Applied on <a href="../modules/apds.html#M.proximity.threshold.enable">M.proximity.threshold.enable</a>
-
-
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "M.proximity.thresh"></a>
-    <strong>M.proximity.thresh</strong>
-    </dt>
-    <dd>
-    Threshold for triggering <a href="../modules/apds.html#M.proximity.threshold.cb">M.proximity.threshold.cb</a>.  Applied on <a href="../modules/apds.html#M.proximity.threshold.enable">M.proximity.threshold.enable</a>
-
-
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "M.proximity.hysteresis"></a>
-    <strong>M.proximity.hysteresis</strong>
-    </dt>
-    <dd>
-    Hysteresis for triggering <a href="../modules/apds.html#M.proximity.threshold.cb">M.proximity.threshold.cb</a>.  Applied on <a href="../modules/apds.html#M.proximity.threshold.enable">M.proximity.threshold.enable</a>
-
-
-
-
-
-
-
-</dd>
-    <dt>
     <a name = "M.proximity.threshold.cb"></a>
     <strong>M.proximity.threshold.cb</strong>
     </dt>
     <dd>
     The callback module for the proximity sensor.
  This is a callback list attached to the distance sensor, see <a href="../modules/cb_list.html#">cb_list</a>.
-This call triggers on threshold crossing, see <a href="../modules/apds.html#M.proximity.thresh">M.proximity.thresh</a> and
- <a href="../modules/apds.html#M.proximity.hysteresis">M.proximity.hysteresis</a>
+This call triggers on threshold crossing, see <a href="../modules/apds.html#M.proximity.threshold.enable">M.proximity.threshold.enable</a>. The parameter of the callback is a boolean which is true when the object is close.
 
 
     <ul>
@@ -259,7 +265,7 @@ This call triggers on threshold crossing, see <a href="../modules/apds.html#M.pr
     <h3>Usage:</h3>
     <ul>
         <pre class="example"><span class="keyword">local</span> <span class="keyword">local</span> apds = <span class="global">require</span><span class="string">'apds'</span>
-apds.proximity.threshold.cb.append( <span class="keyword">function</span> (v) <span class="global">print</span>(<span class="string">"greater:"</span>, v) <span class="keyword">end</span> )</pre>
+apds.proximity.threshold.cb.append( <span class="keyword">function</span> (v) <span class="global">print</span>(<span class="string">"close:"</span>, v) <span class="keyword">end</span> )</pre>
     </ul>
 
 </dd>
@@ -279,26 +285,16 @@ apds.proximity.threshold.cb.append( <span class="keyword">function</span> (v) <s
 
 </dd>
     <dt>
-    <a name = "M.color.period"></a>
-    <strong>M.color.period</strong>
-    </dt>
-    <dd>
-    Period of color measures in ms.  Applied on <a href="../modules/apds.html#M.color.change.enable">M.color.change.enable</a>
-
-
-
-
-
-
-
-</dd>
-    <dt>
     <a name = "M.color.change.cb"></a>
     <strong>M.color.change.cb</strong>
     </dt>
     <dd>
     The callback module for the color change sensor.
  This is a callback list attached to the color sensor, see <a href="../modules/cb_list.html#">cb_list</a>.
+ The callback will be called with <code>(color, s, v)</code> <br/>
+ <code>* color</code>: one of "red", "yellow", "green", "blue", "magenta", "black",
+ "white", "unknown" <br/>
+ <code>* s,v</code>: 0..255
 
 
 
@@ -312,6 +308,33 @@ apds.color.change.cb.append( <span class="keyword">function</span> (color, s, v)
     </ul>
 
 </dd>
+    <dt>
+    <a name = "M.color.continuous.cb"></a>
+    <strong>M.color.continuous.cb</strong>
+    </dt>
+    <dd>
+    The callback module for the color monitoring sensor.
+ This is a callback list attached to the color sensor, see <a href="../modules/cb_list.html#">cb_list</a>.
+ The callback will be called with <code>(r,g,b,a [,h,s,v, color])</code> <br/>
+ hsv will be provided if HSV mode enabled (see <a href="../modules/apds.html#M.color.continuous.enable">M.color.continuous.enable</a>) <br/>
+ * <code>r,g,b,a</code> : 16 bits <br/>
+ * <code>h</code>: 0..360 <br/>
+ * <code>s,v</code>: 0..255 <br/>
+ * <code>color</code>: one of "red", "yellow", "green", "blue", "magenta", "black",
+ "white", "unknown"
+
+
+
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> <span class="keyword">local</span> apds = <span class="global">require</span><span class="string">'apds'</span>
+apds.color.continuous.cb.append( <span class="keyword">function</span> (r, g, b, a) <span class="global">print</span>(r, g, b, a) <span class="keyword">end</span> )</pre>
+    </ul>
+
+</dd>
 </dl>
 
 
@@ -319,7 +342,7 @@ apds.color.change.cb.append( <span class="keyword">function</span> (color, s, v)
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2018-11-27 15:42:47 </i>
+<i style="float:right;">Last updated 2018-11-28 02:03:17 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

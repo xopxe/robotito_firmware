@@ -1,50 +1,24 @@
-local apds = assert(require('apds9960'))
+--- Test prosimity sensor.
 
-local min_sat = 50
-local min_val = 20
-local max_val = 200
+local TEST_SEC = 10 -- test for 10 seconds
 
-local omni = require('omni')
+local apds = require('apds')
+apds.init()
 
-omni.set_enable()
+local proximity = apds.proximity
+local uart_write, uart_CONSOLE = uart.write, uart.CONSOLE
 
-local colors = {
-  {"red", 0, 60},
-  {"yellow", 60, 120},
-  {"green", 120, 180},
-  {"cyan", 180, 240},
-  {"blue", 240, 300},
-  {"magenta", 300, 360},
-}
-
-assert(apds.init())
-local distC = apds.proximity
-assert(distC.enable())
-
-ms = ms or 100
-
-thershold = threshold or 250
-
-histeresis = histeresis or 3
-
-
-
-
--- callback for distC.get_dist_thresh
--- will be called when the robot is over threshold high
-dump_dist = function(b)
-  ---[[
-  if (b) then
-    omni.drive(0,0,1)
-  else
-    omni.drive(0,0,0)
-  end
-  --]]
-  print(b)
+local dump_dist = function(b)
+  uart_write(uart_CONSOLE, 'close: '..tostring(b)..'\r\n')
 end
 
-local proximity_cb_list = require'cb_list'.get_list()
-proximity_cb_list.append(dump_dist)
+proximity.threshold.cb.append(dump_dist)
 
--- enable distC change monitoring
-distC.get_dist_thresh(ms, thershold, histeresis, proximity_cb_list.call)
+print('Start proximity monitoring for '..TEST_SEC..'s')
+proximity.threshold.enable(true)
+
+-- run for TEST_SEC seconds
+tmr.sleepms(TEST_SEC*1000)
+
+print('Done proximity monitoring')
+proximity.threshold.enable(false)
