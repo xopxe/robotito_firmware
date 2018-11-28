@@ -13,17 +13,6 @@ local neo = neopixel.attach(neopixel.WS2812B, ledpin, n_leds)
 local colors  -- setup in M.set_power
 local colors_message  -- setup in M.set_power
 
-local glow_id = nil
-local glow_power = 0
-local glow_direction = 5
-local glow_color = {1, 0, 0}
-
-local turning_blink_state = false
-local turning_blink_pixel = 0
-local turning_blink_direction = 1
-local turning_blink_color -- setup in M.set_power
-
-
 M.set_color_table = function (c, f)
   colors = c
   first_led = f or first_led
@@ -47,7 +36,6 @@ M.set_power = function( power )
     {0, power, 0},
     {0, 0, power},
   }
-  turning_blink_color = {power, 0, 0}
 end
 
 --- Switch off all pixels.
@@ -58,19 +46,34 @@ M.clear = function ()
   neo:update()
 end
 
+--- Sets a LED to a specified color.
+-- The values will not be applied until @{update} is called. This call
+-- is not limited by the power settings.
+-- @param led Index in the 1..24 range
+-- @param r red value in the 0..255 range. Defaults to 0.
+-- @param g green value in the 0..255 range. Defaults to 0.
+-- @param b blue value in the 0..255 range. Defaults to 0.
+M.set_led = function (led, r, g, b)
+  r = r or 0
+  g = g or 0
+  b = b or 0
+  neo:setPixel(led-1, r, g, b)
+  --neo:update()
+end
+
 --- Controls a segment.
--- The 6 segment have predefined color from colors table.
+-- The 6 segment have a predefined color assigned.
 --@param segment Index in the 1..6 range.
---@enable true value to enable, false to disable.
+--@param enable true value to enable, false to disable.
 M.set_segment = function (segment, enable)
   local first = first_led[segment]
   local r, g, b = 0, 0, 0
   if enable then
-    r, g, b = colors[1], colors[2], colors[3]
+    local color = colors[segment]
+    r, g, b = color[1], color[2], color[3]
   end
   for i = first, first + segment_length-1 do
     local ind = i % 24
-    print ('>>>', ind, r, g, b)
     neo:setPixel(ind, r, g, b)
   end
   neo:update()
@@ -89,21 +92,6 @@ M.set_segment_rgb = function (segment, r, g, b)
     neo:setPixel(ind, r, g, b)
   end
   neo:update()
-end
-
---- Sets a LED to a specified color.
--- The values will not be applied until @{update} is called. This call
--- is not limited by the power settings.
--- @param led Index in the 1..24 range
--- @param r red value in the 0..255 range. Defaults to 0.
--- @param g green value in the 0..255 range. Defaults to 0.
--- @param b blue value in the 0..255 range. Defaults to 0.
-M.set_led = function (led, r, g, b)
-  r = r or 0
-  g = g or 0
-  b = b or 0
-  neo:setPixel(led-1, r, g, b)
-  --neo:update()
 end
 
 --- Sends the pixel data to the device.

@@ -62,64 +62,42 @@
 <span class="comment">--- Test laser ring.
 </span>
 <span class="keyword">local</span> ledr = <span class="global">require</span> <span class="string">'led_ring'</span>
+ledr.init(<span class="number">50</span>)
 
-<span class="keyword">local</span> colors = {
-  {<span class="number">50</span>, <span class="number">0</span>, <span class="number">0</span>},
-  {<span class="number">0</span>, <span class="number">50</span>, <span class="number">0</span>},
-  {<span class="number">0</span>, <span class="number">0</span>, <span class="number">50</span>},
-  {<span class="number">50</span>, <span class="number">50</span>, <span class="number">0</span>},
-  {<span class="number">0</span>, <span class="number">50</span>, <span class="number">50</span>},
-  {<span class="number">50</span>, <span class="number">0</span>, <span class="number">50</span>},
-}
-
-tmr.delayms(<span class="number">2000</span>)
-<span class="keyword">local</span> pixel = <span class="number">0</span>
-<span class="keyword">local</span> direction = <span class="number">0</span>
-
-<span class="keyword">local</span> cant_vueltas = <span class="number">2</span>
-
-<span class="keyword">while</span> cant_vueltas ~= <span class="number">0</span> <span class="keyword">do</span>
-  ledr.set_led(pixel, <span class="number">0</span>, <span class="number">50</span>, <span class="number">0</span>)
-  ledr.update()
-  tmr.delayms(<span class="number">100</span>)
-  ledr.set_led(pixel, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>)
-
-  <span class="keyword">if</span> (direction == <span class="number">0</span>) <span class="keyword">then</span>
-    <span class="keyword">if</span> (pixel == <span class="number">23</span>) <span class="keyword">then</span>
-      direction = <span class="number">1</span>
-      pixel = <span class="number">22</span>
-    <span class="keyword">else</span>
-      pixel = pixel + <span class="number">1</span>
-    <span class="keyword">end</span>
-  <span class="keyword">else</span>
-    <span class="keyword">if</span> (pixel == <span class="number">0</span>) <span class="keyword">then</span>
-      direction = <span class="number">0</span>
-      pixel = <span class="number">1</span>
-      <span class="global">print</span>(<span class="string">'Fin vuelta '</span>, cant_vueltas)
-      cant_vueltas = cant_vueltas -<span class="number">1</span>
-    <span class="keyword">else</span>
-      pixel = pixel - <span class="number">1</span>
-    <span class="keyword">end</span>
+<span class="keyword">for</span> c=<span class="number">1</span>, <span class="number">3</span> <span class="keyword">do</span>
+  <span class="keyword">local</span> color={<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>}
+  color[c]=<span class="number">50</span>
+  <span class="keyword">for</span> i=<span class="number">1</span>, <span class="number">24</span> <span class="keyword">do</span>
+    ledr.set_led(i, color[<span class="number">1</span>], color[<span class="number">2</span>], color[<span class="number">3</span>])
+    ledr.update()
+    tmr.delayms(<span class="number">50</span>)
   <span class="keyword">end</span>
 <span class="keyword">end</span>
 
-<span class="comment">-- shutdown
-</span><span class="keyword">local</span> contador = <span class="number">0</span>
-<span class="keyword">for</span> j = <span class="number">0</span>, <span class="number">5</span> <span class="keyword">do</span>
-  <span class="keyword">for</span> i = <span class="number">0</span>, <span class="number">3</span> <span class="keyword">do</span>
-    ledr.set_led(contador, <span class="global">table</span>.<span class="global">unpack</span>(colors[j+<span class="number">1</span>]))
-    contador = contador + <span class="number">1</span>
+tmr.delayms(<span class="number">500</span>)
+ledr.clear()
+<span class="keyword">for</span> c=<span class="number">1</span>, <span class="number">3</span> <span class="keyword">do</span>
+  <span class="keyword">local</span> color={<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>}
+  color[c]=<span class="number">50</span>
+  <span class="keyword">for</span> i=<span class="number">1</span>, <span class="number">6</span> <span class="keyword">do</span>
+    ledr.set_segment_rgb(i, color[<span class="number">1</span>], color[<span class="number">2</span>], color[<span class="number">3</span>])
+    tmr.delayms(<span class="number">200</span>)
   <span class="keyword">end</span>
 <span class="keyword">end</span>
 
-ledr.update()</pre>
+tmr.delayms(<span class="number">500</span>)
+ledr.clear()
+<span class="keyword">for</span> i=<span class="number">1</span>,<span class="number">6</span> <span class="keyword">do</span>
+  ledr.set_segment(i, <span class="keyword">true</span>)
+  tmr.delayms(<span class="number">200</span>)
+<span class="keyword">end</span></pre>
 
 
 </div> <!-- id="content" -->
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2018-11-28 12:25:05 </i>
+<i style="float:right;">Last updated 2018-11-28 16:26:39 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>
