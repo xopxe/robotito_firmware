@@ -16,8 +16,10 @@ local dump_ranges = function(d1, d2, d3, d4, d5, d6)
   uart_write(uart_CONSOLE, tostring(norm_d[6])..'\r\n')
 end
 
+-- pick one of the next two
 laser.cb.append(laser.get_reading_cb())
 --laser.cb.append(laser.get_filtering_cb())
+
 laser.cb.append(dump_ranges)
 
 print('Start monitoring ranges for '..TEST_SEC..'s')
