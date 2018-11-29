@@ -33,6 +33,7 @@
 <h2>Contents</h2>
 <ul>
 <li><a href="#Functions">Functions</a></li>
+<li><a href="#Fields">Fields</a></li>
 </ul>
 
 
@@ -43,8 +44,8 @@
   <li><a href="../modules/laser_ring.html">laser_ring</a></li>
   <li><a href="../modules/omni.html">omni</a></li>
   <li><a href="../modules/led_ring.html">led_ring</a></li>
-  <li><strong>cb_list</strong></li>
-  <li><a href="../modules/wifi_net.html">wifi_net</a></li>
+  <li><a href="../modules/cb_list.html">cb_list</a></li>
+  <li><strong>wifi_net</strong></li>
 </ul>
 <h2>Topics</h2>
 <ul class="">
@@ -63,33 +64,29 @@
 
 <div id="content">
 
-<h1>Module <code>cb_list</code></h1>
-<p>List of functions to be used as callback.</p>
-<p> When you have an API that offers a callback, but it must
- be used from many places. You register this as callback,
- and then anyone can add itself to the list of callees.</p>
-    <h3>Usage:</h3>
-    <ul>
-        <pre class="example">local cb_list = require&apos;cb_list&apos;.get_list() --list of callbacks for readings
-some_lib.some_register_callback(cb_list.call)
-cb_list.append( function() print &quot;call!&quot; end )
-</pre>
-    </ul>
+<h1>Module <code>wifi_net</code></h1>
+<p>WiFi network system.</p>
+<p>
+
+</p>
 
 
 <h2><a href="#Functions">Functions</a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#cbs.append">cbs.append (cb)</a></td>
-	<td class="summary">Append a function to the list of callbacks.</td>
+	<td class="name" nowrap><a href="#broadcast">broadcast (msg)</a></td>
+	<td class="summary">Broadcasts a message.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#cbs.remove">cbs.remove (cb)</a></td>
-	<td class="summary">Remove a function from the list of callbacks.</td>
+	<td class="name" nowrap><a href="#init">init ()</a></td>
+	<td class="summary">Initialize network.</td>
 	</tr>
+</table>
+<h2><a href="#Fields">Fields</a></h2>
+<table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#cbs.call">cbs.call (...)</a></td>
-	<td class="summary">The function to passed to the API requesting a callback function.</td>
+	<td class="name" nowrap><a href="#cb">cb</a></td>
+	<td class="summary">The callback module messages arrival.</td>
 	</tr>
 </table>
 
@@ -101,18 +98,17 @@ cb_list.append( function() print &quot;call!&quot; end )
 
     <dl class="function">
     <dt>
-    <a name = "cbs.append"></a>
-    <strong>cbs.append (cb)</strong>
+    <a name = "broadcast"></a>
+    <strong>broadcast (msg)</strong>
     </dt>
     <dd>
-    Append a function to the list of callbacks.
- The function will be called with the parameters provided to the callback.
+    Broadcasts a message.
 
 
     <h3>Parameters:</h3>
     <ul>
-        <li><span class="parameter">cb</span>
-         a function to be called.
+        <li><span class="parameter">msg</span>
+         a string.
         </li>
     </ul>
 
@@ -122,41 +118,46 @@ cb_list.append( function() print &quot;call!&quot; end )
 
 </dd>
     <dt>
-    <a name = "cbs.remove"></a>
-    <strong>cbs.remove (cb)</strong>
+    <a name = "init"></a>
+    <strong>init ()</strong>
     </dt>
     <dd>
-    Remove a function from the list of callbacks.
- The function will be called with the parameters provided to the callback.
+    Initialize network.
+ The system uses nvs.read('wifi', parameter) to initialize, where
+ parameters are: <br/>
+* <code>&apos;mode&apos;</code>: either 'ap' or 'sta', defaults ot 'ap' <br/>
+* <code>&apos;ssid&apos;</code> <br/>
+* <code>&apos;passwd&apos;</code> <br/>
+* <code>&apos;channel&apos;</code>: defaults to 0 (auto) <br/>
+* <code>&apos;udp_port&apos;</code>: listening port, defaults to 2018 <br/>
+* <code>&apos;udp_announce_port&apos;</code>: announcement port, defaults to 2018 <br/>
+* <code>&apos;broadcast&apos;</code>: target address for the announcements (defaults to)
+'255,255,255,255' <br/>
+* <code>&apos;udp_announce_interval&apos;</code>: time between announcements (in sec),
+ -1 means disabled. Defaults to 10. <br/>
+* <code>&apos;receive_timeout&apos;</code>: timeout for udp reads (in sec). Defaults to -1
+ (disabled).
 
 
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">cb</span>
-         the function to be removed.
-        </li>
-    </ul>
 
 
 
 
 
 </dd>
+</dl>
+    <h2 class="section-header "><a name="Fields"></a>Fields</h2>
+
+    <dl class="function">
     <dt>
-    <a name = "cbs.call"></a>
-    <strong>cbs.call (...)</strong>
+    <a name = "cb"></a>
+    <strong>cb</strong>
     </dt>
     <dd>
-    The function to passed to the API requesting a callback function.
- Invoking this function will call all the functions registered using <a href="../modules/cb_list.html#cbs.append">append</a>
+    The callback module messages arrival.
+ This is a callback list attached to the socket, see <a href="../modules/cb_list.html#">cb_list</a>.
 
 
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">...</span>
-         parameters will be passed to each function. Returns will be ignored.
-        </li>
-    </ul>
 
 
 

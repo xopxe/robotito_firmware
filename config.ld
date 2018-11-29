@@ -11,12 +11,14 @@ file = {
     "arquitectura/modules/omni.lua", 
     "arquitectura/modules/led_ring.lua", 
     "arquitectura/modules/cb_list.lua", 
+    "arquitectura/modules/wifi_net.lua", 
 }
 examples={
     "test/modules_tests/test_color.lua", 
     "test/modules_tests/test_distc.lua", 
     "test/modules_tests/test_laser_ring.lua",
     "test/modules_tests/test_led_ring.lua",
+    "test/modules_tests/test_wifi.lua",
 }
 
 
