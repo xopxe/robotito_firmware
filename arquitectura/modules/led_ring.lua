@@ -38,8 +38,15 @@ M.set_power = function( power )
   }
 end
 
---- Switch off all pixels.
-M.clear = function ()
+--- Sets all pixels.
+--  This call is not limited by the power settings.
+-- @param r red value in the 0..255 range. Defaults to 0.
+-- @param g green value in the 0..255 range. Defaults to 0.
+-- @param b blue value in the 0..255 range. Defaults to 0.
+M.clear = function (r, g, b)
+  r = r or 0
+  g = g or 0
+  b = b or 0
   for i=0, n_leds-1 do
     neo:setPixel(i, 0, 0, 0)
   end
@@ -98,18 +105,6 @@ end
 -- This is to be used with  @{set_led}.
 M.update = function ()
   neo:update()
-end
-
-
-M.print_message = function(color_num)
-  local r, g, b = table.unpack(colors_message[color_num])
-  for i = 1, n_leds do
-    neo:setPixel(i-1, r, g, b)
-  end
-  neo:update()
-  for i = 1 , 6 do
-    M.set_segment(i, false)
-  end
 end
 
 --- Initialization.
