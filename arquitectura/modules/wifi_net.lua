@@ -3,9 +3,6 @@
 -- @alias M
 local M = {}
 
-local udp_tx, udp_rx
-local gettime, resetreason = os.gettime, os.resetreason
-
 --- Current network status
 -- One of `'offline'`, `'associating'`, `'setting up'` or `'online'`.
 local wifi_status = 'offline'
@@ -68,12 +65,12 @@ local start_rc = function (my_ip, conf)
   udp_rx:settimeout(conf.receive_timeout)
 
   local announcement_base = 'ROBOTITO '..my_ip..' '..conf.udp_port
-  ..' '..resetreason()
+  ..' '..os.resetreason()
 
   if conf.announce_interval>0 then 
     M.thr_announcement = thread.start(function()
         while true do
-          local announcement=announcement_base..' '..gettime()
+          local announcement=announcement_base..' '..os.gettime()
           print('announcing', announcement)
           udp_tx:send(announcement)
           thread.sleep(conf.announce_interval)
@@ -121,9 +118,9 @@ M.init = function ()
   iface_config.passwd = nvs.read("wifi","passwd")
   iface_config.channel = nvs.read("wifi","channel", 0) or 0
 
-  uart.write(uart.CONSOLE,'wifi mode:'..iface_config.mode
-    ..' ssid:'..iface_config.ssid
-    ..' passwd:'..iface_config.passwd..'\r\n')
+  print ('wifi mode:'..iface_config.mode
+    ,'ssid:'..iface_config.ssid
+    ,'passwd:'..iface_config.passwd)
 
   local rc_config = {}
   rc_config.udp_port = nvs.read("wifi","udp_port", 2018) or 2018
@@ -134,11 +131,11 @@ M.init = function ()
   rc_config.announce_interval = nvs.read("wifi","announce_interval", 10) or 10
   rc_config.receive_timeout = nvs.read("wifi","receive_timeout", -1) or -1
 
-  uart.write(uart.CONSOLE, 'listen port:'..rc_config.udp_port
-    ..' timeout:'..tostring(rc_config.receive_timeout)..'\r\n')
-  uart.write(uart.CONSOLE, 'announce port:'
-    ..tostring(rc_config.udp_announce_port)..' bcast:'..rc_config.broadcast
-    ..' interval:'..tostring(rc_config.announce_interval)..'\r\n')
+  print('listen port:'..rc_config.udp_port
+    ,'timeout:'..tostring(rc_config.receive_timeout))
+  print('announce port:'..tostring(rc_config.udp_announce_port)
+    ,'bcast:'..rc_config.broadcast
+    ,'interval:'..tostring(rc_config.announce_interval))
 
   try(
     function() 
