@@ -17,20 +17,27 @@ M.proximity.threshold = {}
 
 --- The callback module for the proximity sensor.
 -- This is a callback list attached to the distance sensor, see @{cb_list}.
---This call triggers on threshold crossing, see @{M.proximity.threshold.enable}. The parameter of the callback is a boolean which is true when the object is close.
+-- This call triggers on threshold crossing, see @{M.proximity.threshold.enable}.
+-- The parameter of the callback is a boolean which is true when the object is close.
 -- @usage local local apds = require'apds'
 --apds.proximity.threshold.cb.append( function (v) print("close:", v) end )
 -- @param v true if distance is greater than threshold, false otherwise.
 M.proximity.threshold.cb = require'cb_list'.get_list()
 
 --- Enables the proximity threshold callback.
--- See @{M.proximity.threshold.cb}. The period in ms to use is read from `nvs.read("proximity_sensor","period")` (deafults to 100), the threshold is is read from `nvs.read("proximity_sensor","threshold")` (deafults to 250) and the hysteresis is read from `nvs.read("proximity_sensor","hysteresis")` (deafults to 3). 
---@param on true value to enable, false value to disable.
-M.proximity.threshold.enable = function (on)
+-- When enabled, proximity changes will trigger @{M.proximity.threshold.cb}. 
+-- @param on true value to enable, false value to disable.
+-- @param period Sampling period in ms, if omitted is read from 
+-- `nvs.read("proximity_sensor","period")`, deafults to 100. 
+-- @param threshold proximity reference value, if omitted is read from 
+-- `nvs.read("proximity_sensor","threshold")` (deafults to 250, about 2cm) 
+-- @param hysteresis if omitted is read from `nvs.read("proximity_sensor","hysteresis")` 
+-- (deafults to 3)
+M.proximity.threshold.enable = function (on, period, threshold, hysteresis)
   if on then
-    local period = nvs.read("proximity_sensor","period", 100) or 100
-    local threshold = nvs.read("proximity_sensor","threshold", 250) or 250
-    local hysteresis = nvs.read("proximity_sensor","hysteresis", 3) or 3
+    period = period or nvs.read("proximity_sensor","period", 100) or 100
+    threshold = threshold or nvs.read("proximity_sensor","threshold", 250) or 250
+    hysteresis = hysteresis or nvs.read("proximity_sensor","hysteresis", 3) or 3
     apds9960.proximity.get_dist_thresh(period, threshold, hysteresis,
       M.proximity.threshold.cb.call)
   else
@@ -65,11 +72,13 @@ M.color.change = {}
 M.color.change.cb = require'cb_list'.get_list()
 
 --- Enables the color change callback.
--- See @{M.color.change.cb}. The period in ms to use is read from `nvs.read("color_sensor","period")`, deafults to 100. 
---@param on true value to enable, false value to disable.
-M.color.change.enable = function (on)
+-- When enabled, color changes will trigger @{M.color.change.cb}.  
+-- @param on true value to enable, false value to disable.
+-- @param period Sampling period in ms, if omitted is read from 
+-- `nvs.read("color_sensor","period")`, deafults to 100. 
+M.color.change.enable = function (on, period)
   if on then
-    local period = nvs.read("color_sensor","period", 100) or 100
+    period = period or nvs.read("color_sensor","period", 100) or 100
     apds9960.color.get_change(period, M.color.change.cb.call)
   else
     apds9960.color.get_change(nil)
@@ -93,8 +102,8 @@ M.color.continuous.cb = require'cb_list'.get_list()
 
 --- Enables the color monitoring callback. 
 -- See @{M.color.continuous.cb}. The period in ms to use is read from `nvs.read("color_sensor","period")`, deafults to 100.  
---@param on true value to enable, false value to disable.
---@param hsv true to set HSV mode (see @{M.color.continuous.cb})
+-- @param on true value to enable, false value to disable.
+-- @param hsv true to set HSV mode (see @{M.color.continuous.cb})
 M.color.continuous.enable = function (on, hsv)
   if on then
     local period = nvs.read("color_sensor","period", 100) or 100
