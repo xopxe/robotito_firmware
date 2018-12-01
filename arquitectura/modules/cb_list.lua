@@ -28,7 +28,7 @@ M.get_list = function ()
     end
     cbs.n = #cbs
   end
-  --- The function to passed to the API requesting a callback function.
+  --- The function to be passed to the API requesting a callback function.
   -- Invoking this function will call all the functions registered using @{append}
   -- @param ... parameters will be passed to each function. Returns will be ignored.
   cbs.call = function (...)

@@ -3,12 +3,14 @@
 -- @alias M
 local M = {}
 
+--- Number of LEDs in ring.
+M.n_leds = 24
+
 local ledpin = pio.GPIO19
-local n_leds = 24
 local first_led = {8, 4, 0, 20, 16, 12}
 local segment_length  -- setup in M.set_power
 
-local neo = neopixel.attach(neopixel.WS2812B, ledpin, n_leds)
+local neo = neopixel.attach(neopixel.WS2812B, ledpin, M.n_leds)
 
 local colors  -- setup in M.set_power
 local colors_message  -- setup in M.set_power
@@ -16,7 +18,7 @@ local colors_message  -- setup in M.set_power
 M.set_color_table = function (c, f)
   colors = c
   first_led = f or first_led
-  segment_length = (n_leds // #colors) - 2
+  segment_length = (M.n_leds // #colors) - 2
 end
 
 --- Set maximum power
@@ -47,7 +49,7 @@ M.clear = function (r, g, b)
   r = r or 0
   g = g or 0
   b = b or 0
-  for i=0, n_leds-1 do
+  for i=0, M.n_leds-1 do
     neo:setPixel(i, r, g, b)
   end
   neo:update()

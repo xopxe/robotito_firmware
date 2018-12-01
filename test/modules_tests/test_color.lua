@@ -17,9 +17,12 @@ local dump_rgb = function(r,g,b,a,h,s,v, name)
 end
 
 local dump_color_change = function(name, s, v)
-  --print('color', c, 'sv', s, v)
-  uart_write(uart_CONSOLE, 'color='..tostring(name)..' (s,v)=('
+  --print('IN')
+  uart_write(uart_CONSOLE, '!color='..tostring(name)..' (s,v)=('
     ..tostring(s)..','..tostring(v)..')\r\n')
+  local a = 1+nil
+  uart_write(uart_CONSOLE, 'a='..tostring(a)..')\r\n')
+  --print('OUT')
 end
 
 color.light(true) --power on led

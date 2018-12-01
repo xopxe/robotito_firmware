@@ -19,6 +19,7 @@ examples={
     "test/modules_tests/test_laser_ring.lua",
     "test/modules_tests/test_led_ring.lua",
     "test/modules_tests/test_wifi.lua",
+    "test/modules_tests/test_encoders.lua",
 }
 
 
