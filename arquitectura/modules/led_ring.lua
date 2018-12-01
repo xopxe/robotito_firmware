@@ -48,7 +48,7 @@ M.clear = function (r, g, b)
   g = g or 0
   b = b or 0
   for i=0, n_leds-1 do
-    neo:setPixel(i, 0, 0, 0)
+    neo:setPixel(i, r, g, b)
   end
   neo:update()
 end
