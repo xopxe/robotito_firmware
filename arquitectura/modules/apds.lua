@@ -1,4 +1,4 @@
---- Module for the apds9960 color/distance/gesture sensor. 
+--- Module for the apds9960 color/proximity/gesture sensor. 
 -- @module apds
 -- @alias M
 local M = {}
@@ -16,10 +16,10 @@ M.proximity.device = apds9960.proximity
 M.proximity.threshold = {}
 
 --- The callback module for the proximity sensor.
--- This is a callback list attached to the distance sensor, see @{cb_list}.
+-- This is a callback list attached to the proximity sensor, see @{cb_list}.
 -- This call triggers on threshold crossing, see @{M.proximity.threshold.enable}.
 -- The parameter of the callback is a boolean which is true when the object is close.
--- @usage local local apds = require'apds'
+-- @usage local local apds = require 'apds'
 --apds.proximity.threshold.cb.append( function (v) print("close:", v) end )
 -- @param v true if distance is greater than threshold, false otherwise.
 M.proximity.threshold.cb = require'cb_list'.get_list()
@@ -146,14 +146,11 @@ M.init = function()
   }
 
   assert(apds9960.init())
-  assert(apds9960.proximity.enable())
-  assert(apds9960.color.enable())
-
   assert(apds9960.color.set_color_table(colors))
   assert(apds9960.color.set_sv_limits(min_sat,min_val,max_val))
 
-  --M.proximity.threshold.enable(true)
-  --M.color.change.enable(true)
+  assert(apds9960.proximity.enable())
+  assert(apds9960.color.enable())
 end
 
 return M

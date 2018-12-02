@@ -11,7 +11,7 @@ local apds = assert(require('apds9960'))
 local laser_ring = require('laser_ring')
 local wifi_net = require('wifi_net')
 
---- Omni platform.
+--- Omni platform. This points to @{omni}
 M.omni = omni
 --- Color sensor. This points to @{apds}.color
 M.color = apds.color

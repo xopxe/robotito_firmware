@@ -1,47 +1,50 @@
--- dofile('test_omni.lua')
+--- Test omni.
+-- Led ring is attached to encoders.
 
-m=m or require('omni')
+local omni = require('omni')
+local ledr = require 'led_ring'
+ledr.init(50)
 
-m.set_enable()
+local dt = 2000   --ms
+local v  = 0.05   --m/s
 
-local d=1000
+local pos = { 1, 1, 1 }
+local feedback_encoders = function (encoder, dir, counter)
+  -- print("encoder: " .. encoder,"direction: "..dir,"counter: "..counter)
 
--- raw_write(v1,v2,v3)
--- v* in -90..90
+  ledr.set_led(pos[encoder], 0, 0, 0)
+  pos[encoder] = counter % ledr.n_leds + 1
 
--- m.drive(xdot, ydot, wdot, [phi=0])
--- *dot in -90..90  (actually less)
-
---[[
-m.raw_write(0,0,90)
-tmr.sleepms(2*d);
-m.raw_write(0,0,45)
-tmr.sleepms(2*d);
-m.raw_write(0,0,15)
-tmr.sleepms(2*d);
---]]
-
----[[
-local v = 0.05   --m/s
-
---[[
-for i=1, 5 do
-  m.drive(v,0,0)
-  tmr.sleepms(d)
-  m.drive(0,-v,0)
-  tmr.sleepms(d);
+  local leds = {}
+  for i=1, 3 do 
+    leds[pos[i]] = leds[pos[i]] or {0, 0, 0}
+    leds[pos[i]][i] = 255
+  end
+  for i, color in pairs(leds) do
+    ledr.set_led(i, color[1], color[2], color[3])
+  end
+  ledr.update()
 end
---]]
+ledr.set_led(1, 255, 255, 255)
+ledr.update()
 
-m.drive(v,0,0)
-tmr.sleepms(d)
-m.drive(0,v,0)
-tmr.sleepms(d)
-m.drive(-v,0,0)
-tmr.sleepms(d)
-m.drive(0,-v,0)
-tmr.sleepms(d)
+omni.encoder.cb.append(feedback_encoders)
+omni.encoder.enable(true)
+omni.enable(true)
 
-m.set_enable(false)
+omni.drive(v,0,0)
+tmr.sleepms(dt)
+omni.drive(0,v,0)
+tmr.sleepms(dt)
+omni.drive(-v,0,0)
+tmr.sleepms(dt)
+omni.drive(0,-v,0)
+tmr.sleepms(dt)
 
---m.set_enable();m.raw_write(0,0,45);tmr.sleepms(2000);m.set_enable(false)
+omni.drive(0,0,0)
+while true do
+  omni.enable(false)
+  tmr.sleepms(dt)
+  omni.enable(true)
+  tmr.sleepms(dt)
+end

@@ -3,6 +3,8 @@
 -- @alias M
 local M = {}
 
+local udp_tx, udp_rx
+
 --- Current network status
 -- One of `'offline'`, `'associating'`, `'setting up'` or `'online'`.
 local wifi_status = 'offline'
@@ -92,55 +94,66 @@ M.broadcast = function (msg)
   udp_tx:send(msg)
 end
 
---- The callback module messages arrival.
+--- The callback module for messages arrival.
 -- This is a callback list attached to the socket, see @{cb_list}.
+-- @usage local wifi_net = require 'wifi_net'
+--wifi_net.cb.append( function (msg, ip, port) print(ip..':'..port, msg) end )
+-- @param msg a string with the message
+-- @param ip the IP address of the sender
+-- @param port the port of the sender
 M.cb = require'cb_list'.get_list()
 
 --- Initialize network.
--- The system uses nvs.read('wifi', parameter) to initialize, where 
--- parameters are:  
+-- The system reads the configuration parameters from the config table, and if
+-- the table or some parameter is ommitted it will get it from 
+-- nvs.read('wifi', parameter). The parameters are:  
 --* `'mode'`: either 'ap' or 'sta', defaults ot 'ap'  
---* `'ssid'`  
---* `'passwd'`  
+--* `'ssid'`: the wireless network ssid  
+--* `'passwd'`: the wireless network password  
 --* `'channel'`: defaults to 0 (auto)  
 --* `'udp_port'`: listening port, defaults to 2018   
---* `'udp_announce_port'`: announcement port, defaults to 2018  
 --* `'broadcast'`: target address for the announcements (defaults to)
 --'255,255,255,255'  
---* `'udp_announce_interval'`: time between announcements (in sec),
--- -1 means disabled. Defaults to 10.  
+--* `'udp_announce_port'`: announcement port, defaults to 2018  
+--* `'udp_announce_interval'`: time between announcements (in s),
+-- -1 mean disabled. Defaults to 10.  
 --* `'receive_timeout'`: timeout for udp reads (in sec). Defaults to -1
 -- (disabled).  
-M.init = function ()
-  local iface_config = {}
-  iface_config.mode = nvs.read("wifi","mode", "ap") or "ap"
-  iface_config.ssid = nvs.read("wifi","ssid")
-  iface_config.passwd = nvs.read("wifi","passwd")
-  iface_config.channel = nvs.read("wifi","channel", 0) or 0
+-- @param conf configuration table
+M.init = function (conf)
+  conf = conf or {}
+  --local iface_config = {}
+  conf.mode = conf.mode or nvs.read("wifi","mode", "ap") or "ap"
+  conf.ssid = conf.ssid or nvs.read("wifi","ssid") 
+  conf.passwd = conf.passwd or nvs.read("wifi","passwd")
+  conf.channel = conf.channel or nvs.read("wifi","channel", 0) or 0
 
-  print ('wifi mode:'..iface_config.mode
-    ,'ssid:'..iface_config.ssid
-    ,'passwd:'..iface_config.passwd)
+  print ('wifi mode:'..conf.mode
+    ,'ssid:'..conf.ssid
+    ,'passwd:'..conf.passwd)
 
-  local rc_config = {}
-  rc_config.udp_port = nvs.read("wifi","udp_port", 2018) or 2018
-  rc_config.udp_announce_port = nvs.read("wifi","udp_announce_port", 2018) 
-  or 2018
-  rc_config.broadcast = nvs.read("wifi","broadcast", '255.255.255.255') 
-  or '255.255.255.255'
-  rc_config.announce_interval = nvs.read("wifi","announce_interval", 10) or 10
-  rc_config.receive_timeout = nvs.read("wifi","receive_timeout", -1) or -1
+  --local rc_config = {}
+  conf.udp_port = conf.udp_port or 
+    nvs.read("wifi","udp_port", 2018) or 2018
+  conf.udp_announce_port = conf.udp_announce_port or 
+    nvs.read("wifi","udp_announce_port", 2018) or 2018
+  conf.broadcast = conf.broadcast or 
+    nvs.read("wifi","broadcast", '255.255.255.255') or '255.255.255.255'
+  conf.announce_interval = conf.announce_interval or 
+    nvs.read("wifi","announce_interval", 10) or 10
+  conf.receive_timeout = conf.receive_timeout or 
+    nvs.read("wifi","receive_timeout", -1) or -1
 
-  print('listen port:'..rc_config.udp_port
-    ,'timeout:'..tostring(rc_config.receive_timeout))
-  print('announce port:'..tostring(rc_config.udp_announce_port)
-    ,'bcast:'..rc_config.broadcast
-    ,'interval:'..tostring(rc_config.announce_interval))
+  print('listen port:'..conf.udp_port
+    ,'timeout:'..tostring(conf.receive_timeout))
+  print('announce port:'..tostring(conf.udp_announce_port)
+    ,'bcast:'..conf.broadcast
+    ,'interval:'..tostring(conf.announce_interval))
 
   try(
     function() 
-      local my_ip = start_network(iface_config)
-      start_rc(my_ip, rc_config)
+      local my_ip = start_network(conf) --(iface_config)
+      start_rc(my_ip, conf) --rc_config)
     end,
     print, 
     function() 

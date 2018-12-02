@@ -6,20 +6,20 @@ format = 'markdown'
 readme = "README.md"
 file = {
     "arquitectura/modules/robot.lua", 
+    "arquitectura/modules/omni.lua", 
     "arquitectura/modules/apds.lua",
     "arquitectura/modules/laser_ring.lua", 
-    "arquitectura/modules/omni.lua", 
     "arquitectura/modules/led_ring.lua", 
     "arquitectura/modules/cb_list.lua", 
     "arquitectura/modules/wifi_net.lua", 
 }
 examples={
     "test/modules_tests/test_color.lua", 
-    "test/modules_tests/test_distc.lua", 
+    "test/modules_tests/test_proximity.lua", 
     "test/modules_tests/test_laser_ring.lua",
     "test/modules_tests/test_led_ring.lua",
     "test/modules_tests/test_wifi.lua",
-    "test/modules_tests/test_encoders.lua",
+    "test/modules_tests/test_omni.lua",
 }
 
 
