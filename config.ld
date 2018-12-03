@@ -20,6 +20,7 @@ examples={
     "test/modules_tests/test_led_ring.lua",
     "test/modules_tests/test_wifi.lua",
     "test/modules_tests/test_omni.lua",
+    "test/modules_tests/test_ahsm.lua",
 }
 
 

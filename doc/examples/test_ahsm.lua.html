@@ -1,0 +1,182 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>Reference</title>
+    <link rel="stylesheet" href="../ldoc.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>robotito firmware</h1>
+
+<ul>
+  <li><a href="../index.html">Index</a></li>
+</ul>
+
+
+
+<h2>Examples</h2>
+<ul class="nowrap">
+  <li><a href="../examples/test_color.lua.html">test_color.lua</a></li>
+  <li><a href="../examples/test_proximity.lua.html">test_proximity.lua</a></li>
+  <li><a href="../examples/test_laser_ring.lua.html">test_laser_ring.lua</a></li>
+  <li><a href="../examples/test_led_ring.lua.html">test_led_ring.lua</a></li>
+  <li><a href="../examples/test_wifi.lua.html">test_wifi.lua</a></li>
+  <li><a href="../examples/test_omni.lua.html">test_omni.lua</a></li>
+  <li><strong>test_ahsm.lua</strong></li>
+</ul>
+<h2>Modules</h2>
+<ul class="nowrap">
+  <li><a href="../modules/robot.html">robot</a></li>
+  <li><a href="../modules/omni.html">omni</a></li>
+  <li><a href="../modules/apds.html">apds</a></li>
+  <li><a href="../modules/laser_ring.html">laser_ring</a></li>
+  <li><a href="../modules/led_ring.html">led_ring</a></li>
+  <li><a href="../modules/cb_list.html">cb_list</a></li>
+  <li><a href="../modules/wifi_net.html">wifi_net</a></li>
+</ul>
+<h2>Topics</h2>
+<ul class="">
+  <li><a href="../topics/README.md.html">README</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+    <h2>test_ahsm.lua</h2>
+<pre>
+<span class="comment">--- Test ahsm state machine
+</span><span class="comment">-- On ad Off states, controlled by the floor proximity sensor.
+</span><span class="comment">-- When On, there's a led semaphor cycling trough colors.
+</span>
+<span class="keyword">local</span> ahsm = <span class="global">require</span> <span class="string">'ahsm'</span>
+ahsm.get_time = <span class="global">os</span>.gettime
+
+<span class="keyword">local</span> hsm
+
+<span class="comment">-- setup debug to serial console
+</span><span class="keyword">local</span> <span class="keyword">function</span> ewrite(v)
+  uart.write(uart.CONSOLE, <span class="global">tostring</span>(v)..<span class="string">'\r\n'</span>)
+<span class="keyword">end</span>
+<span class="keyword">local</span> debugger = <span class="global">require</span> <span class="string">'tools.debug_plain'</span>
+debugger.<span class="global">print</span> = ewrite
+ahsm.<span class="global">debug</span> = debugger.out
+
+<span class="keyword">local</span> apds = <span class="global">require</span>(<span class="string">'apds'</span>) <span class="comment">-- proximity sensor
+</span><span class="keyword">local</span> proximity = apds.proximity
+apds.init()
+
+<span class="keyword">local</span> ledr = <span class="global">require</span> <span class="string">'led_ring'</span>
+ledr.init(<span class="number">50</span>)
+
+<span class="comment">-- events for proximity sensor
+</span><span class="keyword">local</span> e_floor = { _name=<span class="string">"FLOOR"</span> }
+<span class="keyword">local</span> e_not_floor = { _name=<span class="string">"NOTFLOOR"</span> }
+
+<span class="comment">-- semaphor states, one per color
+</span><span class="keyword">local</span> s_green = ahsm.state {
+  entry = <span class="keyword">function</span>() ledr.clear(<span class="number">0</span>,<span class="number">100</span>,<span class="number">0</span>) <span class="keyword">end</span>,
+}
+<span class="keyword">local</span> s_yellow = ahsm.state {
+  entry = <span class="keyword">function</span>() ledr.clear(<span class="number">50</span>,<span class="number">50</span>,<span class="number">0</span>) <span class="keyword">end</span>,
+}
+<span class="keyword">local</span> s_red = ahsm.state {
+  entry = <span class="keyword">function</span>() ledr.clear(<span class="number">100</span>,<span class="number">0</span>,<span class="number">0</span>) <span class="keyword">end</span>,
+}
+<span class="comment">-- transitions for semaphor colors (on timeouts)
+</span><span class="keyword">local</span> t_green = ahsm.transition {
+  src = s_red, tgt = s_green,
+  timeout = <span class="number">1.0</span>,
+}
+<span class="keyword">local</span> t_yellow = ahsm.transition {
+  src = s_green, tgt = s_yellow,
+  timeout = <span class="number">1.0</span>,
+}
+<span class="keyword">local</span> t_red = ahsm.transition {
+  src = s_yellow, tgt = s_red,
+  timeout = <span class="number">1.0</span>,
+}
+
+<span class="comment">-- On/Off states
+</span><span class="keyword">local</span> s_off = ahsm.state {
+  entry = <span class="keyword">function</span>() ledr.clear(<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>) <span class="keyword">end</span>,
+}
+<span class="comment">-- the On state has the semaphor embedded
+</span><span class="keyword">local</span> s_on = ahsm.state {
+  states = { GREEN=s_green, YELLOW=s_yellow, RED=s_red },
+  transitions = { togreen=t_green, tored=t_red, toyellow=t_yellow },
+  initial = s_red,
+}
+
+<span class="comment">-- On/Off transitions on proximity events
+</span><span class="keyword">local</span> t_on = ahsm.transition {
+  src = s_off, tgt = s_on,
+  events = { e_floor },
+}
+<span class="keyword">local</span> t_off = ahsm.transition {
+  src = s_on, tgt = s_off,
+  events = { e_not_floor },
+}
+
+<span class="comment">-- callback for proximity sensor, emits events for state machine
+</span><span class="keyword">local</span> floor_event = <span class="keyword">function</span>( v )
+  <span class="keyword">if</span> v <span class="keyword">then</span>
+    hsm.send_event(e_floor)
+  <span class="keyword">else</span>
+    hsm.send_event(e_not_floor)
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+<span class="comment">-- root state, embeds On/Off machine and initialization code
+</span><span class="keyword">local</span> root = ahsm.state {
+  events =  { e_floor, e_not_floor },
+  states = { OFF=s_off, ON=s_on },
+  transitions = { switchon=t_on, switchoff=t_off },
+  initial = s_off,
+  entry = <span class="keyword">function</span>()
+    proximity.threshold.cb.append(floor_event)
+    proximity.threshold.enable(<span class="keyword">true</span>)
+  <span class="keyword">end</span>,
+  exit = <span class="keyword">function</span>()
+    proximity.threshold.enable(<span class="keyword">false</span>)
+    proximity.threshold.cb.remove(floor_event)
+  <span class="keyword">end</span>,
+}
+
+<span class="comment">-- start machine
+</span>hsm = ahsm.init( root )
+
+<span class="comment">-- We must keep looping for reacting to state timeouts
+</span><span class="keyword">while</span> <span class="keyword">true</span> <span class="keyword">do</span>
+  hsm.loop()
+  tmr.sleepms(<span class="number">100</span>)
+<span class="keyword">end</span></pre>
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
+<i style="float:right;">Last updated 2018-12-03 16:26:58 </i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>
