@@ -41,10 +41,5 @@ tmr.sleepms(dt)
 omni.drive(0,-v,0)
 tmr.sleepms(dt)
 
-omni.drive(0,0,0)
-while true do
-  omni.enable(false)
-  tmr.sleepms(dt)
-  omni.enable(true)
-  tmr.sleepms(dt)
-end
+omni.enable(false)
+

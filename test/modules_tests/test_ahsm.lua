@@ -7,12 +7,7 @@ ahsm.get_time = os.gettime
 
 local hsm
 
--- setup debug to serial console
-local function ewrite(v)
-  uart.write(uart.CONSOLE, tostring(v)..'\r\n')
-end
 local debugger = require 'tools.debug_plain'
-debugger.print = ewrite
 ahsm.debug = debugger.out
 
 local apds = require('apds') -- proximity sensor

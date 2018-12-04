@@ -6,23 +6,13 @@ local apds = require('apds')
 apds.init()
 
 local color = apds.color
-local uart_write, uart_CONSOLE = uart.write, uart.CONSOLE
 
 local dump_rgb = function(r,g,b,a,h,s,v, name)
-  --print('argb:', a, r, g, b,'hsvc:', h, s, v, name)
-  uart_write(uart_CONSOLE, 'ambient='..tostring(a)..' (r,g,b)=(' 
-    ..tostring(r)..','..tostring(g)..','..tostring(b)..') (h,s,v)=('
-    ..tostring(h)..','..tostring(s)..','..tostring(v)..') color='
-    ..tostring(name)..'\r\n')
+  print('argb:', a, r, g, b,'hsvc:', h, s, v, name)
 end
 
 local dump_color_change = function(name, s, v)
-  --print('IN')
-  uart_write(uart_CONSOLE, '!color='..tostring(name)..' (s,v)=('
-    ..tostring(s)..','..tostring(v)..')\r\n')
-  --local a = 1+nil
-  --uart_write(uart_CONSOLE, 'a='..tostring(a)..')\r\n')
-  --print('OUT')
+  print('! color:'..tostring(name), 'sv:', s, v)
 end
 
 color.light(true) --power on led

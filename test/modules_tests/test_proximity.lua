@@ -6,10 +6,9 @@ local apds = require('apds')
 apds.init()
 
 local proximity = apds.proximity
-local uart_write, uart_CONSOLE = uart.write, uart.CONSOLE
 
 local dump_dist = function(b)
-  uart_write(uart_CONSOLE, 'close: '..tostring(b)..'\r\n')
+  print('close:', b)
 end
 
 proximity.threshold.cb.append(dump_dist)
