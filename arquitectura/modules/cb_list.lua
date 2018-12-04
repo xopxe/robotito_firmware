@@ -14,9 +14,9 @@ M.get_list = function ()
   local cb = { n = 0 }
   --- Append a function to the list of callbacks.
   -- The function will be called with the parameters provided to the callback. 
-  -- @param cb a function to be called.
-  cb.append = function (cb)
-    cb[#cb+1] = cb
+  -- @param f a function to be called.
+  cb.append = function (f)
+    cb[#cb+1] = f
     cb.n = #cb
   end
   --- Remove a function from the list of callbacks.
