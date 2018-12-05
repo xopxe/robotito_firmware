@@ -30,17 +30,12 @@
   <li><a href="../index.html">Index</a></li>
 </ul>
 
-<h2>Contents</h2>
-<ul>
-<li><a href="#Features">Features </a></li>
-<li><a href="#License">License </a></li>
-<li><a href="#Who_">Who? </a></li>
-</ul>
 
 
-<h2>Topics</h2>
-<ul class="">
-  <li><strong>README</strong></li>
+<h2>Scripts</h2>
+<ul class="nowrap">
+  <li><strong>autorun</strong></li>
+  <li><a href="../scripts/main_ahsm.html">main_ahsm</a></li>
 </ul>
 <h2>Modules</h2>
 <ul class="nowrap">
@@ -52,10 +47,9 @@
   <li><a href="../modules/cb_list.html">cb_list</a></li>
   <li><a href="../modules/wifi_net.html">wifi_net</a></li>
 </ul>
-<h2>Scripts</h2>
-<ul class="nowrap">
-  <li><a href="../scripts/autorun.html">autorun</a></li>
-  <li><a href="../scripts/main_ahsm.html">main_ahsm</a></li>
+<h2>Topics</h2>
+<ul class="">
+  <li><a href="../topics/README.md.html">README</a></li>
 </ul>
 <h2>Examples</h2>
 <ul class="nowrap">
@@ -72,29 +66,26 @@
 
 <div id="content">
 
+<h1>Script <code>autorun</code></h1>
+<p>Autorun script.</p>
+<p>
 
-<h1>robotito: microcontrolled robotic platform for research.</h1>
+<p> The first program to run, used to boot the whole system. Configuration
+ is loaded using <code>nvs.read(&quot;autorun&quot;, parameter)</code> calls, where the
+ available parameters are:  </p>
 
-<p>Description</p>
-
-<p><a name="Features"></a></p>
-<h2>Features</h2>
-
-<p>...</p>
-
-
-<p><a name="License"></a></p>
-<h2>License</h2>
-
-<p>See LICENSE.</p>
+<ul>
+    <li><code>&quot;main&quot;</code> program to run, defaults to <code>&quot;main_ahsm.lua&quot;</code>. Other options are
+    <code>&quot;test_omni.lua&quot;</code>, <code>&quot;test_wifi.lua&quot;</code>, etc.</li>
+</ul>
+</p>
 
 
-<p><a name="Who_"></a></p>
-<h2>Who?</h2>
 
-<p>mina@fing.edu.uy</p>
+<br/>
+<br/>
 
-<p>Grupo MINA - Facultad de Ingeniería - Universidad de la República</p>
+
 
 
 </div> <!-- id="content" -->

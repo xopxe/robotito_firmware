@@ -1,6 +1,6 @@
 --- Main program using ahsm.
 -- Uses state machines to control the robot. This program is intended to
--- be loaded from the @{autorun} script. To achieve this, set `nvs.write("autorun", "main" "main_ahsm")`.
+-- be loaded from the @{autorun} script. To achieve this, set `nvs.write("autorun", "main" "main_ahsm.lua")`.
 -- This program loads and initalizes @{robot} and ahsm.  
 --  
 -- Configuration is loaded using `nvs.read("ahsm", parameter)` calls, where the
