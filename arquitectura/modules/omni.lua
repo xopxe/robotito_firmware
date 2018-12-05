@@ -45,6 +45,10 @@ omni.device = device
 -- @param phi rotation of the xy axis, in rad. Defaults to 0
 omni.drive = device.drive
 
+--- Enable/disable motors.
+-- @function enable
+-- @param on if true value or omitted, power up. If false value then 
+-- power down.
 omni.enable = device.set_enable
 
 omni.encoder = {}

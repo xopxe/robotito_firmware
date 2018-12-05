@@ -30,17 +30,11 @@
   <li><a href="../index.html">Index</a></li>
 </ul>
 
-<h2>Contents</h2>
-<ul>
-<li><a href="#Features">Features </a></li>
-<li><a href="#License">License </a></li>
-<li><a href="#Who_">Who? </a></li>
-</ul>
 
 
-<h2>Topics</h2>
-<ul class="">
-  <li><strong>README</strong></li>
+<h2>Scripts</h2>
+<ul class="nowrap">
+  <li><strong>main_ahsm</strong></li>
 </ul>
 <h2>Modules</h2>
 <ul class="nowrap">
@@ -52,9 +46,9 @@
   <li><a href="../modules/cb_list.html">cb_list</a></li>
   <li><a href="../modules/wifi_net.html">wifi_net</a></li>
 </ul>
-<h2>Scripts</h2>
-<ul class="nowrap">
-  <li><a href="../scripts/main_ahsm.html">main_ahsm</a></li>
+<h2>Topics</h2>
+<ul class="">
+  <li><a href="../topics/README.md.html">README</a></li>
 </ul>
 <h2>Examples</h2>
 <ul class="nowrap">
@@ -71,29 +65,29 @@
 
 <div id="content">
 
+<h1>Script <code>main_ahsm</code></h1>
+<p>Main program using ahsm.</p>
+<p>
 
-<h1>robotito: microcontrolled robotic platform for research.</h1>
+<p> Uses state machines to control the robot. This program is intended to
+ be loaded from the autorun.lua script as <code>dofile &apos;main_ahsm&apos;</code>. <br/>
+ This program loads and initalizes <a href="../modules/robot.html#">robot</a> and ahsm. <br/>
+ Configuration is loaded using <code>nvs.read(&quot;ahsm&quot;, parameter) calls</code>, where the
+ available parameters are:  </p>
 
-<p>Description</p>
-
-<p><a name="Features"></a></p>
-<h2>Features</h2>
-
-<p>...</p>
-
-
-<p><a name="License"></a></p>
-<h2>License</h2>
-
-<p>See LICENSE.</p>
+<ul>
+    <li><p><code>&quot;debugger&quot;</code> the debug output system, like ahsm's "debug_plain". Defaults to nil (disabled)  </p></li>
+    <li><p><code>&quot;root&quot;</code> a composite state to be used as root for the state machine. This must be the name of library to be required, which will return an ahsm state. Defaults to "states.test"  </p></li>
+    <li><p><code>&quot;timestep&quot;</code> time in ms between sweeps to check for timed out transitions. Defaults to 10  </p></li>
+</ul>
+</p>
 
 
-<p><a name="Who_"></a></p>
-<h2>Who?</h2>
 
-<p>mina@fing.edu.uy</p>
+<br/>
+<br/>
 
-<p>Grupo MINA - Facultad de Ingeniería - Universidad de la República</p>
+
 
 
 </div> <!-- id="content" -->

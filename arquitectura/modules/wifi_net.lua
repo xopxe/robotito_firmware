@@ -66,8 +66,9 @@ local start_rc = function (my_ip, conf)
   udp_rx:setsockname(my_ip, conf.udp_port)
   udp_rx:settimeout(conf.receive_timeout)
 
-  local announcement_base = 'ROBOTITO '..my_ip..' '..conf.udp_port
-  ..' '..os.resetreason()
+  local id = (robot or {}).id or '?'
+  local announcement_base = 'ROBOTITO '..tostring(id)..' '
+  ..my_ip..' '..conf.udp_port..' '..os.resetreason()
 
   if conf.announce_interval>0 then 
     M.thr_announcement = thread.start(function()

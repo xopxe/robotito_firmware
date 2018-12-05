@@ -13,24 +13,28 @@ M.id = nvs.read("robot","id")
 
 --- Omni platform. This points to @{omni}
 M.omni = require('omni')
+M.omni.enable()
+
+--- Downward facing apds sensor. This points to @{apds}
+M.apds = require('apds')
+M.apds.init()
+
 --- Color sensor. This points to @{apds}.color
-M.color = require('apds9960').color
+M.color = M.apds.color
+
 --- Proximity sensor. This points to @{apds}.proximity
-M.height = require('apds9960').proximity
+M.floor = M.apds.proximity
+
 --- Distance sensor ring. This points to @{laser_ring}
 M.laser_ring = require('laser_ring')
---- LED ring. This points to @{led_ring}
+M.laser_ring.init()
+
+--- UI LED ring. This points to @{led_ring}
 M.led_ring = require'led_ring'
+
 --- WiFi network susbsystem. This points to @{wifi_net}
 M.wifi_net = require('wifi_net')
+M.wifi_net.init()
 
-M.init = function()
-
-  M.apds.init()
-  M.laser_ring.init()
-  M.omni.set_enable()
-  M.wifi_net.init()
-
-end
 
 return M

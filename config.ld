@@ -12,6 +12,7 @@ file = {
     "arquitectura/modules/led_ring.lua", 
     "arquitectura/modules/cb_list.lua", 
     "arquitectura/modules/wifi_net.lua", 
+    "arquitectura/modules/main_ahsm.lua", 
 }
 examples={
     "test/modules_tests/test_color.lua", 

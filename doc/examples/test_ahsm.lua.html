@@ -52,6 +52,10 @@
   <li><a href="../modules/cb_list.html">cb_list</a></li>
   <li><a href="../modules/wifi_net.html">wifi_net</a></li>
 </ul>
+<h2>Scripts</h2>
+<ul class="nowrap">
+  <li><a href="../scripts/main_ahsm.html">main_ahsm</a></li>
+</ul>
 <h2>Topics</h2>
 <ul class="">
   <li><a href="../topics/README.md.html">README</a></li>
@@ -63,106 +67,30 @@
 
     <h2>test_ahsm.lua</h2>
 <pre>
-<span class="comment">--- Test ahsm state machine
-</span><span class="comment">-- On ad Off states, controlled by the floor proximity sensor.
+<span class="comment">--- Test ahsm state machine.
+</span><span class="comment">-- On and Off states, controlled by the floor proximity sensor.
 </span><span class="comment">-- When On, there's a led semaphor cycling trough colors.
 </span>
+robot = <span class="global">require</span> <span class="string">'robot'</span>
 <span class="keyword">local</span> ahsm = <span class="global">require</span> <span class="string">'ahsm'</span>
 ahsm.get_time = <span class="global">os</span>.gettime
-
-<span class="keyword">local</span> hsm
 
 <span class="keyword">local</span> debugger = <span class="global">require</span> <span class="string">'tools.debug_plain'</span>
 ahsm.<span class="global">debug</span> = debugger.out
 
-<span class="keyword">local</span> apds = <span class="global">require</span>(<span class="string">'apds'</span>) <span class="comment">-- proximity sensor
-</span><span class="keyword">local</span> proximity = apds.proximity
-apds.init()
-
-<span class="keyword">local</span> ledr = <span class="global">require</span> <span class="string">'led_ring'</span>
-ledr.init(<span class="number">50</span>)
-
-<span class="comment">-- events for proximity sensor
-</span><span class="keyword">local</span> e_floor = { _name=<span class="string">"FLOOR"</span> }
-<span class="keyword">local</span> e_not_floor = { _name=<span class="string">"NOTFLOOR"</span> }
-
-<span class="comment">-- semaphor states, one per color
-</span><span class="keyword">local</span> s_green = ahsm.state {
-  entry = <span class="keyword">function</span>() ledr.clear(<span class="number">0</span>,<span class="number">100</span>,<span class="number">0</span>) <span class="keyword">end</span>,
-}
-<span class="keyword">local</span> s_yellow = ahsm.state {
-  entry = <span class="keyword">function</span>() ledr.clear(<span class="number">50</span>,<span class="number">50</span>,<span class="number">0</span>) <span class="keyword">end</span>,
-}
-<span class="keyword">local</span> s_red = ahsm.state {
-  entry = <span class="keyword">function</span>() ledr.clear(<span class="number">100</span>,<span class="number">0</span>,<span class="number">0</span>) <span class="keyword">end</span>,
-}
-<span class="comment">-- transitions for semaphor colors (on timeouts)
-</span><span class="keyword">local</span> t_green = ahsm.transition {
-  src = s_red, tgt = s_green,
-  timeout = <span class="number">1.0</span>,
-}
-<span class="keyword">local</span> t_yellow = ahsm.transition {
-  src = s_green, tgt = s_yellow,
-  timeout = <span class="number">1.0</span>,
-}
-<span class="keyword">local</span> t_red = ahsm.transition {
-  src = s_yellow, tgt = s_red,
-  timeout = <span class="number">1.0</span>,
-}
-
-<span class="comment">-- On/Off states
-</span><span class="keyword">local</span> s_off = ahsm.state {
-  entry = <span class="keyword">function</span>() ledr.clear(<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>) <span class="keyword">end</span>,
-}
-<span class="comment">-- the On state has the semaphor embedded
-</span><span class="keyword">local</span> s_on = ahsm.state {
-  states = { GREEN=s_green, YELLOW=s_yellow, RED=s_red },
-  transitions = { togreen=t_green, tored=t_red, toyellow=t_yellow },
-  initial = s_red,
-}
-
-<span class="comment">-- On/Off transitions on proximity events
-</span><span class="keyword">local</span> t_on = ahsm.transition {
-  src = s_off, tgt = s_on,
-  events = { e_floor },
-}
-<span class="keyword">local</span> t_off = ahsm.transition {
-  src = s_on, tgt = s_off,
-  events = { e_not_floor },
-}
-
-<span class="comment">-- callback for proximity sensor, emits events for state machine
-</span><span class="keyword">local</span> floor_event = <span class="keyword">function</span>( v )
-  <span class="keyword">if</span> v <span class="keyword">then</span>
-    hsm.send_event(e_floor)
-  <span class="keyword">else</span>
-    hsm.send_event(e_not_floor)
-  <span class="keyword">end</span>
-<span class="keyword">end</span>
+<span class="keyword">local</span> hsm
 
 <span class="comment">-- root state, embeds On/Off machine and initialization code
-</span><span class="keyword">local</span> root = ahsm.state {
-  events =  { e_floor, e_not_floor },
-  states = { OFF=s_off, ON=s_on },
-  transitions = { switchon=t_on, switchoff=t_off },
-  initial = s_off,
-  entry = <span class="keyword">function</span>()
-    proximity.threshold.cb.append(floor_event)
-    proximity.threshold.enable(<span class="keyword">true</span>)
-  <span class="keyword">end</span>,
-  exit = <span class="keyword">function</span>()
-    proximity.threshold.enable(<span class="keyword">false</span>)
-    proximity.threshold.cb.remove(floor_event)
-  <span class="keyword">end</span>,
-}
+</span><span class="keyword">local</span> root = <span class="global">require</span> <span class="string">'states.test'</span>
 
 <span class="comment">-- start machine
 </span>hsm = ahsm.init( root )
+robot.hsm = hsm
 
 <span class="comment">-- We must keep looping for reacting to state timeouts
 </span><span class="keyword">while</span> <span class="keyword">true</span> <span class="keyword">do</span>
   hsm.loop()
-  tmr.sleepms(<span class="number">100</span>)
+  tmr.sleepms(<span class="number">10</span>)
 <span class="keyword">end</span></pre>
 
 
@@ -170,7 +98,7 @@ ledr.init(<span class="number">50</span>)
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2018-12-04 14:55:59 </i>
+<i style="float:right;">Last updated 2018-12-05 11:12:37 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>
