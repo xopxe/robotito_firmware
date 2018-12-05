@@ -3,13 +3,17 @@
 -- is loaded using `nvs.read("autorun", parameter)` calls, where the
 -- available parameters are:  
 --  
---* `"main"` program to run, defaults to `"main_ahsm.lua"`. Other options are 
+--* `"main"` The program to run. Some options are `"main_ahsm.lua"`, 
 -- `"test_omni.lua"`, `"test_wifi.lua"`, etc.
 -- @script autorun
 
-print("Booting robotito")
+print("Booting robotito, looking into nvs('autorun', 'main')")
 
-local main = nvs.read("autorun", "main", "main_ahsm.lua")
-print("Main program:", main)
+local main = nvs.read("autorun", "main", nil)
 
-dofile(main)
+if main then 
+  print("Main program:", main)
+  dofile(main)
+else
+  print ("No main program set.")
+end
