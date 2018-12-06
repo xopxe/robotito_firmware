@@ -11,53 +11,67 @@ local table_sort = table.sort
 local N_SENSORS = 6
 local N_SENSORS_2= N_SENSORS/2
 assert(N_SENSORS %2 == 0, 'median optimized for par N_SENSORS')
-local WIN_SIZE = 3   --  store history distance values to compute low pass filter
-local alpha_lpf = 1           -- low pass filter update parameter
-local MASK_ON_SENSORS = {true, true, true, true, true, true}
+local WIN_SIZE = 3  -- store history distance values to compute low pass filter
+local alpha_lpf = 1 -- low pass filter update parameter
 
+--[[ this moved inside M.init() to free this from memory after use
 -- { {xshutpin, [newadddr]}, ... }
-local sensors = {
-  {16},
-  {17},
-  {2},
-  {14},
-  {12},
-  {13},
-}
+local sensors = {{16}, {17}, {2}, {14},{12}, {13}}
+--]]
 
 -- VARIABLES
 local norm_d = {0, 0, 0, 0, 0, 0}       -- normalized measurements
 local previous_d = {0, 0, 0, 0, 0, 0}   -- previous norm_d
 local raw_d = {0, 0, 0, 0, 0, 0}
 
---- Minimuma range to be measured in mm.
--- Initialized from nvs.read("laser_range","dmin"), defaults to 80.
-M.dmin = nvs.read("laser_range","dmin", 80) or 80
+do
+  local angles = {6}
+  local intersensor = 2*math.pi/N_SENSORS 
+  for i = 1, N_SENSORS do
+    angles[i] = math.pi/6 + (i-1)*intersensor
+  end
+--- Sensor angles.
+-- The angles at which each one sensors point. It's and array indexed byt the 
+-- sensor number 1..6 --FIXME
+  M.sensor_angles = angles
+end
 
---- Minimuma range to be measured in mm.
--- Initialized from nvs.read("laser_range","dmax"), defaults to 600.
+--- Minimum range for normalization in mm.
+-- See @{norm_d}. Initialized from `nvs.read("laser_range","dmin")`, 
+-- defaults to 80.
+M.dmin = nvs.read("laser_range","dmin", 80) or 80
+local dmin = M.dmin
+
+--- Maximum range for normalization in mm.
+-- See @{norm_d}. Initialized from `nvs.read("laser_range","dmax")`, 
+-- defaults to 600.
 M.dmax = nvs.read("laser_range","dmax", 600) or 600
+local dmax = M.dmax
 
 --- The last reading, in raw form.
--- It's an array with length 6, with measures in mm.
+-- It's an array with length 6, with measures in mm. This is not affected
+-- by the @{dmin} and @{dmax} settings.
 M.raw_d = raw_d
 
 --- The last reading, normalized.
--- It's an array with length 6. The distances are normalized to 0.0..1.0
--- in the @{dmin}..@{dmax} range, and 0.0 outside. For these values to
+-- It's an array with length 6. The distances are normalized to 0.0..100.0
+-- in the @{dmin}..@{dmax} range, and clipped to 0 or 100 when outside this
+-- range. For these values to
 -- be upgdated, you must register and enable a callback (see @{get_reading_cb}
 -- and @{get_filtering_cb}).
 M.norm_d = norm_d
 
 --- The previous reading, normalized.
--- It's an array with length 6.
+-- It's a copy of @{norm_d} from previous cycle.
 M.previous_d = previous_d
 
-
-local line = function(x1, y1, x2, y2, x)  -- evalua la funcion de una recta en x dado dos puntos (x1, y1) y (x2, y2)
-  local y = (y2-y1)/(x2-x1)*(x-x1)+y1
-  return y
+local function get_interpolator(x1, y1, x2, y2)
+  local p = (y2-y1)/(x2-x1)
+  return function (x)
+    return p*(x-x1)+y1
+  end
 end
+local normalize_d = get_interpolator(M.dmin, 0, M.dmax, 100)
 
 --- The callback module for the range sensor ring.
 -- This is a callback list attached to the range sensor, see @{cb_list}.
@@ -70,15 +84,17 @@ M.cb = require'cb_list'.get_list()
 M.get_reading_cb = function ()
   local dist_callback = function(d1,d2,d3,d4,d5,d6)
     --uart.write(uart.CONSOLE, '!get_reading_cb callback\r\n')
-    local dmin, dmax = M.dmin, M.dmax
     local laser_data = {d1,d2,d3,d4,d5,d6}
     for i = 1,N_SENSORS do
       previous_d[i] = norm_d[i]
-      raw_d[i] = laser_data[i]
-      if laser_data[i] > dmin and laser_data[i] < dmax and MASK_ON_SENSORS[i] then        
-        norm_d[i] = line(dmin, 0, dmax, 1, laser_data[i])   -- 0..1
-      else
+      local d = laser_data[i]
+      raw_d[i] = d
+      if d < dmin then
         norm_d[i] = 0
+      elseif d > dmax then
+        norm_d[i] = 100        
+      else
+        norm_d[i] = normalize_d(d)   -- 0..100
       end
     end
   end
@@ -117,17 +133,21 @@ M.get_filtering_cb = function ()
   end
 
   local dist_callback_filter = function(d1,d2,d3,d4,d5,d6)
-    local dmin, dmax = M.dmin, M.dmax
     local laser_data = {d1,d2,d3,d4,d5,d6}
     for i = 1,N_SENSORS do
-      raw_d[i] = laser_data[i]
-      sensors_win[i][current_wp] = laser_data[i]
-      act_d[i] = act_d[i] + alpha_lpf*(median(sensors_win[i])-act_d[i])
       previous_d[i] = norm_d[i]
-      if act_d[i] > dmin and act_d[i] < dmax and MASK_ON_SENSORS[i] then
-        norm_d[i] = line(dmin, 0, dmax, 1, act_d[i])   -- 0..1
-      else
+      local d = laser_data[i]
+      raw_d[i] = d
+      sensors_win[i][current_wp] = d
+      local act = act_d[i]
+      act = act + alpha_lpf*(median(sensors_win[i])-act)
+      act_d[i] = act
+      if act < dmin then
         norm_d[i] = 0
+      elseif act > dmax then
+        norm_d[i] = 100        
+      else
+        norm_d[i] = normalize_d(act)   -- 0..100
       end
     end
     current_wp = (current_wp + 1) % WIN_SIZE
@@ -151,6 +171,9 @@ end
 -- This configures and starts the sensors. The timing budget for the measurement
 -- is read from `nvs.read("laser_range","time_budget")`, defaults to 5000.
 M.init = function()
+  -- { {xshutpin, [newadddr]}, ... }
+  --local sensors = { {16}, {17}, {2}, {14}, {12}, {13} }
+  local sensors = { {13}, {16}, {17}, {2}, {14}, {12} }
   vlring.init(sensors)
   local time_budget = nvs.read("laser_range","time_budget", 5000) or 5000
   vlring.set_measurement_timing_budget(time_budget) 

@@ -1,4 +1,9 @@
 --- Omnidirectional platform.
+-- Configuration is loaded using `nvs.read("omni", parameter)` calls, where the
+-- available parameters are:  
+--  
+--* `"maxpower"` Limits the maximum power output of the motors as percentage.
+-- Defaults to 80.0
 -- @module omni
 -- @alias M
 local omni = {}
@@ -27,12 +32,27 @@ local KI = 0.05
 local KD = 0.0
 
 -- initialize with tobot radius and drivers' pins
-device.init(ROBOT_RADIUS, 27,26,37,39, 33,25,36,38, 23,18,35,34)
+device.init(ROBOT_RADIUS, 27,26,37,39, 23,18,35,34, 33,25,36,38)
 device.set_pid(KP, KI, KD, KF)
 device.set_set_rad_per_tick(RAD_PER_TICK)
 device.set_set_wheel_diameter(WHEEL_DIAMETER)
-device.set_max_output(80.0)
 
+do
+  local function get_interpolator(x1, y1, x2, y2)
+    local p = (y2-y1)/(x2-x1)
+    return function (x)
+      return p*(x-x1)+y1
+    end
+  end
+  local normalize = get_interpolator(0, 0, MAX_SPEED_POWER, MAX_SPEED_LIN)
+  
+  local max = nvs.read('omni', 'maxpower', 80.0)
+  device.set_max_output(max)
+  
+  --- Estimated maximum speed in m/s.
+  -- This is computed from the maxpower setting.
+  omni.max_speed = normalize(max)
+end
 --- The native C firmware module.
 -- This can be used to access low level functionality from `omni_hbridge`. FIXME: docs 
 omni.device = device
