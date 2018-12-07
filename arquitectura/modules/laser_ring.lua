@@ -1,9 +1,19 @@
 --- Range sensor ring module.
+-- Configuration is loaded using `nvs.read("laser_ring", parameter)` calls, where the
+-- available parameters are:  
+--  
+--* `"time_budget"` The timing budget for the measurements, defaults to 5000.
+--
 -- @module laser_ring
 -- @alias M
 local M = {}
 
 local vlring=require('vl53ring')
+  -- { {xshutpin, [newadddr]}, ... }
+local sensors = { {13}, {16}, {17}, {2}, {14}, {12} }
+vlring.init(sensors)
+local time_budget = nvs.read("laser_ring","time_budget", 5000) or 5000
+vlring.set_measurement_timing_budget(time_budget) 
 
 local table_sort = table.sort
 
@@ -13,11 +23,6 @@ local N_SENSORS_2= N_SENSORS/2
 assert(N_SENSORS %2 == 0, 'median optimized for par N_SENSORS')
 local WIN_SIZE = 3  -- store history distance values to compute low pass filter
 local alpha_lpf = 1 -- low pass filter update parameter
-
---[[ this moved inside M.init() to free this from memory after use
--- { {xshutpin, [newadddr]}, ... }
-local sensors = {{16}, {17}, {2}, {14},{12}, {13}}
---]]
 
 -- VARIABLES
 local norm_d = {0, 0, 0, 0, 0, 0}       -- normalized measurements
@@ -109,10 +114,10 @@ local median = function (numlist)
   return numlist[math.ceil(#numlist/2)]
 end
 --]]
--- version optimizada para #numlist == N_SENSORS
+-- version optimizada para #numlist == N_SENSORS, par
 local median = function (numlist)
   table_sort(numlist)
-  return (numlist[N_SENSORS_2] + numlist[N_SENSORS_2]) / 2
+  return (numlist[N_SENSORS_2] + numlist[N_SENSORS_2+1]) / 2
 end
 
 --- Factory for a filtering range callback.
@@ -126,7 +131,7 @@ M.get_filtering_cb = function ()
 
   -- init sensors window
   for i=1,N_SENSORS do
-    sensors_win[i] = {WIN_SIZE}     -- create a new row
+    sensors_win[i] = {}     -- create a new row
     for j=1,WIN_SIZE do
       sensors_win[i][j] = 0
     end
@@ -165,18 +170,6 @@ M.enable = function (on)
   else
     vlring.get_continuous(nil)
   end
-end
-
---- Initialization.
--- This configures and starts the sensors. The timing budget for the measurement
--- is read from `nvs.read("laser_range","time_budget")`, defaults to 5000.
-M.init = function()
-  -- { {xshutpin, [newadddr]}, ... }
-  --local sensors = { {16}, {17}, {2}, {14}, {12}, {13} }
-  local sensors = { {13}, {16}, {17}, {2}, {14}, {12} }
-  vlring.init(sensors)
-  local time_budget = nvs.read("laser_range","time_budget", 5000) or 5000
-  vlring.set_measurement_timing_budget(time_budget) 
 end
 
 return M

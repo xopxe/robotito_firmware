@@ -1,4 +1,16 @@
 --- Module for the apds9960 color/proximity/gesture sensor. 
+-- Color definitions and setings are loaded using `nvs.read("color_sensor", parameter)` 
+-- calls, where the available parameters are:  
+--  
+-- * `"min_sat"` If the saturaion is below this, color is 'unknown' (default is 24)  
+-- * `"min_val"` If the value is below this, color is 'black' (default is 40)  
+-- * `"max_val"` If the value is above this, color is 'white' (default is 270)  
+-- * `"min_h_red"`, `"max_h_red"` Hue range for 'red' (default is 351, 359)  
+-- * `"min_h_yellow"`, `"max_h_yellow"` Hue range for 'yellow' (default is 22, 65)   
+-- * `"min_h_green"`, `"max_h_green"` ` Hue range for 'green' (default is 159, 180)   
+-- * `"min_h_blue"`, `"max_h_blue"` ` Hue range for 'blue' (default is 209, 215)   
+-- * `"min_h_magenta"`, `"max_h_magenta"` ` Hue range for 'magenta' (default is 255, 300)  
+--
 -- @module apds
 -- @alias M
 local M = {}
@@ -7,6 +19,8 @@ local led_pin = pio.GPIO32
 pio.pin.setdir(pio.OUTPUT, led_pin)
 
 local apds9960 = assert(require('apds9960'))
+
+local refcount_color_cb = 0
 
 M.proximity = {}
 --- The native C firmware module.
@@ -40,7 +54,9 @@ M.proximity.threshold.enable = function (on, period, threshold, hysteresis)
     hysteresis = hysteresis or nvs.read("proximity_sensor","hysteresis", 3) or 3
     apds9960.proximity.get_dist_thresh(period, threshold, hysteresis,
       M.proximity.threshold.cb.call)
+    apds9960.color.enable(true)
   else
+    apds9960.color.enable(false)
     apds9960.proximity.get_dist_thresh(nil)
   end
 end
@@ -80,7 +96,15 @@ M.color.change.enable = function (on, period)
   if on then
     period = period or nvs.read("color_sensor","period", 100) or 100
     apds9960.color.get_change(period, M.color.change.cb.call)
+    if refcount_color_cb == 0 then 
+      apds9960.proximity.enable(true)
+    end
+    refcount_color_cb = refcount_color_cb + 1
   else
+    refcount_color_cb = refcount_color_cb - 1
+    if refcount_color_cb == 0 then 
+      apds9960.proximity.enable(false)
+    end
     apds9960.color.get_change(nil)
   end
 end
@@ -108,49 +132,51 @@ M.color.continuous.enable = function (on, hsv)
   if on then
     local period = nvs.read("color_sensor","period", 100) or 100
     apds9960.color.get_continuous(period, M.color.continuous.cb.call, hsv)
+    if refcount_color_cb == 0 then 
+      apds9960.proximity.enable(true)
+    end
+    refcount_color_cb = refcount_color_cb + 1
   else
+    refcount_color_cb = refcount_color_cb - 1
+    if refcount_color_cb == 0 then 
+      apds9960.proximity.enable(false)
+    end
     apds9960.color.get_continuous(nil)
   end
 end
 
 
---- Initialization.
--- This configures and starts the sensors.  
--- The color sensor is configured with a color table. TODO docs.
-M.init = function()
-  local min_sat = nvs.read("color_sensor","min_sat")
-  local min_val = nvs.read("color_sensor","min_val")
-  local max_val = nvs.read("color_sensor","max_val")
+do
+  local min_sat = nvs.read("color_sensor","min_sat", 24)
+  local min_val = nvs.read("color_sensor","min_val", 40)
+  local max_val = nvs.read("color_sensor","max_val", 270)
 
   local colors = {
     {"red", 
-      nvs.read("color_sensor","min_h_red"), 
-      nvs.read("color_sensor","max_h_red"),
+      nvs.read("color_sensor","min_h_red", 351), 
+      nvs.read("color_sensor","max_h_red", 359),
     },
     {"yellow", 
-      nvs.read("color_sensor","min_h_yellow"), 
-      nvs.read("color_sensor","max_h_yellow"),
+      nvs.read("color_sensor","min_h_yellow", 22), 
+      nvs.read("color_sensor","max_h_yellow", 65),
     },
     {"green", 
-      nvs.read("color_sensor","min_h_green"), 
-      nvs.read("color_sensor","max_h_green"),
+      nvs.read("color_sensor","min_h_green", 159), 
+      nvs.read("color_sensor","max_h_green", 180),
     },
     {"blue", 
-      nvs.read("color_sensor","min_h_blue"), 
-      nvs.read("color_sensor","max_h_blue"),
+      nvs.read("color_sensor","min_h_blue", 209), 
+      nvs.read("color_sensor","max_h_blue", 215),
     },
     {"magenta", 
-      nvs.read("color_sensor","min_h_magenta"), 
-      nvs.read("color_sensor","max_h_magenta"),
+      nvs.read("color_sensor","min_h_magenta", 255), 
+      nvs.read("color_sensor","max_h_magenta", 300),
     },
   }
 
   assert(apds9960.init())
   assert(apds9960.color.set_color_table(colors))
   assert(apds9960.color.set_sv_limits(min_sat,min_val,max_val))
-
-  assert(apds9960.proximity.enable())
-  assert(apds9960.color.enable())
 end
 
 return M

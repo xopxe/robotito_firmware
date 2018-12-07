@@ -1,4 +1,9 @@
 --- LED ring.
+-- Configuration is loaded using `nvs.read("led_ring", parameter)` calls, where the
+-- available parameters are:  
+--  
+--* `"power"` max power to use, in the 0..255 range. Defaults to 20
+--
 -- @module led_ring
 -- @alias M
 local M = {}
@@ -13,7 +18,6 @@ local segment_length  -- setup in M.set_power
 local neo = neopixel.attach(neopixel.WS2812B, ledpin, M.n_leds)
 
 local colors  -- setup in M.set_power
-local colors_message  -- setup in M.set_power
 
 M.set_color_table = function (c, f)
   colors = c
@@ -33,11 +37,6 @@ M.set_power = function( power )
     {power//2, 0, power//2},
   }
   M.set_color_table(c)
-  colors_message = {
-    {power, 0, 0}, -- NO OBJECT
-    {0, power, 0},
-    {0, 0, power},
-  }
 end
 
 --- Sets all pixels.
@@ -90,7 +89,7 @@ end
 
 --- Controls a segment.
 -- The 6 segments can be assigned a color.
---@param segment Index in the 1..6 range.
+-- @param segment Index in the 1..6 range.
 -- @param r red value in the 0..255 range. Defaults to 0.
 -- @param g green value in the 0..255 range. Defaults to 0.
 -- @param b blue value in the 0..255 range. Defaults to 0.
@@ -109,13 +108,6 @@ M.update = function ()
   neo:update()
 end
 
---- Initialization.
--- This configures the LED ring.
---@param power max power to use, in the 0..255 range. If nor provided, will 
---be read from `nvs.read("led_ring","power")`, defaults to 20.
-M.init = function (power)
-  M.set_power( power or nvs.read("led_ring","power", 20) or 20 )
-end
-
+M.set_power( nvs.read("led_ring","power", 20)
 
 return M

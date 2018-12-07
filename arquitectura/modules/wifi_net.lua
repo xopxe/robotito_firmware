@@ -108,7 +108,7 @@ M.cb = require'cb_list'.get_list()
 -- The system reads the configuration parameters from the config table, and if
 -- the table or some parameter is ommitted it will get it from 
 -- nvs.read('wifi', parameter). The parameters are:  
---* `'mode'`: either 'ap' or 'sta', defaults ot 'ap'  
+--* `'mode'`: either 'ap' or 'sta', defaults ot 'none' (disabled)  
 --* `'ssid'`: the wireless network ssid  
 --* `'passwd'`: the wireless network password  
 --* `'channel'`: defaults to 0 (auto)  
@@ -124,10 +124,11 @@ M.cb = require'cb_list'.get_list()
 M.init = function (conf)
   conf = conf or {}
   --local iface_config = {}
-  conf.mode = conf.mode or nvs.read("wifi","mode", "ap") or "ap"
-  conf.ssid = conf.ssid or nvs.read("wifi","ssid") 
-  conf.passwd = conf.passwd or nvs.read("wifi","passwd")
-  conf.channel = conf.channel or nvs.read("wifi","channel", 0) or 0
+  conf.mode = conf.mode or nvs.read("wifi","mode", "none")
+  conf.ssid = conf.ssid or 
+    nvs.read("wifi","ssid", "robotito"..((robot or {}).id or '')) 
+  conf.passwd = conf.passwd or nvs.read("wifi","passwd", "robotito")
+  conf.channel = conf.channel or nvs.read("wifi","channel", 0)
 
   print ('wifi mode:'..conf.mode
     ,'ssid:'..conf.ssid
@@ -135,15 +136,15 @@ M.init = function (conf)
 
   --local rc_config = {}
   conf.udp_port = conf.udp_port or 
-    nvs.read("wifi","udp_port", 2018) or 2018
+    nvs.read("wifi","udp_port", 2018)
   conf.udp_announce_port = conf.udp_announce_port or 
-    nvs.read("wifi","udp_announce_port", 2018) or 2018
+    nvs.read("wifi","udp_announce_port", 2018)
   conf.broadcast = conf.broadcast or 
-    nvs.read("wifi","broadcast", '255.255.255.255') or '255.255.255.255'
+    nvs.read("wifi","broadcast", '255.255.255.255')
   conf.announce_interval = conf.announce_interval or 
-    nvs.read("wifi","announce_interval", 10) or 10
+    nvs.read("wifi","announce_interval", 10)
   conf.receive_timeout = conf.receive_timeout or 
-    nvs.read("wifi","receive_timeout", -1) or -1
+    nvs.read("wifi","receive_timeout", -1)
 
   print('listen port:'..conf.udp_port
     ,'timeout:'..tostring(conf.receive_timeout))
@@ -151,23 +152,25 @@ M.init = function (conf)
     ,'bcast:'..conf.broadcast
     ,'interval:'..tostring(conf.announce_interval))
 
-  try(
-    function() 
-      local my_ip = start_network(conf) --(iface_config)
-      start_rc(my_ip, conf) --rc_config)
-    end,
-    print, 
-    function() 
-      print("Network:", wifi_status)
-      print("Announcer:", 
-        (M.thr_announcement and thread.status(M.thr_announcement)))
-      print("Receiver:", 
-        (M.thr_receiver and thread.status(M.thr_receiver)))
-      if wifi_status ~= 'online' then 
-        wifi_status = 'offline' 
+  if conf.mode ~= "none" then
+    try(
+      function() 
+        local my_ip = start_network(conf) --(iface_config)
+        start_rc(my_ip, conf) --rc_config)
+      end,
+      print, 
+      function() 
+        print("Network:", wifi_status)
+        print("Announcer:", 
+          (M.thr_announcement and thread.status(M.thr_announcement)))
+        print("Receiver:", 
+          (M.thr_receiver and thread.status(M.thr_receiver)))
+        if wifi_status ~= 'online' then 
+          wifi_status = 'offline' 
+        end
       end
-    end
-  )
+    )
+  end
 end
 
 return M
