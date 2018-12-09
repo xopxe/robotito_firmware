@@ -12,20 +12,14 @@ local dump_color_change = function(name, s, v)
   print('! color:'..tostring(name), 'sv:', s, v)
 end
 
-color.light(true) --power on led
-
-color.continuous.cb.append(dump_rgb)
-color.change.cb.append(dump_color_change)
+color.rgb_cb.append(dump_rgb)
+color.color_cb.append(dump_color_change)
 
 print('Start color monitoring for '..TEST_SEC..'s')
-color.continuous.enable(true, true)
-color.change.enable(true)
+color.enable(true)
 
 -- run for TEST_SEC seconds
 tmr.sleepms(TEST_SEC*1000)
 
 print('Done color monitoring')
-color.continuous.enable(false)
-color.change.enable(false)
-
-color.light(false)
+color.enable(false)

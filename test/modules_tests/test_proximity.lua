@@ -8,13 +8,13 @@ local dump_dist = function(b)
   print('close:', b)
 end
 
-proximity.threshold.cb.append(dump_dist)
+proximity.cb.append(dump_dist)
 
 print('Start proximity monitoring for '..TEST_SEC..'s')
-proximity.threshold.enable(true)
+proximity.enable(true)
 
 -- run for TEST_SEC seconds
 tmr.sleepms(TEST_SEC*1000)
 
 print('Done proximity monitoring')
-proximity.threshold.enable(false)
+proximity.enable(false)

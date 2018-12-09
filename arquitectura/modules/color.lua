@@ -15,12 +15,8 @@
 -- @alias M
 local M = {}
 
--- Configure LED illumination
-local led_pin = pio.GPIO32
-pio.pin.setdir(pio.OUTPUT, led_pin)
-
 -- Configure apds9960 color sensor
-local apds9960 = require('apds9960')
+local apds9960 = require('apds9960robotitorobotito')
 assert(apds9960.init())
 do
   local min_sat = nvs.read("color_sensor","min_sat", 24)
@@ -54,86 +50,41 @@ do
   assert(apds9960.color.set_sv_limits(min_sat,min_val,max_val))
 end
 
-local refcount_color_cb = 0
-
 --- The native C firmware module.
 -- This can be used to access low level functionality from `apds9960.color`. FIXME: docs 
 M.device = apds9960.color
 
---- Control the LED light for the color sensor.
--- @param on true to switch on, false to switch off.
-M.light = function (on)
-  if on then pio.pin.sethigh(led_pin)
-  else pio.pin.setlow(led_pin) end
-end
-
-M.change = {}
-
---- The callback module for the color change sensor.
+--- The callback the color change.
 -- This is a callback list attached to the color sensor, see @{cb_list}.
 -- The callback will be called with `(color, s, v)`  
 -- `* color`: one of "red", "yellow", "green", "blue", "magenta", "black", 
 -- "white", "unknown"  
 -- `* s,v`: 0..255  
 -- @usage local local color = require'color'
---color.change.cb.append( function (color, s, v) print(color, s, v) end )
-M.change.cb = require'cb_list'.get_list()
+--color.color_cb.append( function (color, s, v) print(color, s, v) end )
+M.color_cb = require'cb_list'.get_list()
+apds9960.color.set_color_callback(M.color_cb.call)
 
---- Enables the color change callback.
--- When enabled, color changes will trigger @{M.change.cb}.  
--- @param on true value to enable, false value to disable.
--- @param period Sampling period in ms, if omitted is read from 
--- `nvs.read("color_sensor","period")`, deafults to 100. 
-M.change.enable = function (on, period)
-  if on then
-    period = period or nvs.read("color_sensor","period", 100) or 100
-    apds9960.color.get_change(period, M.color.change.cb.call)
-    if refcount_color_cb == 0 then 
-      apds9960.proximity.enable(true)
-    end
-    refcount_color_cb = refcount_color_cb + 1
-  else
-    refcount_color_cb = refcount_color_cb - 1
-    if refcount_color_cb == 0 then 
-      apds9960.proximity.enable(false)
-    end
-    apds9960.color.get_change(nil)
-  end
-end
-
-M.continuous = {}
-
---- The callback module for the color monitoring sensor.
+--- The callback for the RGBA dump.
 -- This is a callback list attached to the color sensor, see @{cb_list}. 
--- The callback will be called with `(r,g,b,a [,h,s,v, color])`  
--- hsv will be provided if HSV mode enabled (see @{M.continuous.enable})  
+-- The callback will be called with `(r,g,b,a)`  
 -- * `r,g,b,a` : 16 bits  
--- * `h`: 0..360  
--- * `s,v`: 0..255  
--- * `color`: one of "red", "yellow", "green", "blue", "magenta", "black", 
--- "white", "unknown" 
 -- @usage local local color = require'color'
 --color.continuous.cb.append( function (r, g, b, a) print(r, g, b, a) end )
-M.continuous.cb = require'cb_list'.get_list()
+M.rgb_cb = require'cb_list'.get_list()
+apds9960.color.set_rgb_callback(M.rgb_cb.call)
 
---- Enables the color monitoring callback. 
--- See @{M.continuous.cb}. The period in ms to use is read from `nvs.read("color_sensor","period")`, deafults to 100.  
+--- Enables the callbacks.
+-- When enabled, the driver will trigger @{color_cb} and @{rgb_cb}.  
 -- @param on true value to enable, false value to disable.
--- @param hsv true to set HSV mode (see @{M.continuous.cb})
-M.continuous.enable = function (on, hsv)
+-- @param period Sampling period in ms, if omitted is read from 
+-- `nvs.read("color_sensor","period")`, deafults to 500. 
+M.enable = function (on, period)
   if on then
-    local period = nvs.read("color_sensor","period", 100) or 100
-    apds9960.color.get_continuous(period, M.color.continuous.cb.call, hsv)
-    if refcount_color_cb == 0 then 
-      apds9960.proximity.enable(true)
-    end
-    refcount_color_cb = refcount_color_cb + 1
+    period = period or nvs.read("color_sensor","period", 500)
+    apds9960.color.enable(true)
   else
-    refcount_color_cb = refcount_color_cb - 1
-    if refcount_color_cb == 0 then 
-      apds9960.proximity.enable(false)
-    end
-    apds9960.color.get_continuous(nil)
+    apds9960.color.enable(false)
   end
 end
 

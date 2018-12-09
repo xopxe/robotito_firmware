@@ -95,16 +95,8 @@
 <h2><a href="#Functions">Functions</a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#light">light (on)</a></td>
-	<td class="summary">Control the LED light for the color sensor.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#M.change.enable">M.change.enable (on, period)</a></td>
-	<td class="summary">Enables the color change callback.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#M.continuous.enable">M.continuous.enable (on, hsv)</a></td>
-	<td class="summary">Enables the color monitoring callback.</td>
+	<td class="name" nowrap><a href="#enable">enable (on, period)</a></td>
+	<td class="summary">Enables the callbacks.</td>
 	</tr>
 </table>
 <h2><a href="#Fields">Fields</a></h2>
@@ -114,12 +106,12 @@
 	<td class="summary">The native C firmware module.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#M.change.cb">M.change.cb</a></td>
-	<td class="summary">The callback module for the color change sensor.</td>
+	<td class="name" nowrap><a href="#color_cb">color_cb</a></td>
+	<td class="summary">The callback the color change.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#M.continuous.cb">M.continuous.cb</a></td>
-	<td class="summary">The callback module for the color monitoring sensor.</td>
+	<td class="name" nowrap><a href="#rgb_cb">rgb_cb</a></td>
+	<td class="summary">The callback for the RGBA dump.</td>
 	</tr>
 </table>
 
@@ -131,32 +123,12 @@
 
     <dl class="function">
     <dt>
-    <a name = "light"></a>
-    <strong>light (on)</strong>
+    <a name = "enable"></a>
+    <strong>enable (on, period)</strong>
     </dt>
     <dd>
-    Control the LED light for the color sensor.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">on</span>
-         true to switch on, false to switch off.
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "M.change.enable"></a>
-    <strong>M.change.enable (on, period)</strong>
-    </dt>
-    <dd>
-    Enables the color change callback.
- When enabled, color changes will trigger <a href="../modules/color.html#M.change.cb">M.change.cb</a>.
+    Enables the callbacks.
+ When enabled, the driver will trigger <a href="../modules/color.html#color_cb">color_cb</a> and <a href="../modules/color.html#rgb_cb">rgb_cb</a>.
 
 
     <h3>Parameters:</h3>
@@ -166,31 +138,7 @@
         </li>
         <li><span class="parameter">period</span>
          Sampling period in ms, if omitted is read from
- <code>nvs.read(&quot;color_sensor&quot;,&quot;period&quot;)</code>, deafults to 100.
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "M.continuous.enable"></a>
-    <strong>M.continuous.enable (on, hsv)</strong>
-    </dt>
-    <dd>
-    Enables the color monitoring callback. <br/>
- See <a href="../modules/color.html#M.continuous.cb">M.continuous.cb</a>. The period in ms to use is read from <code>nvs.read(&quot;color_sensor&quot;,&quot;period&quot;)</code>, deafults to 100.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">on</span>
-         true value to enable, false value to disable.
-        </li>
-        <li><span class="parameter">hsv</span>
-         true to set HSV mode (see <a href="../modules/color.html#M.continuous.cb">M.continuous.cb</a>)
+ <code>nvs.read(&quot;color_sensor&quot;,&quot;period&quot;)</code>, deafults to 500.
         </li>
     </ul>
 
@@ -219,11 +167,11 @@
 
 </dd>
     <dt>
-    <a name = "M.change.cb"></a>
-    <strong>M.change.cb</strong>
+    <a name = "color_cb"></a>
+    <strong>color_cb</strong>
     </dt>
     <dd>
-    The callback module for the color change sensor.
+    The callback the color change.
  This is a callback list attached to the color sensor, see <a href="../modules/cb_list.html#">cb_list</a>.
  The callback will be called with <code>(color, s, v)</code> <br/>
  <code>* color</code>: one of "red", "yellow", "green", "blue", "magenta", "black",
@@ -238,24 +186,19 @@
     <h3>Usage:</h3>
     <ul>
         <pre class="example"><span class="keyword">local</span> <span class="keyword">local</span> color = <span class="global">require</span><span class="string">'color'</span>
-color.change.cb.append( <span class="keyword">function</span> (color, s, v) <span class="global">print</span>(color, s, v) <span class="keyword">end</span> )</pre>
+color.color_cb.append( <span class="keyword">function</span> (color, s, v) <span class="global">print</span>(color, s, v) <span class="keyword">end</span> )</pre>
     </ul>
 
 </dd>
     <dt>
-    <a name = "M.continuous.cb"></a>
-    <strong>M.continuous.cb</strong>
+    <a name = "rgb_cb"></a>
+    <strong>rgb_cb</strong>
     </dt>
     <dd>
-    The callback module for the color monitoring sensor.
+    The callback for the RGBA dump.
  This is a callback list attached to the color sensor, see <a href="../modules/cb_list.html#">cb_list</a>.
- The callback will be called with <code>(r,g,b,a [,h,s,v, color])</code> <br/>
- hsv will be provided if HSV mode enabled (see <a href="../modules/color.html#M.continuous.enable">M.continuous.enable</a>) <br/>
- * <code>r,g,b,a</code> : 16 bits <br/>
- * <code>h</code>: 0..360 <br/>
- * <code>s,v</code>: 0..255 <br/>
- * <a href="../modules/color.html#">color</a>: one of "red", "yellow", "green", "blue", "magenta", "black",
- "white", "unknown"
+ The callback will be called with <code>(r,g,b,a)</code> <br/>
+ * <code>r,g,b,a</code> : 16 bits
 
 
 
@@ -276,7 +219,7 @@ color.continuous.cb.append( <span class="keyword">function</span> (r, g, b, a) <
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2018-12-09 15:51:20 </i>
+<i style="float:right;">Last updated 2018-12-09 17:42:51 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>
