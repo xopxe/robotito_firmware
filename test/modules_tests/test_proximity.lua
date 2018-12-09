@@ -2,10 +2,7 @@
 
 local TEST_SEC = 10 -- test for 10 seconds
 
-local apds = require('apds')
-apds.init()
-
-local proximity = apds.proximity
+local proximity = require('proximity')
 
 local dump_dist = function(b)
   print('close:', b)

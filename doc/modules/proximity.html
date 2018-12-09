@@ -1,0 +1,197 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>Reference</title>
+    <link rel="stylesheet" href="../ldoc.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>robotito firmware</h1>
+
+<ul>
+  <li><a href="../index.html">Index</a></li>
+</ul>
+
+<h2>Contents</h2>
+<ul>
+<li><a href="#Functions">Functions</a></li>
+<li><a href="#Fields">Fields</a></li>
+</ul>
+
+
+<h2>Modules</h2>
+<ul class="nowrap">
+  <li><a href="../modules/robot.html">robot</a></li>
+  <li><a href="../modules/omni.html">omni</a></li>
+  <li><a href="../modules/color.html">color</a></li>
+  <li><strong>proximity</strong></li>
+  <li><a href="../modules/laser_ring.html">laser_ring</a></li>
+  <li><a href="../modules/led_ring.html">led_ring</a></li>
+  <li><a href="../modules/cb_list.html">cb_list</a></li>
+  <li><a href="../modules/wifi_net.html">wifi_net</a></li>
+</ul>
+<h2>Scripts</h2>
+<ul class="nowrap">
+  <li><a href="../scripts/autorun.html">autorun</a></li>
+  <li><a href="../scripts/main_ahsm.html">main_ahsm</a></li>
+</ul>
+<h2>Topics</h2>
+<ul class="">
+  <li><a href="../topics/README.md.html">README</a></li>
+</ul>
+<h2>Examples</h2>
+<ul class="nowrap">
+  <li><a href="../examples/test_color.lua.html">test_color.lua</a></li>
+  <li><a href="../examples/test_proximity.lua.html">test_proximity.lua</a></li>
+  <li><a href="../examples/test_laser_ring.lua.html">test_laser_ring.lua</a></li>
+  <li><a href="../examples/test_led_ring.lua.html">test_led_ring.lua</a></li>
+  <li><a href="../examples/test_wifi.lua.html">test_wifi.lua</a></li>
+  <li><a href="../examples/test_omni.lua.html">test_omni.lua</a></li>
+  <li><a href="../examples/test_ahsm.lua.html">test_ahsm.lua</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+<h1>Module <code>proximity</code></h1>
+<p>Downward facing proximity sensor.</p>
+<p>
+ This modeule is used to detect when the robot is picked up.</p>
+
+
+<h2><a href="#Functions">Functions</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#M.threshold.enable">M.threshold.enable (on, period, threshold, hysteresis)</a></td>
+	<td class="summary">Enables the proximity threshold callback.</td>
+	</tr>
+</table>
+<h2><a href="#Fields">Fields</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#device">device</a></td>
+	<td class="summary">The native C firmware module.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#M.threshold.cb">M.threshold.cb</a></td>
+	<td class="summary">The callback module for the proximity sensor.</td>
+	</tr>
+</table>
+
+<br/>
+<br/>
+
+
+    <h2 class="section-header "><a name="Functions"></a>Functions</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "M.threshold.enable"></a>
+    <strong>M.threshold.enable (on, period, threshold, hysteresis)</strong>
+    </dt>
+    <dd>
+    Enables the proximity threshold callback.
+ When enabled, proximity changes will trigger <a href="../modules/proximity.html#M.threshold.cb">M.threshold.cb</a>.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">on</span>
+         true value to enable, false value to disable.
+        </li>
+        <li><span class="parameter">period</span>
+         Sampling period in ms, if omitted is read from
+ <code>nvs.read(&quot;proximity_sensor&quot;,&quot;period&quot;)</code>, defaults to 100.
+        </li>
+        <li><span class="parameter">threshold</span>
+         proximity reference value, if omitted is read from
+ <code>nvs.read(&quot;proximity_sensor&quot;,&quot;threshold&quot;)</code> (defaults to 250, about 2cm)
+        </li>
+        <li><span class="parameter">hysteresis</span>
+         if omitted is read from <code>nvs.read(&quot;proximity_sensor&quot;,&quot;hysteresis&quot;)</code>
+ (defaults to 3)
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Fields"></a>Fields</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "device"></a>
+    <strong>device</strong>
+    </dt>
+    <dd>
+    The native C firmware module.
+ This can be used to access low level functionality from <code>apds9969.proximity</code>. FIXME: docs
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "M.threshold.cb"></a>
+    <strong>M.threshold.cb</strong>
+    </dt>
+    <dd>
+    The callback module for the proximity sensor.
+ This is a callback list attached to the proximity sensor, see <a href="../modules/cb_list.html#">cb_list</a>.
+ This call triggers on threshold crossing, see <a href="../modules/proximity.html#M.threshold.enable">M.threshold.enable</a>.
+ The parameter of the callback is a boolean which is true when the object is close.
+
+
+    <ul>
+        <li><span class="parameter">v</span>
+         true if distance is greater than threshold, false otherwise.
+        </li>
+    </ul>
+
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> <span class="keyword">local</span> proximity = <span class="global">require</span> <span class="string">'proximity'</span>
+proximity.threshold.cb.append( <span class="keyword">function</span> (v) <span class="global">print</span>(<span class="string">"close:"</span>, v) <span class="keyword">end</span> )</pre>
+    </ul>
+
+</dd>
+</dl>
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
+<i style="float:right;">Last updated 2018-12-09 15:51:20 </i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>

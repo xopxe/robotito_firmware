@@ -2,10 +2,7 @@
 
 local TEST_SEC = 10 -- test for 10 seconds
 
-local apds = require('apds')
-apds.init()
-
-local color = apds.color
+local color = require('color')
 
 local dump_rgb = function(r,g,b,a,h,s,v, name)
   print('argb:', a, r, g, b,'hsvc:', h, s, v, name)

@@ -7,7 +7,8 @@ readme = "README.md"
 file = {
     "arquitectura/modules/robot.lua", 
     "arquitectura/modules/omni.lua", 
-    "arquitectura/modules/apds.lua",
+    "arquitectura/modules/color.lua",
+    "arquitectura/modules/proximity.lua",
     "arquitectura/modules/laser_ring.lua", 
     "arquitectura/modules/led_ring.lua", 
     "arquitectura/modules/cb_list.lua", 

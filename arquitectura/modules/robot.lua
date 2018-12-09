@@ -7,22 +7,18 @@
 local M = {}
 
 --- Unique ID of the robot.
--- Read from nvs.read("robot","id").
+-- Read from `nvs.read("robot","id")`, defaults to 0.
 M.id = nvs.read("robot","id", 0)
 
-
---- Omni platform. This points to @{omni}
+--- @{omni}-directional mobility platform.
 M.omni = require('omni')
 M.omni.enable()
 
---- Downward facing apds sensor. This points to @{apds}
-M.apds = require('apds')
+--- Downard facing @{color} sensor.
+M.color = require('color')
 
---- Color sensor. This points to @{apds}.color
-M.color = M.apds.color
-
---- Proximity sensor. This points to @{apds}.proximity
-M.floor = M.apds.proximity
+--- Downard facing @{proximity} sensor. 
+M.floor = require('proximity')
 
 --- Distance sensor ring. This points to @{laser_ring}
 M.laser_ring = require('laser_ring')
@@ -30,7 +26,7 @@ M.laser_ring = require('laser_ring')
 --- UI LED ring. This points to @{led_ring}
 M.led_ring = require'led_ring'
 
---- WiFi network susbsystem. This points to @{wifi_net}
+--- WiFi UDP network susbsystem. This points to @{wifi_net}
 M.wifi_net = require('wifi_net')
 M.wifi_net.init()
 
