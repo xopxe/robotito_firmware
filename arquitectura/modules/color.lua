@@ -89,13 +89,13 @@ M.change.enable = function (on, period)
     period = period or nvs.read("color_sensor","period", 100) or 100
     apds9960.color.get_change(period, M.color.change.cb.call)
     if refcount_color_cb == 0 then 
-      apds9960.proximity.enable(true)
+      apds9960.color.enable(true)
     end
     refcount_color_cb = refcount_color_cb + 1
   else
     refcount_color_cb = refcount_color_cb - 1
     if refcount_color_cb == 0 then 
-      apds9960.proximity.enable(false)
+      apds9960.color.enable(false)
     end
     apds9960.color.get_change(nil)
   end
@@ -125,13 +125,13 @@ M.continuous.enable = function (on, hsv)
     local period = nvs.read("color_sensor","period", 100) or 100
     apds9960.color.get_continuous(period, M.color.continuous.cb.call, hsv)
     if refcount_color_cb == 0 then 
-      apds9960.proximity.enable(true)
+      apds9960.color.enable(true)
     end
     refcount_color_cb = refcount_color_cb + 1
   else
     refcount_color_cb = refcount_color_cb - 1
     if refcount_color_cb == 0 then 
-      apds9960.proximity.enable(false)
+      apds9960.color.enable(false)
     end
     apds9960.color.get_continuous(nil)
   end
