@@ -11,12 +11,15 @@
 -- * `"min_h_blue"`, `"max_h_blue"` ` Hue range for 'blue' (default is 209, 215)   
 -- * `"min_h_magenta"`, `"max_h_magenta"` ` Hue range for 'magenta' (default is 255, 300)  
 --
+-- These parameters are used in low-level calls, and are the native 
+-- 16 bits values FIXME
+--
 -- @module color
 -- @alias M
 local M = {}
 
 -- Configure apds9960 color sensor
-local apds9960 = require('apds9960robotitorobotito')
+local apds9960 = require('apds9960r')
 assert(apds9960.init())
 do
   local min_sat = nvs.read("color_sensor","min_sat", 24)
@@ -68,7 +71,7 @@ apds9960.color.set_color_callback(M.color_cb.call)
 --- The callback for the RGBA dump.
 -- This is a callback list attached to the color sensor, see @{cb_list}. 
 -- The callback will be called with `(r,g,b,a)`  
--- * `r,g,b,a` : 16 bits  
+-- * `r,g,b,a` : 16 bits    
 -- @usage local local color = require'color'
 --color.continuous.cb.append( function (r, g, b, a) print(r, g, b, a) end )
 M.rgb_cb = require'cb_list'.get_list()
@@ -81,8 +84,8 @@ apds9960.color.set_rgb_callback(M.rgb_cb.call)
 -- `nvs.read("color_sensor","period")`, deafults to 500. 
 M.enable = function (on, period)
   if on then
-    period = period or nvs.read("color_sensor","period", 500)
-    apds9960.color.enable(true)
+    period = period or nvs.read("color_sensor","period", 200)
+    apds9960.color.enable(period)
   else
     apds9960.color.enable(false)
   end

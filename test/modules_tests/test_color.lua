@@ -1,25 +1,26 @@
 --- Test color sensor.
 
-local TEST_SEC = 10 -- test for 10 seconds
+local TEST_SEC = 100000 -- test for 10 seconds
 
 local color = require('color')
 
-local dump_rgb = function(r,g,b,a,h,s,v, name)
-  print('argb:', a, r, g, b,'hsvc:', h, s, v, name)
+
+local dump_rgb = function(r,g,b,a, hsv)
+  print('rgba:', r, g, b, a, 'hsv:')
 end
 
-local dump_color_change = function(name, s, v)
-  print('! color:'..tostring(name), 'sv:', s, v)
+local dump_color_change = function(name, h, s, v)
+  print('COLOR:'..tostring(name), 'hsv:', h, s, v)
 end
 
-color.rgb_cb.append(dump_rgb)
+color.rgb_cb.append(print) --dump_rgb)
 color.color_cb.append(dump_color_change)
 
 print('Start color monitoring for '..TEST_SEC..'s')
 color.enable(true)
 
 -- run for TEST_SEC seconds
-tmr.sleepms(TEST_SEC*1000)
+tmr.sleep(TEST_SEC)
 
 print('Done color monitoring')
 color.enable(false)
