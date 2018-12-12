@@ -19,8 +19,8 @@
 local M = {}
 
 -- Configure apds9960 color sensor
-local apds9960 = require('apds9960r')
-assert(apds9960.init())
+local apds9960r = require('apds9960r')
+assert(apds9960r.init())
 do
   local min_sat = nvs.read("color_sensor","min_sat", 24)
   local min_val = nvs.read("color_sensor","min_val", 40)
@@ -49,13 +49,13 @@ do
     },
   }
 
-  assert(apds9960.color.set_color_table(colors))
-  assert(apds9960.color.set_sv_limits(min_sat,min_val,max_val))
+  assert(apds9960r.color.set_color_table(colors))
+  assert(apds9960r.color.set_sv_limits(min_sat,min_val,max_val))
 end
 
 --- The native C firmware module.
 -- This can be used to access low level functionality from `apds9960.color`. FIXME: docs 
-M.device = apds9960.color
+M.device = apds9960r.color
 
 --- The callback the color change.
 -- This is a callback list attached to the color sensor, see @{cb_list}.
@@ -66,7 +66,7 @@ M.device = apds9960.color
 -- @usage local local color = require'color'
 --color.color_cb.append( function (color, s, v) print(color, s, v) end )
 M.color_cb = require'cb_list'.get_list()
-apds9960.color.set_color_callback(M.color_cb.call)
+apds9960r.color.set_color_callback(M.color_cb.call)
 
 --- The callback for the RGBA dump.
 -- This is a callback list attached to the color sensor, see @{cb_list}. 
@@ -75,7 +75,7 @@ apds9960.color.set_color_callback(M.color_cb.call)
 -- @usage local local color = require'color'
 --color.continuous.cb.append( function (r, g, b, a) print(r, g, b, a) end )
 M.rgb_cb = require'cb_list'.get_list()
-apds9960.color.set_rgb_callback(M.rgb_cb.call)
+apds9960r.color.set_rgb_callback(M.rgb_cb.call)
 
 --- Enables the callbacks.
 -- When enabled, the driver will trigger @{color_cb} and @{rgb_cb}.  
@@ -85,9 +85,9 @@ apds9960.color.set_rgb_callback(M.rgb_cb.call)
 M.enable = function (on, period)
   if on then
     period = period or nvs.read("color_sensor","period", 200)
-    apds9960.color.enable(period)
+    apds9960r.color.enable(period)
   else
-    apds9960.color.enable(false)
+    apds9960r.color.enable(false)
   end
 end
 

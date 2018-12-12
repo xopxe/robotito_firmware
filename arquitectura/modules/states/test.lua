@@ -69,12 +69,12 @@ local root = ahsm.state {
   transitions = { switchon=t_on, switchoff=t_off },
   initial = s_off,
   entry = function()
-    robot.floor.threshold.cb.append(floor_event)
-    robot.floor.threshold.enable(true)
+    robot.floor.cb.append(floor_event)
+    robot.floor.enable(true)
   end,
   exit = function()
-    robot.floor.threshold.enable(false)
-    robot.floor.threshold.cb.remove(floor_event)
+    robot.floor.enable(false)
+    robot.floor.cb.remove(floor_event)
   end,  
 }
 

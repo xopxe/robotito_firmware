@@ -4,12 +4,13 @@
 -- @alias M
 local M = {}
 
-local apds9960 = assert(require('apds9960'))
-assert(apds9960.init())
+local apds9960r = assert(require('apds9960r'))
+assert(apds9960r.init())
+assert(apds9960r.enable_power())
 
 --- The native C firmware module.
 -- This can be used to access low level functionality from `apds9969.proximity`. FIXME: docs 
-M.device = apds9960.proximity
+M.device = apds9960r.proximity
 
 --- The callback module for the proximity sensor.
 -- This is a callback list attached to the proximity sensor, see @{cb_list}.
@@ -19,7 +20,7 @@ M.device = apds9960.proximity
 --proximity.cb.append( function (v) print("too close:", v) end )
 -- @param v true if distance is greater than threshold, false otherwise.
 M.cb = require'cb_list'.get_list()
-apds9960.proximity.set_callback(M.proximity.cb.call)
+apds9960r.proximity.set_callback(M.cb.call)
 
 --- Enables the proximity callback.
 -- When enabled, proximity changes will trigger @{cb}. 
@@ -36,9 +37,9 @@ M.enable = function (on, period, threshold, hysteresis)
     threshold = threshold or nvs.read("proximity_sensor","threshold", 250) or 250
     hysteresis = hysteresis or nvs.read("proximity_sensor","hysteresis", 3) or 3
 
-    apds9960.proximity.enable(period, threshold, hysteresis)
+    assert(apds9960r.proximity.enable(period, threshold, hysteresis))
   else
-    apds9960.proximity.enable(nil)
+    assert(apds9960r.proximity.enable(nil))
   end
 end
 

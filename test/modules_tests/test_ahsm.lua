@@ -6,7 +6,7 @@ robot = require 'robot'
 local ahsm = require 'ahsm'
 ahsm.get_time = os.gettime
  
-local debugger = require 'tools.debug_plain'
+local debugger = require 'debug_plain'
 ahsm.debug = debugger.out
 
 local hsm
