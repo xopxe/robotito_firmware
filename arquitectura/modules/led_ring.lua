@@ -108,6 +108,6 @@ M.update = function ()
   neo:update()
 end
 
-M.set_power( nvs.read("led_ring","power", 20)
+M.set_power( nvs.read("led_ring","power", 20))
 
 return M

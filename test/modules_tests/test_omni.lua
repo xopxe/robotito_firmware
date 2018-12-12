@@ -3,7 +3,6 @@
 
 local omni = require('omni')
 local ledr = require 'led_ring'
-ledr.init(50)
 
 local dt = 2000   --ms
 local v  = 0.05   --m/s
