@@ -84,7 +84,7 @@ apds9960r.color.set_rgb_callback(M.rgb_cb.call)
 -- `nvs.read("color_sensor","period")`, deafults to 500. 
 M.enable = function (on, period)
   if on then
-    period = period or nvs.read("color_sensor","period", 200)
+    period = period or nvs.read("color_sensor","period", 200) or 200
     apds9960r.color.enable(period)
   else
     apds9960r.color.enable(false)
