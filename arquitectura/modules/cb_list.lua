@@ -14,14 +14,14 @@ M.get_list = function ()
   local cb = { n = 0 }
   --- Append a function to the list of callbacks.
   -- The function will be called with the parameters provided to the callback. 
-  -- @param f a function to be called.
+  -- @tparam function f a function to be called.
   cb.append = function (f)
     cb[#cb+1] = f
     cb.n = #cb
   end
   --- Remove a function from the list of callbacks.
   -- The function will be called with the parameters provided to the callback. 
-  -- @param f the function to be removed.
+  -- @tparam function f the function to be removed.
   cb.remove = function (f)
     for i = 1, #cb do 
       if cb[i] == f then table.remove(cb, i) end

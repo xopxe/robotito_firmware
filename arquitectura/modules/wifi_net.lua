@@ -124,11 +124,13 @@ M.cb = require'cb_list'.get_list()
 M.init = function (conf)
   conf = conf or {}
   --local iface_config = {}
-  conf.mode = conf.mode or nvs.read("wifi","mode", "none")
+  conf.mode = conf.mode or nvs.read("wifi","mode", "none") or "none"
   conf.ssid = conf.ssid or 
     nvs.read("wifi","ssid", "robotito"..((robot or {}).id or '')) 
-  conf.passwd = conf.passwd or nvs.read("wifi","passwd", "robotito")
-  conf.channel = conf.channel or nvs.read("wifi","channel", 0)
+    or "robotito"..((robot or {}).id or '')
+  conf.passwd = conf.passwd or nvs.read("wifi","passwd", "robotito") 
+    or "robotito"
+  conf.channel = conf.channel or nvs.read("wifi","channel", 0) ot 0
 
   print ('wifi mode:'..conf.mode
     ,'ssid:'..conf.ssid
@@ -136,15 +138,15 @@ M.init = function (conf)
 
   --local rc_config = {}
   conf.udp_port = conf.udp_port or 
-    nvs.read("wifi","udp_port", 2018)
+    nvs.read("wifi","udp_port", 2018) or 2018
   conf.udp_announce_port = conf.udp_announce_port or 
-    nvs.read("wifi","udp_announce_port", 2018)
+    nvs.read("wifi","udp_announce_port", 2018) or 2018
   conf.broadcast = conf.broadcast or 
-    nvs.read("wifi","broadcast", '255.255.255.255')
+    nvs.read("wifi","broadcast", '255.255.255.255') or '255.255.255.255'
   conf.announce_interval = conf.announce_interval or 
-    nvs.read("wifi","announce_interval", 10)
+    nvs.read("wifi","announce_interval", 10) or 10
   conf.receive_timeout = conf.receive_timeout or 
-    nvs.read("wifi","receive_timeout", -1)
+    nvs.read("wifi","receive_timeout", -1) or -1
 
   print('listen port:'..conf.udp_port
     ,'timeout:'..tostring(conf.receive_timeout))

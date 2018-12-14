@@ -8,7 +8,7 @@ local M = {}
 
 --- Unique ID of the robot.
 -- Read from `nvs.read("robot","id")`, defaults to 0.
-M.id = nvs.read("robot","id", 0)
+M.id = nvs.read("robot","id", 0) or 0
 
 --- @{omni}-directional mobility platform.
 M.omni = require('omni')

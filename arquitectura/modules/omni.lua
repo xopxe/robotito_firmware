@@ -46,7 +46,7 @@ do
   end
   local normalize = get_interpolator(0, 0, MAX_SPEED_POWER, MAX_SPEED_LIN)
   
-  local max = nvs.read('omni', 'maxpower', 80.0)
+  local max = nvs.read('omni', 'maxpower', 80.0) or 80
   device.set_max_output(max)
   
   --- Estimated maximum speed in m/s.
@@ -59,10 +59,10 @@ omni.device = device
 
 --- Move the robot.
 -- @function drive
--- @param x_dot velocity on the x axis, in m/s
--- @param y_dot velocity on the y axis, in m/s
--- @param w_dot rotation angular velocity, in rad/s
--- @param phi rotation of the xy axis, in rad. Defaults to 0
+-- @tparam number x_dot velocity on the x axis, in m/s
+-- @tparam number y_dot velocity on the y axis, in m/s
+-- @tparam number w_dot rotation angular velocity, in rad/s
+-- @tparam[opt=0] number phi rotation of the xy axis, in rad. Defaults to 0
 omni.drive = device.drive
 
 --- Enable/disable motors.
@@ -78,14 +78,14 @@ omni.encoder = {}
 -- This call triggers when wheels rotate.
 -- @usage local local omni = require 'omni'
 --omni.encoder.cb.append( function (id, dir, count) print(id, count) end )
--- @param id the wheel identifier, in the 1..3 range
--- @param dir either 1 or -1, indicating the direction of the rotation
--- @param count a rotation counter in encoder ticks.
+-- @tparam integer id the wheel identifier, in the 1..3 range
+-- @tparam integer dir either 1 or -1, indicating the direction of the rotation
+-- @tparam integer count a rotation counter in encoder ticks.
 omni.encoder.cb = require'cb_list'.get_list()
 
 --- Enables the encoder callback.
 -- When enabled, wheel movement will trigger @{omni.encoder.cb}. 
--- @param on true value to enable, false value to disable.
+-- @tparam boolean on true value to enable, false value to disable.
 omni.encoder.enable = function (on)
   if on then
     device.set_encoder_callback(omni.encoder.cb.call)

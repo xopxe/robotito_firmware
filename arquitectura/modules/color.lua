@@ -59,29 +59,35 @@ M.device = apds9960r.color
 
 --- The callback the color change.
 -- This is a callback list attached to the color sensor, see @{cb_list}.
--- The callback will be called with `(color, s, v)`  
+-- The callback will be called with `(color, h, s, v)` when a color change 
+-- is detected  
 -- `* color`: one of "red", "yellow", "green", "blue", "magenta", "black", 
 -- "white", "unknown"  
+-- `* h`: 0..360  
 -- `* s,v`: 0..255  
 -- @usage local local color = require'color'
---color.color_cb.append( function (color, s, v) print(color, s, v) end )
+-- color.color_cb.append( function (color, h, s, v) print(color, h, s, v) end )
+-- color.enable(true)
 M.color_cb = require'cb_list'.get_list()
 apds9960r.color.set_color_callback(M.color_cb.call)
 
 --- The callback for the RGBA dump.
 -- This is a callback list attached to the color sensor, see @{cb_list}. 
--- The callback will be called with `(r,g,b,a)`  
+-- The callback will be called with `(r,g,b,a,h,s,v)`  
 -- * `r,g,b,a` : 16 bits    
+-- `* h`: 0..360  
+-- `* s,v`: 0..255  
 -- @usage local local color = require'color'
---color.continuous.cb.append( function (r, g, b, a) print(r, g, b, a) end )
+-- color.continuous.cb.append( function (...) print('color', ...) end )
+-- color.enable(true)
 M.rgb_cb = require'cb_list'.get_list()
 apds9960r.color.set_rgb_callback(M.rgb_cb.call)
 
 --- Enables the callbacks.
 -- When enabled, the driver will trigger @{color_cb} and @{rgb_cb}.  
--- @param on true value to enable, false value to disable.
--- @param period Sampling period in ms, if omitted is read from 
--- `nvs.read("color_sensor","period")`, deafults to 500. 
+-- @tparam boolean on true value to enable, false value to disable.
+-- @tparam[opt=200] integer period Sampling period in ms, if omitted is 
+-- read from `nvs.read("color_sensor","period")`. 
 M.enable = function (on, period)
   if on then
     period = period or nvs.read("color_sensor","period", 200) or 200

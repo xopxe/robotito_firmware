@@ -36,20 +36,20 @@ do
     angles[i] = math.pi/6 + (i-1)*intersensor
   end
 --- Sensor angles.
--- The angles at which each one sensors point. It's and array indexed byt the 
+-- The angles at which each sensor point. It's and array indexed by the 
 -- sensor number 1..6 --FIXME
   M.sensor_angles = angles
 end
 
---- Minimum range for normalization in mm.
--- See @{norm_d}. Initialized from `nvs.read("laser_range","dmin")`, 
--- defaults to 80.
+--- Minimum range for normalization in mm. (See @{norm_d}). Initialized from
+-- `nvs.read("laser_range","dmin")`.
+-- @tfield[opt=80] integer dmin 
 M.dmin = nvs.read("laser_range","dmin", 80) or 80
 local dmin = M.dmin
 
---- Maximum range for normalization in mm.
--- See @{norm_d}. Initialized from `nvs.read("laser_range","dmax")`, 
--- defaults to 600.
+--- Maximum range for normalization in mm. (See @{norm_d}). Initialized from
+-- `nvs.read("laser_range","dmax")`.
+-- @tfield[opt=600] integer dmax
 M.dmax = nvs.read("laser_range","dmax", 600) or 600
 local dmax = M.dmax
 
@@ -83,9 +83,11 @@ local normalize_d = get_interpolator(M.dmin, 0, M.dmax, 100)
 M.cb = require'cb_list'.get_list()
 
 --- Factory for a linear range callback.
--- The output is written to @{norm_d}
+-- The output is written to @{norm_d} and @{raw_d}
 -- @usage local laser=require('laser_ring')
---laser.cb.append(laser.get_reading_cb())
+-- laser.cb.append(laser.get_reading_cb())
+-- laser.cb.append(print)
+-- laser.enable(true)
 M.get_reading_cb = function ()
   local dist_callback = function(d1,d2,d3,d4,d5,d6)
     --uart.write(uart.CONSOLE, '!get_reading_cb callback\r\n')
@@ -121,9 +123,11 @@ local median = function (numlist)
 end
 
 --- Factory for a filtering range callback.
--- The output is written to @{norm_d}
+-- The output is written to @{norm_d} and @{raw_d}
 -- @usage local laser=require('laser_ring')
---laser.cb.append(laser.get_filtering_cb())
+-- laser.cb.append(laser.get_filtering_cb())
+-- laser.cb.append(print)
+-- laser.enable(true)
 M.get_filtering_cb = function ()
   local sensors_win = {}            -- create sensors readings matrix
   local current_wp = 0              -- global, curren position in the sensor readings history window
@@ -161,11 +165,13 @@ M.get_filtering_cb = function ()
 end
 
 --- Enables the range monitoring callback. 
--- See @{cb}. The period in ms to use is read from `nvs.read("laser_range","period")`, deafults to 100.  
---@param on true value to enable, false value to disable.
-M.enable = function (on)
+-- When enabled @{cb} will be triggered periodically. 
+-- @tparam boolean on true value to enable, false value to disable.
+-- @tparam[opt=100] integer period Sampling period in ms, if omitted is read
+-- from `nvs.read("laser_range","period")`
+M.enable = function (on, period)
   if on then
-    local period = nvs.read("laser_range","period", 100) or 100
+    period = period or nvs.read("laser_range","period", 100) or 100
     vlring.get_continuous(period, M.cb.call)
   else
     vlring.get_continuous(nil)

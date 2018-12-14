@@ -32,14 +32,14 @@ end
 
 -- load root state
 do
-  local rootname = nvs.read("ahsm", "root", "states.test")
+  local rootname = nvs.read("ahsm", "root", "states.test") or "states.test"
   local root = require( rootname )
   hsm = ahsm.init(root)
   robot.hsm = hsm
 end
 
 -- We must keep looping for reacting to state timeouts
-local step = nvs.read("ahsm", "timestep", 10)
+local step = nvs.read("ahsm", "timestep", 10) or 10
 while true do 
   hsm.loop()
   tmr.sleepms(step)

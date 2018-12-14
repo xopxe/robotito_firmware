@@ -18,19 +18,18 @@ M.device = apds9960r.proximity
 -- The parameter of the callback is a boolean which is true when the object is close.
 -- @usage local local proximity = require 'proximity'
 --proximity.cb.append( function (v) print("too close:", v) end )
--- @param v true if distance is greater than threshold, false otherwise.
 M.cb = require'cb_list'.get_list()
 apds9960r.proximity.set_callback(M.cb.call)
 
 --- Enables the proximity callback.
 -- When enabled, proximity changes will trigger @{cb}. 
--- @param on true value to enable, false value to disable.
--- @param period Sampling period in ms, if omitted is read from 
--- `nvs.read("proximity_sensor","period")`, defaults to 100. 
--- @param threshold proximity reference value, if omitted is read from 
--- `nvs.read("proximity_sensor","threshold")` (defaults to 250, about 2cm) 
--- @param hysteresis if omitted is read from `nvs.read("proximity_sensor","hysteresis")` 
--- (defaults to 3)
+-- @tparam boolean on true value to enable, false value to disable.
+-- @tparam[opt=100] integer period Sampling period in ms, if omitted is read
+-- from `nvs.read("proximity_sensor","period")`. 
+-- @tparam[opt=250] integer threshold proximity reference value, if omitted is 
+-- read from `nvs.read("proximity_sensor","threshold")`
+-- @tparam[opt=3] integer hysteresis if omitted is read from
+-- `nvs.read("proximity_sensor","hysteresis")` 
 M.enable = function (on, period, threshold, hysteresis)
   if on then
     period = period or nvs.read("proximity_sensor","period", 100) or 100
