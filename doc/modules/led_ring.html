@@ -92,20 +92,20 @@
 	<td class="summary">Set maximum power</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#clear">clear (r, g, b)</a></td>
+	<td class="name" nowrap><a href="#clear">clear ([r=0[, g=0[, b=0]]])</a></td>
 	<td class="summary">Sets all pixels.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#set_led">set_led (led, r, g, b)</a></td>
+	<td class="name" nowrap><a href="#set_led">set_led (led[, r=0[, g=0[, b=0]]])</a></td>
 	<td class="summary">Sets a LED to a specified color.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#set_segment">set_segment (segment, enable)</a></td>
+	<td class="name" nowrap><a href="#set_segment">set_segment (segment[, r=0[, g=0[, b=0]]])</a></td>
 	<td class="summary">Controls a segment.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#set_segment_rgb">set_segment_rgb (segment, r, g, b)</a></td>
-	<td class="summary">Controls a segment.</td>
+	<td class="name" nowrap><a href="#set_arc">set_arc (led, length[, r=0[, g=0[, b=0]]])</a></td>
+	<td class="summary">Controls an arc.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#update">update ()</a></td>
@@ -149,7 +149,7 @@
 </dd>
     <dt>
     <a name = "clear"></a>
-    <strong>clear (r, g, b)</strong>
+    <strong>clear ([r=0[, g=0[, b=0]]])</strong>
     </dt>
     <dd>
     Sets all pixels.
@@ -159,13 +159,19 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">r</span>
-         red value in the 0..255 range. Defaults to 0.
+            <span class="types"><span class="type">integer</span></span>
+         red value in the 0..255 range.
+         (<em>default</em> 0)
         </li>
         <li><span class="parameter">g</span>
-         green value in the 0..255 range. Defaults to 0.
+            <span class="types"><span class="type">integer</span></span>
+         green value in the 0..255 range.
+         (<em>default</em> 0)
         </li>
         <li><span class="parameter">b</span>
-         blue value in the 0..255 range. Defaults to 0.
+            <span class="types"><span class="type">integer</span></span>
+         blue value in the 0..255 range.
+         (<em>default</em> 0)
         </li>
     </ul>
 
@@ -176,7 +182,7 @@
 </dd>
     <dt>
     <a name = "set_led"></a>
-    <strong>set_led (led, r, g, b)</strong>
+    <strong>set_led (led[, r=0[, g=0[, b=0]]])</strong>
     </dt>
     <dd>
     Sets a LED to a specified color.
@@ -190,13 +196,19 @@
          Index in the 1..24 range
         </li>
         <li><span class="parameter">r</span>
-         red value in the 0..255 range. Defaults to 0.
+            <span class="types"><span class="type">integer</span></span>
+         red value in the 0..255 range.
+         (<em>default</em> 0)
         </li>
         <li><span class="parameter">g</span>
-         green value in the 0..255 range. Defaults to 0.
+            <span class="types"><span class="type">integer</span></span>
+         green value in the 0..255 range.
+         (<em>default</em> 0)
         </li>
         <li><span class="parameter">b</span>
-         blue value in the 0..255 range. Defaults to 0.
+            <span class="types"><span class="type">integer</span></span>
+         blue value in the 0..255 range.
+         (<em>default</em> 0)
         </li>
     </ul>
 
@@ -207,31 +219,7 @@
 </dd>
     <dt>
     <a name = "set_segment"></a>
-    <strong>set_segment (segment, enable)</strong>
-    </dt>
-    <dd>
-    Controls a segment.
- The 6 segment have a predefined color assigned.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">segment</span>
-         Index in the 1..6 range.
-        </li>
-        <li><span class="parameter">enable</span>
-         true value to enable, false to disable.
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "set_segment_rgb"></a>
-    <strong>set_segment_rgb (segment, r, g, b)</strong>
+    <strong>set_segment (segment[, r=0[, g=0[, b=0]]])</strong>
     </dt>
     <dd>
     Controls a segment.
@@ -244,13 +232,62 @@
          Index in the 1..6 range.
         </li>
         <li><span class="parameter">r</span>
-         red value in the 0..255 range. Defaults to 0.
+            <span class="types"><span class="type">integer</span> or <span class="type">boolean</span></span>
+         red value in the 0..255 range. If r is true then a
+ predefined r,g,b color will be used. If false, the segment will be switched
+ off.
+         (<em>default</em> 0)
         </li>
         <li><span class="parameter">g</span>
-         green value in the 0..255 range. Defaults to 0.
+            <span class="types"><span class="type">integer</span></span>
+         green value in the 0..255 range.
+         (<em>default</em> 0)
         </li>
         <li><span class="parameter">b</span>
-         blue value in the 0..255 range. Defaults to 0.
+            <span class="types"><span class="type">integer</span></span>
+         blue value in the 0..255 range.
+         (<em>default</em> 0)
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "set_arc"></a>
+    <strong>set_arc (led, length[, r=0[, g=0[, b=0]]])</strong>
+    </dt>
+    <dd>
+    Controls an arc.
+ Paint a set of consecutive leds.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">led</span>
+            <span class="types"><span class="type">integer</span></span>
+         Index in the 1..24 range.
+        </li>
+        <li><span class="parameter">length</span>
+            <span class="types"><span class="type">integer</span></span>
+         number of consecutive leds to paint -24..24 range.
+        </li>
+        <li><span class="parameter">r</span>
+            <span class="types"><span class="type">integer</span></span>
+         red value in the 0..255 range.
+         (<em>default</em> 0)
+        </li>
+        <li><span class="parameter">g</span>
+            <span class="types"><span class="type">integer</span></span>
+         green value in the 0..255 range.
+         (<em>default</em> 0)
+        </li>
+        <li><span class="parameter">b</span>
+            <span class="types"><span class="type">integer</span></span>
+         blue value in the 0..255 range.
+         (<em>default</em> 0)
         </li>
     </ul>
 
@@ -299,7 +336,7 @@
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2018-12-14 00:00:12 </i>
+<i style="float:right;">Last updated 2018-12-21 01:37:12 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

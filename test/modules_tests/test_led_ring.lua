@@ -1,7 +1,6 @@
 --- Test laser ring.
 
 local ledr = require 'led_ring'
-ledr.init(50)
 
 for c=1, 3 do
   local color={0,0,0}
@@ -19,7 +18,7 @@ for c=1, 3 do
   local color={0,0,0}
   color[c]=50
   for i=1, 6 do
-    ledr.set_segment_rgb(i, color[1], color[2], color[3])
+    ledr.set_segment(i, color[1], color[2], color[3])
     tmr.delayms(200)
   end
 end

@@ -10,32 +10,34 @@ local omni = {}
 
 local device = require('omni_hbridge')
 
-local WHEEL_DIAMETER = 0.038   --m
-local ROBOT_RADIUS = 0.0675 --m
+do
+  local WHEEL_DIAMETER = 0.038   --m
+  local ROBOT_RADIUS = 0.0675 --m
 
 --WHEEL_PERIMETER = WHEEL_DIAMETER*3.141592654
-local ENC_CPR = 12  --counts per revolution
-local MOTOR_REDUCTION = 50
-local TICS_PER_REVOLUTION = ENC_CPR*MOTOR_REDUCTION
-local RAD_PER_TICK = 2*math.pi / TICS_PER_REVOLUTION
+  local ENC_CPR = 12  --counts per revolution
+  local MOTOR_REDUCTION = 50
+  local TICS_PER_REVOLUTION = ENC_CPR*MOTOR_REDUCTION
+  local RAD_PER_TICK = 2*math.pi / TICS_PER_REVOLUTION
 
-local MAX_SPEED_POWER = 90 -- power % at which MAX_SPEED_TICS value is obtained
-local MAX_SPEED_TICS = 1080 --tics/s at MAX_SPEED_POWER
+  local MAX_SPEED_POWER = 90 -- power % at which MAX_SPEED_TICS is obtained
+  local MAX_SPEED_TICS = 1080 --tics/s at MAX_SPEED_POWER
 
-local MAX_SPEED_RAD = MAX_SPEED_TICS * RAD_PER_TICK  -- rad/s
-local MAX_SPEED_LIN = MAX_SPEED_RAD * WHEEL_DIAMETER / 2 -- m/s
+  local MAX_SPEED_RAD = MAX_SPEED_TICS * RAD_PER_TICK  -- rad/s
+  local MAX_SPEED_LIN = MAX_SPEED_RAD * WHEEL_DIAMETER / 2 -- m/s
 
 -- forward feed parameter
-local KF = MAX_SPEED_POWER / TICS_PER_REVOLUTION
-local KP = 0.1     --0.1/ENC_CPR
-local KI = 0.05
-local KD = 0.0
+  local KF = MAX_SPEED_POWER / TICS_PER_REVOLUTION
+  local KP = 0.1     --0.1/ENC_CPR
+  local KI = 0.05
+  local KD = 0.0
 
--- initialize with tobot radius and drivers' pins
-device.init(ROBOT_RADIUS, 27,26,37,39, 23,18,35,34, 33,25,36,38)
-device.set_pid(KP, KI, KD, KF)
-device.set_set_rad_per_tick(RAD_PER_TICK)
-device.set_set_wheel_diameter(WHEEL_DIAMETER)
+-- initialize with robot radius and drivers' pins
+  device.init(ROBOT_RADIUS, 27,26,37,39, 23,18,35,34, 33,25,36,38)
+  device.set_pid(KP, KI, KD, KF)
+  device.set_set_rad_per_tick(RAD_PER_TICK)
+  device.set_set_wheel_diameter(WHEEL_DIAMETER)
+end
 
 do
   local function get_interpolator(x1, y1, x2, y2)
@@ -45,10 +47,10 @@ do
     end
   end
   local normalize = get_interpolator(0, 0, MAX_SPEED_POWER, MAX_SPEED_LIN)
-  
+
   local max = nvs.read('omni', 'maxpower', 80.0) or 80
   device.set_max_output(max)
-  
+
   --- Estimated maximum speed in m/s.
   -- This is computed from the maxpower setting.
   omni.max_speed = normalize(max)
@@ -67,8 +69,8 @@ omni.drive = device.drive
 
 --- Enable/disable motors.
 -- @function enable
--- @param on if true value or omitted, power up. If false value then 
--- power down.
+-- @tparam[opt=true] boolean on if true value or omitted, power up. 
+-- If false value then power down.
 omni.enable = device.set_enable
 
 omni.encoder = {}
