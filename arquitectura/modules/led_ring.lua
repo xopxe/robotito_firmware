@@ -83,7 +83,7 @@ M.set_segment = function (segment, r, g, b, update)
     local color = colors[segment]
     r, g, b = color[1], color[2], color[3]
   elseif r==false then
-    local r, g, b = 0, 0, 0
+    r, g, b = 0, 0, 0
   end
   M.set_arc((segment-1)*segment_length+1, segment_length, r, g, b, update)
 end
