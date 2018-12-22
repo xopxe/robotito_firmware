@@ -76,11 +76,15 @@
 <p>LED ring.</p>
 <p>
 
-<p> Configuration is loaded using <code>nvs.read(&quot;led_ring&quot;, parameter)</code> calls, where the
+<p> All drawing is made to a buffer, and sent to the device with the <a href="../modules/led_ring.html#update">update</a>
+ call. Also, many drawing functions have an <a href="../modules/led_ring.html#update">update</a> parameter that triggers
+ an immediate update. <br/>
+ Configuration is loaded using <code>nvs.read(&quot;led_ring&quot;, parameter)</code> calls, where the
  available parameters are:  </p>
 
 <ul>
-    <li><code>&quot;power&quot;</code> max power to use, in the 0..255 range. Defaults to 20</li>
+    <li><code>&quot;power&quot;</code> max power to use, in the 0..100% range. Defaults to 20. Also can
+    be changed at runtime calling <a href="../modules/led_ring.html#set_power">set_power</a></li>
 </ul>
 </p>
 
@@ -92,24 +96,28 @@
 	<td class="summary">Set maximum power</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#clear">clear ([r=0[, g=0[, b=0]]])</a></td>
-	<td class="summary">Sets all pixels.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#set_led">set_led (led[, r=0[, g=0[, b=0]]])</a></td>
+	<td class="name" nowrap><a href="#set_led">set_led (led[, r=0[, g=0[, b=0[, update=false]]]])</a></td>
 	<td class="summary">Sets a LED to a specified color.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#set_segment">set_segment (segment[, r=0[, g=0[, b=0]]])</a></td>
+	<td class="name" nowrap><a href="#set_segment">set_segment (segment[, r=0[, g=0[, b=0[, update=false]]]])</a></td>
 	<td class="summary">Controls a segment.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#set_arc">set_arc (led, length[, r=0[, g=0[, b=0]]])</a></td>
+	<td class="name" nowrap><a href="#set_arc">set_arc (led, length[, r=0[, g=0[, b=0[, update=false]]]])</a></td>
 	<td class="summary">Controls an arc.</td>
 	</tr>
 	<tr>
+	<td class="name" nowrap><a href="#set_all">set_all ([r=0[, g=0[, b=0[, update=false]]]])</a></td>
+	<td class="summary">Sets all pixels.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#clear">clear ()</a></td>
+	<td class="summary">Clear all pixels.</td>
+	</tr>
+	<tr>
 	<td class="name" nowrap><a href="#update">update ()</a></td>
-	<td class="summary">Sends the pixel data to the device.</td>
+	<td class="summary">Sends the pixel buffer to the device.</td>
 	</tr>
 </table>
 <h2><a href="#Fields">Fields</a></h2>
@@ -138,40 +146,8 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">power</span>
-         In the 0..255 range
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "clear"></a>
-    <strong>clear ([r=0[, g=0[, b=0]]])</strong>
-    </dt>
-    <dd>
-    Sets all pixels.
-  This call is not limited by the power settings.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">r</span>
             <span class="types"><span class="type">integer</span></span>
-         red value in the 0..255 range.
-         (<em>default</em> 0)
-        </li>
-        <li><span class="parameter">g</span>
-            <span class="types"><span class="type">integer</span></span>
-         green value in the 0..255 range.
-         (<em>default</em> 0)
-        </li>
-        <li><span class="parameter">b</span>
-            <span class="types"><span class="type">integer</span></span>
-         blue value in the 0..255 range.
-         (<em>default</em> 0)
+         In the 0..100% range
         </li>
     </ul>
 
@@ -182,12 +158,10 @@
 </dd>
     <dt>
     <a name = "set_led"></a>
-    <strong>set_led (led[, r=0[, g=0[, b=0]]])</strong>
+    <strong>set_led (led[, r=0[, g=0[, b=0[, update=false]]]])</strong>
     </dt>
     <dd>
     Sets a LED to a specified color.
- The values will not be applied until <a href="../modules/led_ring.html#update">update</a> is called. This call
- is not limited by the power settings.
 
 
     <h3>Parameters:</h3>
@@ -197,18 +171,23 @@
         </li>
         <li><span class="parameter">r</span>
             <span class="types"><span class="type">integer</span></span>
-         red value in the 0..255 range.
+         red value in the 0..100% range.
          (<em>default</em> 0)
         </li>
         <li><span class="parameter">g</span>
             <span class="types"><span class="type">integer</span></span>
-         green value in the 0..255 range.
+         green value in the 0..100% range.
          (<em>default</em> 0)
         </li>
         <li><span class="parameter">b</span>
             <span class="types"><span class="type">integer</span></span>
-         blue value in the 0..255 range.
+         blue value in the 0..100% range.
          (<em>default</em> 0)
+        </li>
+        <li><span class="parameter">update</span>
+            <span class="types"><span class="type">boolean</span></span>
+         writes the buffer to the device
+         (<em>default</em> false)
         </li>
     </ul>
 
@@ -219,7 +198,7 @@
 </dd>
     <dt>
     <a name = "set_segment"></a>
-    <strong>set_segment (segment[, r=0[, g=0[, b=0]]])</strong>
+    <strong>set_segment (segment[, r=0[, g=0[, b=0[, update=false]]]])</strong>
     </dt>
     <dd>
     Controls a segment.
@@ -233,20 +212,25 @@
         </li>
         <li><span class="parameter">r</span>
             <span class="types"><span class="type">integer</span> or <span class="type">boolean</span></span>
-         red value in the 0..255 range. If r is true then a
- predefined r,g,b color will be used. If false, the segment will be switched
- off.
+         red value in the 0..100% range.
+ If r is true then a  predefined r,g,b color will be used. If false, the
+ segment will be switched off.
          (<em>default</em> 0)
         </li>
         <li><span class="parameter">g</span>
             <span class="types"><span class="type">integer</span></span>
-         green value in the 0..255 range.
+         green value in the 0..100% range.
          (<em>default</em> 0)
         </li>
         <li><span class="parameter">b</span>
             <span class="types"><span class="type">integer</span></span>
-         blue value in the 0..255 range.
+         blue value in the 0..100% range.
          (<em>default</em> 0)
+        </li>
+        <li><span class="parameter">update</span>
+            <span class="types"><span class="type">boolean</span></span>
+         writes the buffer to the device
+         (<em>default</em> false)
         </li>
     </ul>
 
@@ -257,7 +241,7 @@
 </dd>
     <dt>
     <a name = "set_arc"></a>
-    <strong>set_arc (led, length[, r=0[, g=0[, b=0]]])</strong>
+    <strong>set_arc (led, length[, r=0[, g=0[, b=0[, update=false]]]])</strong>
     </dt>
     <dd>
     Controls an arc.
@@ -276,20 +260,77 @@
         </li>
         <li><span class="parameter">r</span>
             <span class="types"><span class="type">integer</span></span>
-         red value in the 0..255 range.
+         red value in the 0..100% range.
          (<em>default</em> 0)
         </li>
         <li><span class="parameter">g</span>
             <span class="types"><span class="type">integer</span></span>
-         green value in the 0..255 range.
+         green value in the 0..100% range.
          (<em>default</em> 0)
         </li>
         <li><span class="parameter">b</span>
             <span class="types"><span class="type">integer</span></span>
-         blue value in the 0..255 range.
+         blue value in the 0..100% range.
          (<em>default</em> 0)
         </li>
+        <li><span class="parameter">update</span>
+            <span class="types"><span class="type">boolean</span></span>
+         writes the buffer to the device
+         (<em>default</em> false)
+        </li>
     </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "set_all"></a>
+    <strong>set_all ([r=0[, g=0[, b=0[, update=false]]]])</strong>
+    </dt>
+    <dd>
+    Sets all pixels.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">r</span>
+            <span class="types"><span class="type">integer</span></span>
+         red value in the 0..100% range.
+         (<em>default</em> 0)
+        </li>
+        <li><span class="parameter">g</span>
+            <span class="types"><span class="type">integer</span></span>
+         green value in the 0..100% range.
+         (<em>default</em> 0)
+        </li>
+        <li><span class="parameter">b</span>
+            <span class="types"><span class="type">integer</span></span>
+         blue value in the 0..100% range.
+         (<em>default</em> 0)
+        </li>
+        <li><span class="parameter">update</span>
+            <span class="types"><span class="type">boolean</span></span>
+         writes the buffer to the device
+         (<em>default</em> false)
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "clear"></a>
+    <strong>clear ()</strong>
+    </dt>
+    <dd>
+    Clear all pixels.
+ Powers down all the pixels.
+
+
 
 
 
@@ -301,8 +342,7 @@
     <strong>update ()</strong>
     </dt>
     <dd>
-    Sends the pixel data to the device.
- This is to be used with  <a href="../modules/led_ring.html#set_led">set_led</a>.
+    Sends the pixel buffer to the device.
 
 
 
@@ -336,7 +376,7 @@
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2018-12-21 01:37:12 </i>
+<i style="float:right;">Last updated 2018-12-22 01:43:57 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>
