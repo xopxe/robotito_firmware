@@ -18,9 +18,9 @@ ledr.clear()
 local length, c1, c2, c3
 for i=1, 24*3 do
   c1 = 50+floor(50*math.cos(2*pi*i/24))
-  c2 = 50+floor(50*cos(2*pi*(i+8)/24))
+  c2 = 50+floor(-50*cos(2*pi*(i+8)/24))
   c3 = 50+floor(50*cos(2*pi*(i+16)/24))
-  ledr.set_all(c2,c1,c3)
+  ledr.set_all(c3,c1,c2)
   length = 10+floor(7*cos(pi*i/24))
   ledr.set_arc(i, -length, c1, c2, c3)
   ledr.update()

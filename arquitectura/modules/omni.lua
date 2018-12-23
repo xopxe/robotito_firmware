@@ -10,6 +10,7 @@ local omni = {}
 
 local device = require('omni_hbridge')
 
+local MAX_SPEED_POWER, MAX_SPEED_LIN
 do
   local WHEEL_DIAMETER = 0.038   --m
   local ROBOT_RADIUS = 0.0675 --m
@@ -20,11 +21,11 @@ do
   local TICS_PER_REVOLUTION = ENC_CPR*MOTOR_REDUCTION
   local RAD_PER_TICK = 2*math.pi / TICS_PER_REVOLUTION
 
-  local MAX_SPEED_POWER = 90 -- power % at which MAX_SPEED_TICS is obtained
+  MAX_SPEED_POWER = 90 -- power % at which MAX_SPEED_TICS is obtained
   local MAX_SPEED_TICS = 1080 --tics/s at MAX_SPEED_POWER
 
   local MAX_SPEED_RAD = MAX_SPEED_TICS * RAD_PER_TICK  -- rad/s
-  local MAX_SPEED_LIN = MAX_SPEED_RAD * WHEEL_DIAMETER / 2 -- m/s
+  MAX_SPEED_LIN = MAX_SPEED_RAD * WHEEL_DIAMETER / 2 -- m/s
 
 -- forward feed parameter
   local KF = MAX_SPEED_POWER / TICS_PER_REVOLUTION

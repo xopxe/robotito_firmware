@@ -3,7 +3,6 @@
 local TEST_SEC = 10 -- test for 10 seconds
 
 local laser=require('laser_ring')
-laser.init()
 
 local dump_ranges = function(d1, d2, d3, d4, d5, d6)
   print ('dist (mm):', d1, d2, d3, d4, d5, d6)

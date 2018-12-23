@@ -17,14 +17,14 @@ local feedback_encoders = function (encoder, dir, counter)
   local leds = {}
   for i=1, 3 do 
     leds[pos[i]] = leds[pos[i]] or {0, 0, 0}
-    leds[pos[i]][i] = 255
+    leds[pos[i]][i] = 100
   end
   for i, color in pairs(leds) do
     ledr.set_led(i, color[1], color[2], color[3])
   end
   ledr.update()
 end
-ledr.set_led(1, 255, 255, 255)
+ledr.set_led(1, 100, 100, 100)
 ledr.update()
 
 omni.encoder.cb.append(feedback_encoders)

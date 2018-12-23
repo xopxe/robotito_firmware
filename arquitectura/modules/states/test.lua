@@ -10,13 +10,13 @@ local e_not_floor = { _name="NOTFLOOR" }
 
 -- semaphor states, one per color
 local s_green = ahsm.state {
-  entry = function() robot.led_ring.clear(0,100,0) end,
+  entry = function() robot.led_ring.set_all(0,100,0,true) end,
 }
 local s_yellow = ahsm.state {
-  entry = function() robot.led_ring.clear(50,50,0) end,
+  entry = function() robot.led_ring.set_all(50,50,0,true) end,
 }
 local s_red = ahsm.state {
-  entry = function() robot.led_ring.clear(100,0,0) end,
+  entry = function() robot.led_ring.set_all(100,0,0,true) end,
 }
 -- transitions for semaphor colors (on timeouts)
 local t_green = ahsm.transition {
@@ -34,7 +34,7 @@ local t_red = ahsm.transition {
 
 -- On/Off states
 local s_off = ahsm.state {
-  entry = function() robot.led_ring.clear(0,0,0) end,
+  entry = function() robot.led_ring.clear() end,
 }
 -- the On state has the semaphor embedded
 local s_on = ahsm.state {

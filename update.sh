@@ -6,38 +6,61 @@ TMP_FILE=lastrun
 
 # Information about origin files and dirs
 MODULES_DIR="arquitectura/modules"
-MODULES_AHSM_DIR="arquitectura"
-WORK_DIR="arquitectura/work"
+MODULES_AHSM_DIR="arquitectura/modules/states"
 UTILS_DIR="utils"
 AHSM_DIR="../ahsm"
+TEST_DIR="test/modules_tests"
 
 # Array of source files
 declare -a LOCAL_FILES=(
 $AHSM_DIR/ahsm.lua
-$WORK_DIR/cb_list.lua
-$WORK_DIR/laser_ring.lua
-$WORK_DIR/led_ring.lua
-$WORK_DIR/run.lua
-$WORK_DIR/omni.lua
-$WORK_DIR/robot.lua
-$WORK_DIR/fsm_on_off.lua
-$WORK_DIR/apds.lua
-$UTILS_DIR/autorun.lua
+$AHSM_DIR/tools/debug_plain.lua
+$MODULES_DIR/autorun.lua
+$MODULES_DIR/cb_list.lua
+$MODULES_DIR/color.lua
+$MODULES_DIR/laser_ring.lua
+$MODULES_DIR/led_ring.lua
+$MODULES_DIR/main_ahsm.lua
+$MODULES_DIR/omni.lua
+$MODULES_DIR/proximity.lua
+$MODULES_DIR/robot.lua
+$MODULES_DIR/wifi_net.lua
+$MODULES_AHSM_DIR/test.lua
+$TEST_DIR/test_color_display.lua
+$TEST_DIR/test_laser_ring.lua
+$TEST_DIR/test_omni.lua
+$TEST_DIR/test_wifi.lua
+$TEST_DIR/test_ahsm.lua
+$TEST_DIR/test_color.lua
+$TEST_DIR/test_led_ring.lua
+$TEST_DIR/test_proximity.lua
 )
 
 # Array of destination files
 declare -a REMOTE_FILES=(
 ahsm.lua
+debug_plain.lua
+autorun.lua
 cb_list.lua
+color.lua
 laser_ring.lua
 led_ring.lua
-main.lua
+main_ahsm.lua
 omni.lua
+proximity.lua
 robot.lua
-fsm_on_off.lua
-apds.lua
-autorun.lua
+wifi_net.lua
+states/test.lua
+test_color_display.lua
+test_laser_ring.lua
+test_omni.lua
+test_wifi.lua
+test_ahsm.lua
+test_color.lua
+test_led_ring.lua
+test_proximity.lua
 )
+
 
 # Check if the number of source and destination files are the same
 if [ ${#LOCAL_FILES[@]} -ne ${#REMOTE_FILES[@]} ]; then

@@ -74,7 +74,7 @@ local start_rc = function (my_ip, conf)
     M.thr_announcement = thread.start(function()
         while true do
           local announcement=announcement_base..' '..os.gettime()
-          print('announcing', announcement)
+          --print('announcing', announcement)
           udp_tx:send(announcement)
           thread.sleep(conf.announce_interval)
         end
@@ -92,7 +92,9 @@ end
 --- Broadcasts a message.
 -- @param msg a string.
 M.broadcast = function (msg)
-  udp_tx:send(msg)
+  if udp_tx then
+    udp_tx:send(msg)
+  end
 end
 
 --- The callback module for messages arrival.
@@ -130,7 +132,7 @@ M.init = function (conf)
     or "robotito"..((robot or {}).id or '')
   conf.passwd = conf.passwd or nvs.read("wifi","passwd", "robotito") 
     or "robotito"
-  conf.channel = conf.channel or nvs.read("wifi","channel", 0) ot 0
+  conf.channel = conf.channel or nvs.read("wifi","channel", 0) or 0
 
   print ('wifi mode:'..conf.mode
     ,'ssid:'..conf.ssid
