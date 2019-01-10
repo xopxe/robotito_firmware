@@ -3,14 +3,28 @@
 -- is loaded using `nvs.read("autorun", parameter)` calls, where the
 -- available parameters are:  
 --  
---* `"main"` The program to run. Some options are `"main_ahsm.lua"`, 
+--* `"runonce"` A program to execute only once. This parameter is set to nil
+-- just before running. This can be used to run calibration tools, like
+-- `"calibrate_color.lua"`  
+--  
+--* `"main"` The program to run. Some examples are `"main_ahsm.lua"`, 
 -- `"test_omni.lua"`, `"test_wifi.lua"`, etc.
 -- @script autorun
 
-print("Booting robotito, looking into nvs('autorun', 'main')")
+print("Booting robotito")
 
+print("Looking for a run-once program into nvs('autorun', 'runonce')")
+local runonce = nvs.read("autorun", "runonce", nil)
+if runonce then 
+  print("Run-once program:", runonce)
+  nvs.write("autorun", "runonce", nil)
+  dofile(runonce)
+else
+  print ("No run-once program set.")
+end
+
+print("Looking for a main program into nvs('autorun', 'main')")
 local main = nvs.read("autorun", "main", nil)
-
 if main then 
   print("Main program:", main)
   dofile(main)
