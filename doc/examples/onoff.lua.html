@@ -40,10 +40,10 @@
   <li><a href="../examples/test_led_ring.lua.html">test_led_ring.lua</a></li>
   <li><a href="../examples/test_wifi.lua.html">test_wifi.lua</a></li>
   <li><a href="../examples/test_omni.lua.html">test_omni.lua</a></li>
-  <li><strong>test_ahsm.lua</strong></li>
+  <li><a href="../examples/test_ahsm.lua.html">test_ahsm.lua</a></li>
   <li><a href="../examples/calibrate_color.lua.html">calibrate_color.lua</a></li>
   <li><a href="../examples/test.lua.html">test.lua</a></li>
-  <li><a href="../examples/onoff.lua.html">onoff.lua</a></li>
+  <li><strong>onoff.lua</strong></li>
   <li><a href="../examples/colorway.lua.html">colorway.lua</a></li>
 </ul>
 <h2>Modules</h2>
@@ -71,35 +71,64 @@
 
 <div id="content">
 
-    <h2>test_ahsm.lua</h2>
+    <h2>onoff.lua</h2>
 <pre>
-<span class="comment">--- Test ahsm state machine.
-</span><span class="comment">-- On and Off states, controlled by the floor proximity sensor.
-</span><span class="comment">-- When On, there's a led semaphor cycling trough colors.
+<span class="comment">--- On-floor detecting state machine.
+</span><span class="comment">-- This state machine is usefull for powering on and off the robot
+</span><span class="comment">-- when placed on the floor or picked up. It uses the proximity sensor.
+</span><span class="comment">-- To integrate, import t nd add behavior to the states.ON and states.OFF
+</span><span class="comment">-- states. Also emits events.FLOOR and events.NOTFLOOR events.
+</span><span class="comment">-- For an example usage, see <a href="../examples/colorway.lua.html#">colorway.lua</a>
 </span>
-robot = <span class="global">require</span> <span class="string">'robot'</span>
 <span class="keyword">local</span> ahsm = <span class="global">require</span> <span class="string">'ahsm'</span>
-ahsm.get_time = <span class="global">os</span>.gettime
 
-<span class="keyword">local</span> debugger = <span class="global">require</span> <span class="string">'debug_plain'</span>
-ahsm.<span class="global">debug</span> = debugger.out
+<span class="comment">-- events for proximity sensor
+</span><span class="keyword">local</span> e_floor = { _name=<span class="string">"FLOOR"</span> }
+<span class="keyword">local</span> e_not_floor = { _name=<span class="string">"NOTFLOOR"</span> }
 
-<span class="keyword">local</span> hsm
+
+<span class="comment">-- On/Off states
+</span><span class="keyword">local</span> s_off = ahsm.state {
+}
+<span class="keyword">local</span> s_on = ahsm.state {
+}
+
+<span class="comment">-- On/Off transitions on proximity events
+</span><span class="keyword">local</span> t_on = ahsm.transition {
+  src = s_off, tgt = s_on,
+  events = { e_floor },
+}
+<span class="keyword">local</span> t_off = ahsm.transition {
+  src = s_on, tgt = s_off,
+  events = { e_not_floor },
+}
+
+<span class="comment">-- callback for proximity sensor, emits events for state machine
+</span><span class="keyword">local</span> floor_event = <span class="keyword">function</span>( v )
+  <span class="keyword">if</span> v <span class="keyword">then</span>
+    robot.hsm.queue_event(e_floor)
+  <span class="keyword">else</span>
+    robot.hsm.queue_event(e_not_floor)
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
 
 <span class="comment">-- root state, embeds On/Off machine and initialization code
-</span><span class="keyword">local</span> root = <span class="global">require</span> <span class="string">'states.test'</span>
+</span><span class="keyword">local</span> hsm = ahsm.state {
+  events =  { FLOOR=e_floor, NOTFLOOR=e_not_floor },
+  states = { OFF=s_off, ON=s_on },
+  transitions = { switchon=t_on, switchoff=t_off },
+  initial = s_off,
+  entry = <span class="keyword">function</span>()
+    robot.floor.cb.append(floor_event)
+    robot.floor.enable(<span class="keyword">true</span>)
+  <span class="keyword">end</span>,
+  exit = <span class="keyword">function</span>()
+    robot.floor.enable(<span class="keyword">false</span>)
+    robot.floor.cb.remove(floor_event)
+  <span class="keyword">end</span>,
+}
 
-<span class="comment">-- start machine
-</span>hsm = ahsm.init( root )
-robot.hsm = hsm
-
-<span class="comment">-- We must keep looping for reacting to state timeouts
-</span>thread.start( <span class="keyword">function</span>()
-    <span class="keyword">while</span> <span class="keyword">true</span> <span class="keyword">do</span>
-      hsm.loop()
-      tmr.sleepms(<span class="number">10</span>)
-    <span class="keyword">end</span>
-  <span class="keyword">end</span>)</pre>
+<span class="keyword">return</span> hsm</pre>
 
 
 </div> <!-- id="content" -->

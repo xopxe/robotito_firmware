@@ -1,0 +1,262 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>Reference</title>
+    <link rel="stylesheet" href="../ldoc.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>robotito firmware</h1>
+
+<ul>
+  <li><a href="../index.html">Index</a></li>
+</ul>
+
+
+
+<h2>Examples</h2>
+<ul class="nowrap">
+  <li><a href="../examples/test_color.lua.html">test_color.lua</a></li>
+  <li><a href="../examples/test_proximity.lua.html">test_proximity.lua</a></li>
+  <li><a href="../examples/test_laser_ring.lua.html">test_laser_ring.lua</a></li>
+  <li><a href="../examples/test_led_ring.lua.html">test_led_ring.lua</a></li>
+  <li><a href="../examples/test_wifi.lua.html">test_wifi.lua</a></li>
+  <li><a href="../examples/test_omni.lua.html">test_omni.lua</a></li>
+  <li><a href="../examples/test_ahsm.lua.html">test_ahsm.lua</a></li>
+  <li><strong>calibrate_color.lua</strong></li>
+  <li><a href="../examples/test.lua.html">test.lua</a></li>
+  <li><a href="../examples/onoff.lua.html">onoff.lua</a></li>
+  <li><a href="../examples/colorway.lua.html">colorway.lua</a></li>
+</ul>
+<h2>Modules</h2>
+<ul class="nowrap">
+  <li><a href="../modules/robot.html">robot</a></li>
+  <li><a href="../modules/omni.html">omni</a></li>
+  <li><a href="../modules/color.html">color</a></li>
+  <li><a href="../modules/proximity.html">proximity</a></li>
+  <li><a href="../modules/laser_ring.html">laser_ring</a></li>
+  <li><a href="../modules/led_ring.html">led_ring</a></li>
+  <li><a href="../modules/cb_list.html">cb_list</a></li>
+  <li><a href="../modules/wifi_net.html">wifi_net</a></li>
+</ul>
+<h2>Scripts</h2>
+<ul class="nowrap">
+  <li><a href="../scripts/autorun.html">autorun</a></li>
+  <li><a href="../scripts/main_ahsm.html">main_ahsm</a></li>
+</ul>
+<h2>Topics</h2>
+<ul class="">
+  <li><a href="../topics/README.md.html">README</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+    <h2>calibrate_color.lua</h2>
+<pre>
+<span class="comment">--- Tool for calibrating the color sensor.
+</span><span class="comment">-- Start holdong the robot in your hands (not on the floor).
+</span><span class="comment">-- This program will first shortly display all the colors that
+</span><span class="comment">-- will be calibrated (red, yellow, green, blue, and magenta).
+</span><span class="comment">-- Then it will display a color, and you will have to place to
+</span><span class="comment">-- robot over a patch othe same color. When a color is detected,
+</span><span class="comment">-- The robor will briefly flash the leds and display the next color.
+</span><span class="comment">-- The calibration data will be writen to nvs system (see <a href="../modules/color.html#">color</a>).
+</span><span class="comment">-- When all colors are calibrated, the programs ends.
+</span>
+<span class="keyword">local</span> hsv_stable_count = <span class="number">5</span>  <span class="comment">--number of identical readings to claim a color
+</span><span class="keyword">local</span> colors = {<span class="string">'red'</span>,<span class="string">'yellow'</span>,<span class="string">'green'</span>,<span class="string">'blue'</span>,<span class="string">'magenta'</span>}
+
+<span class="keyword">local</span> color = <span class="global">require</span>(<span class="string">'color'</span>)
+<span class="keyword">local</span> prox = <span class="global">require</span>(<span class="string">'proximity'</span>)
+<span class="keyword">local</span> ledr = <span class="global">require</span>(<span class="string">'led_ring'</span>)
+<span class="keyword">local</span> ahsm = <span class="global">require</span>(<span class="string">'ahsm'</span>)
+ahsm.get_time = <span class="global">os</span>.gettime
+<span class="keyword">local</span> debugger = <span class="global">require</span> <span class="string">'debug_plain'</span>
+<span class="comment">--ahsm.debug = debugger.out
+</span>
+<span class="keyword">local</span> hsm
+
+<span class="keyword">local</span> n_colors = #colors
+
+<span class="keyword">for</span> i=<span class="number">1</span>, n_colors <span class="keyword">do</span>
+  <span class="keyword">local</span> name = colors[i]
+  <span class="keyword">local</span> clr = {
+    name = name,
+    r = color.color_rgb[name][<span class="number">1</span>],
+    g = color.color_rgb[name][<span class="number">2</span>],
+    b = color.color_rgb[name][<span class="number">3</span>],
+  }
+  colors[i] = clr
+<span class="keyword">end</span>
+
+<span class="keyword">local</span> <span class="keyword">function</span> welcome ()
+  <span class="global">print</span><span class="string">'We will calibrate the following colors:'</span>
+  <span class="keyword">for</span> i=<span class="number">1</span>, n_colors <span class="keyword">do</span>
+    <span class="keyword">local</span> clr = colors[i]
+    <span class="global">print</span> (i, clr.name)
+    ledr.set_arc((i-<span class="number">1</span>)*n_colors+<span class="number">1</span>, ledr.n_leds//n_colors, clr.r, clr.g, clr.b, <span class="keyword">true</span>)
+    tmr.delayms(<span class="number">200</span>)
+  <span class="keyword">end</span>
+  tmr.delayms(<span class="number">500</span>)
+<span class="keyword">end</span>
+
+<span class="keyword">local</span> e_proximity = { _name=<span class="string">"FLOOR"</span> }
+<span class="keyword">local</span> e_stable = { _name=<span class="string">"STABLE"</span> }
+
+<span class="comment">-- callback for proximity sensor, emits events for state machine
+</span><span class="keyword">local</span> floor_event = <span class="keyword">function</span>( v )
+  <span class="keyword">if</span> v <span class="keyword">then</span>
+    hsm.queue_event(e_proximity)
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+<span class="keyword">local</span> cr, cg, cb, ch, cs, cv
+<span class="keyword">local</span> hsv_count = <span class="number">0</span> <span class="comment">--number of equal h,s,v readings
+</span><span class="keyword">local</span> color_event = <span class="keyword">function</span>(r, g, b, a, h, s, v)
+  <span class="comment">--print('rgba:', r, g, b, a, 'hsv:', h, s, v)
+</span>  <span class="keyword">if</span> h==ch <span class="keyword">and</span> s==cs <span class="keyword">and</span> v==cv <span class="keyword">then</span>
+    hsv_count = hsv_count+<span class="number">1</span>
+    <span class="keyword">if</span> hsv_count == hsv_stable_count <span class="keyword">then</span>
+      hsm.queue_event(e_stable)
+    <span class="keyword">end</span>
+  <span class="keyword">else</span>
+    cr, cg, cb = r, g, b
+    ch, cs, cv = h, s, v
+    hsv_count = <span class="number">0</span>
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+<span class="keyword">local</span> <span class="keyword">function</span> create_calibrator (clr)
+  <span class="keyword">local</span> e_calibrated = {}
+  <span class="keyword">local</span> s_wait_prox = ahsm.state {
+    _name = <span class="string">'s_wait_prox'</span>,
+    entry = <span class="keyword">function</span> () <span class="global">print</span><span class="string">'wating for proximity...'</span> <span class="keyword">end</span>,
+  }
+  <span class="keyword">local</span> s_wait_stable = ahsm.state {
+    _name = <span class="string">'s_wait_stable'</span>,
+    entry = <span class="keyword">function</span> ()
+      <span class="global">print</span><span class="string">'wating for stable color...'</span>
+    <span class="keyword">end</span>,
+  }
+  <span class="keyword">local</span> s_capture_calibration = ahsm.state {
+    _name = <span class="string">'s_capture'</span>,
+    entry = <span class="keyword">function</span> ()
+      <span class="global">print</span> (<span class="string">'capturing'</span>, clr.name, ch, cs, cv)
+      nvs.write(<span class="string">'color_sensor'</span>, clr.name..<span class="string">'_h'</span>, ch)
+      nvs.write(<span class="string">'color_sensor'</span>, clr.name..<span class="string">'_s'</span>, cs)
+      nvs.write(<span class="string">'color_sensor'</span>, clr.name..<span class="string">'_v'</span>, cv)
+      ledr.set_all(cr, cg, cb, <span class="keyword">true</span>)
+      tmr.delayms(<span class="number">500</span>)
+    <span class="keyword">end</span>,
+    doo = <span class="keyword">function</span> ()
+      hsm.queue_event(e_calibrated)
+    <span class="keyword">end</span>,
+  }
+  <span class="keyword">local</span> t_proximity = ahsm.transition {
+    src = s_wait_prox, tgt = s_wait_stable,
+    events = {e_proximity},
+  }
+  <span class="keyword">local</span> t_stable = ahsm.transition {
+    src = s_wait_stable, tgt = s_capture_calibration,
+    events = {e_stable},
+  }
+  <span class="keyword">local</span> s_calibrator = ahsm.state {
+    _name = <span class="string">'s_calib_'</span>..clr.name,
+    events = {calibrated = e_calibrated},
+    entry = <span class="keyword">function</span> ()
+      <span class="global">print</span>(<span class="string">'calibrating color:'</span>, clr.name)
+      ledr.set_all(clr.r, clr.g, clr.b, <span class="keyword">true</span>)
+    <span class="keyword">end</span>,
+    exit = <span class="keyword">function</span> () <span class="global">print</span>(<span class="string">'done calibrating color:'</span>, clr.name) <span class="keyword">end</span>,
+    states = {s_wait_prox, s_wait_stable, s_capture_calibration},
+    transitions = {t_proximity, t_stable},
+    initial = s_wait_prox,
+  }
+  <span class="keyword">return</span> s_calibrator
+<span class="keyword">end</span>
+
+
+<span class="keyword">local</span> states = {}
+<span class="keyword">for</span> i=<span class="number">1</span>, n_colors <span class="keyword">do</span>
+  <span class="keyword">local</span> s_calibrator = create_calibrator(colors[i])
+  states[i] = s_calibrator
+<span class="keyword">end</span>
+<span class="keyword">local</span> transitions = {}
+<span class="keyword">for</span> i=<span class="number">1</span>, n_colors-<span class="number">1</span> <span class="keyword">do</span>
+  <span class="keyword">local</span> t_calibrator = ahsm.transition{
+    _name = <span class="string">'t_to_'</span>..colors[i+<span class="number">1</span>].name,
+    src = states[i], tgt = states[i+<span class="number">1</span>],
+    events = {states[i].events.calibrated}
+  }
+  transitions[i] = t_calibrator
+<span class="keyword">end</span>
+states[#states+<span class="number">1</span>] = ahsm.state {
+  _name = <span class="string">'calib_done'</span>,
+  entry = <span class="keyword">function</span> ()
+    <span class="global">print</span> <span class="string">'Finished calibrating'</span>
+    ledr.clear()
+    prox.enable(<span class="keyword">false</span>)
+    prox.cb.remove(floor_event)
+    color.enable(<span class="keyword">false</span>)
+    color.rgb_cb.remove(color_event)
+  <span class="keyword">end</span>,
+}
+transitions[#transitions+<span class="number">1</span>] = ahsm.transition {
+  _name = <span class="string">'finished'</span>,
+  src = states[#states-<span class="number">1</span>], tgt = states[#states],
+  events = {states[#states-<span class="number">1</span>].events.calibrated}
+}
+
+<span class="keyword">local</span> s_root = ahsm.state {
+  entry = <span class="keyword">function</span> ()
+    ledr.clear()
+    welcome()
+    prox.cb.append(floor_event)
+    prox.enable(<span class="keyword">true</span>)
+    color.rgb_cb.append(color_event)
+    color.enable(<span class="keyword">true</span>)
+  <span class="keyword">end</span>,
+  states = states,
+  transitions = transitions,
+  initial = states[<span class="number">1</span>],
+}
+
+
+hsm = ahsm.init( s_root )
+thread.start( <span class="keyword">function</span>()
+    <span class="keyword">while</span> <span class="keyword">true</span> <span class="keyword">do</span>
+      hsm.loop()
+      tmr.sleepms(<span class="number">10</span>)
+    <span class="keyword">end</span>
+  <span class="keyword">end</span>)</pre>
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
+<i style="float:right;">Last updated 2019-01-10 12:15:23 </i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>

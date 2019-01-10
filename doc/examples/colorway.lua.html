@@ -1,0 +1,179 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>Reference</title>
+    <link rel="stylesheet" href="../ldoc.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>robotito firmware</h1>
+
+<ul>
+  <li><a href="../index.html">Index</a></li>
+</ul>
+
+
+
+<h2>Examples</h2>
+<ul class="nowrap">
+  <li><a href="../examples/test_color.lua.html">test_color.lua</a></li>
+  <li><a href="../examples/test_proximity.lua.html">test_proximity.lua</a></li>
+  <li><a href="../examples/test_laser_ring.lua.html">test_laser_ring.lua</a></li>
+  <li><a href="../examples/test_led_ring.lua.html">test_led_ring.lua</a></li>
+  <li><a href="../examples/test_wifi.lua.html">test_wifi.lua</a></li>
+  <li><a href="../examples/test_omni.lua.html">test_omni.lua</a></li>
+  <li><a href="../examples/test_ahsm.lua.html">test_ahsm.lua</a></li>
+  <li><a href="../examples/calibrate_color.lua.html">calibrate_color.lua</a></li>
+  <li><a href="../examples/test.lua.html">test.lua</a></li>
+  <li><a href="../examples/onoff.lua.html">onoff.lua</a></li>
+  <li><strong>colorway.lua</strong></li>
+</ul>
+<h2>Modules</h2>
+<ul class="nowrap">
+  <li><a href="../modules/robot.html">robot</a></li>
+  <li><a href="../modules/omni.html">omni</a></li>
+  <li><a href="../modules/color.html">color</a></li>
+  <li><a href="../modules/proximity.html">proximity</a></li>
+  <li><a href="../modules/laser_ring.html">laser_ring</a></li>
+  <li><a href="../modules/led_ring.html">led_ring</a></li>
+  <li><a href="../modules/cb_list.html">cb_list</a></li>
+  <li><a href="../modules/wifi_net.html">wifi_net</a></li>
+</ul>
+<h2>Scripts</h2>
+<ul class="nowrap">
+  <li><a href="../scripts/autorun.html">autorun</a></li>
+  <li><a href="../scripts/main_ahsm.html">main_ahsm</a></li>
+</ul>
+<h2>Topics</h2>
+<ul class="">
+  <li><a href="../topics/README.md.html">README</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+    <h2>colorway.lua</h2>
+<pre>
+<span class="comment">--- Use color patches to select movement direction.
+</span><span class="comment">-- The robot will move in the direction indicated by the led lights when
+</span><span class="comment">-- detects a color patch on the floor of the same color. If you pick the
+</span><span class="comment">-- robot up it powers down.
+</span><span class="comment">-- This is a state machine to be run using <a href="../scripts/main_ahsm.html#">main_ahsm</a>. For this set
+</span><span class="comment">-- <code>nvs.write(&quot;ahsm&quot;, &quot;root&quot;, &quot;states.colorway&quot;)</code> and then run <code>dofile&apos;main_ahsm.lua</code>,
+</span><span class="comment">-- or simply set <code>nvs.write(&quot;autorun&quot;, &quot;main&quot;, &quot;main_ahsm.lua&quot;)</code> for autorun.
+</span>
+<span class="comment">-- color events
+</span><span class="keyword">local</span> e_color = {
+  [<span class="string">'yellow'</span>] = {vel = <span class="number">0.1</span>, dir = <span class="number">0.0</span>},
+  [<span class="string">'blue'</span>] = {vel = <span class="number">0.1</span>, dir = <span class="global">math</span>.pi},
+  [<span class="string">'green'</span>] = {vel = <span class="number">0.1</span>, dir = <span class="global">math</span>.pi/<span class="number">2</span>},
+  [<span class="string">'red'</span>] = {vel = <span class="number">0.1</span>, dir = <span class="number">3</span>*<span class="global">math</span>.pi/<span class="number">2</span>},
+}
+
+<span class="keyword">local</span> ahsm = <span class="global">require</span> <span class="string">'ahsm'</span>
+<span class="keyword">local</span> color = <span class="global">require</span>(<span class="string">'color'</span>)
+<span class="keyword">local</span> ledr = <span class="global">require</span> <span class="string">'led_ring'</span>
+
+<span class="keyword">local</span> onoff = <span class="global">require</span> <span class="string">'states.onoff'</span>
+
+<span class="comment">--preproccess events
+</span><span class="keyword">for</span> c, e <span class="keyword">in</span> <span class="global">pairs</span>(e_color) <span class="keyword">do</span>
+  <span class="keyword">local</span> rgb = color.color_rgb[c]
+  e.r, e.g, e.b = rgb[<span class="number">1</span>], rgb[<span class="number">2</span>], rgb[<span class="number">3</span>]
+  e.x = e.vel*<span class="global">math</span>.cos(e.dir)
+  e.y = e.vel*<span class="global">math</span>.sin(e.dir)
+  e.led = <span class="global">math</span>.floor(ledr.n_leds*e.dir/(<span class="number">2</span>*<span class="global">math</span>.pi))
+  e._name = <span class="string">"e_"</span>..c
+<span class="keyword">end</span>
+
+<span class="keyword">local</span> produce_color_event = <span class="keyword">function</span>(name)
+  robot.hsm.queue_event(e_color[name])
+<span class="keyword">end</span>
+
+<span class="keyword">local</span> s_main = ahsm.state {
+}
+<span class="keyword">local</span> transitions = {}
+<span class="keyword">for</span> c, e <span class="keyword">in</span> <span class="global">pairs</span>(e_color) <span class="keyword">do</span>
+  <span class="keyword">local</span> t_change = ahsm.transition {
+    src = s_main, tgt = s_main,
+    events = {e},
+    effect = <span class="keyword">function</span> (ev)
+      <span class="comment">--print ('!', c, ev.x, ev.y, ev.r, ev.g, ev.b)
+</span>      robot.omni.drive(ev.x, ev.y, <span class="number">0.0</span>)
+      ledr.set_all(<span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>)
+      <span class="keyword">for</span> ci, e <span class="keyword">in</span> <span class="global">pairs</span>(e_color) <span class="keyword">do</span>
+        <span class="comment">--print ('ARC', c, e.led, e.r, e.g, e.b)
+</span>        <span class="keyword">if</span> ci == c <span class="keyword">then</span>
+          ledr.set_arc(e.led-<span class="number">2</span>, <span class="number">5</span>, e.r, e.g, e.b)
+        <span class="keyword">else</span>
+          ledr.set_arc(e.led, <span class="number">1</span>, e.r, e.g, e.b)
+        <span class="keyword">end</span>
+      <span class="keyword">end</span>
+      ledr.update()
+    <span class="keyword">end</span>
+  }
+  transitions[<span class="string">'t_'</span>..c] = t_change
+<span class="keyword">end</span>
+<span class="keyword">local</span> s_on = onoff.states.ON
+<span class="keyword">local</span> s_off = onoff.states.OFF
+
+<span class="keyword">local</span> <span class="keyword">function</span> paint_leds_empty ()
+  ledr.set_all(<span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>)
+  <span class="keyword">for</span> c, e <span class="keyword">in</span> <span class="global">pairs</span>(e_color) <span class="keyword">do</span>
+    <span class="comment">--print ('ARC', c, e.led, e.r, e.g, e.b)
+</span>    ledr.set_arc(e.led, <span class="number">1</span>, e.r, e.g, e.b)
+  <span class="keyword">end</span>
+  ledr.update()
+<span class="keyword">end</span>
+
+s_off.entry = <span class="keyword">function</span> ()
+  paint_leds_empty()
+<span class="keyword">end</span>
+
+s_on.entry = <span class="keyword">function</span> ()
+  paint_leds_empty()
+  robot.omni.drive(<span class="number">0</span>, <span class="number">0</span>, <span class="number">0.0</span>)
+  robot.omni.enable(<span class="keyword">true</span>)
+  color.color_cb.append(produce_color_event)
+  color.enable(<span class="keyword">true</span>) <span class="comment">-- only enable (no dis. because it could be used by others)
+</span><span class="keyword">end</span>
+s_on.exit = <span class="keyword">function</span> ()
+  robot.omni.enable(<span class="keyword">false</span>)
+  color.enable(<span class="keyword">false</span>)
+  color.color_cb.remove(produce_color_event)
+<span class="keyword">end</span>
+s_on.states = { s_main }
+s_on.transitions = transitions
+s_on.initial = s_main
+
+<span class="keyword">return</span> onoff</pre>
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
+<i style="float:right;">Last updated 2019-01-10 12:15:23 </i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>

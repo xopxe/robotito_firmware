@@ -24,6 +24,10 @@ examples={
     "test/modules_tests/test_wifi.lua",
     "test/modules_tests/test_omni.lua",
     "test/modules_tests/test_ahsm.lua",
+    "test/modules_tests/calibrate_color.lua",
+    "arquitectura/modules/states/test.lua",
+    "arquitectura/modules/states/onoff.lua",
+    "arquitectura/modules/states/colorway.lua",
 }
 
 
