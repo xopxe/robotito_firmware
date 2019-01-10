@@ -4,7 +4,6 @@ local TEST_SEC = 100000 -- test for 10 seconds
 
 local color = require('color')
 
-
 local dump_rgb = function(r, g, b, a, h, s, v)
   print('rgba:', r, g, b, a, 'hsv:', h, s, v)
 end
@@ -24,3 +23,5 @@ tmr.sleep(TEST_SEC)
 
 print('Done color monitoring')
 color.enable(false)
+color.rgb_cb.remove(dump_rgb)
+color.color_cb.remove(dump_color_change)

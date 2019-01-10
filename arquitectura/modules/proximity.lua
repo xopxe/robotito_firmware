@@ -4,7 +4,7 @@
 -- @alias M
 local M = {}
 
-local apds9960r = assert(require('apds9960r'))
+local apds9960r = assert(require('apds9960'))
 assert(apds9960r.init())
 assert(apds9960r.enable_power())
 
