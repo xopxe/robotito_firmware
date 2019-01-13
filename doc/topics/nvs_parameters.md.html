@@ -1,0 +1,148 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>Reference</title>
+    <link rel="stylesheet" href="../ldoc.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>robotito firmware</h1>
+
+<ul>
+  <li><a href="../index.html">Index</a></li>
+</ul>
+
+
+
+<h2>Topics</h2>
+<ul class="">
+  <li><a href="../topics/README.md.html">README</a></li>
+  <li><strong>nvs_parameters</strong></li>
+</ul>
+<h2>State Machines</h2>
+<ul class="nowrap">
+  <li><a href="../state machines/test.lua.html">test.lua</a></li>
+  <li><a href="../state machines/onoff.lua.html">onoff.lua</a></li>
+  <li><a href="../state machines/colorway.lua.html">colorway.lua</a></li>
+</ul>
+<h2>Modules</h2>
+<ul class="nowrap">
+  <li><a href="../modules/robot.html">robot</a></li>
+  <li><a href="../modules/omni.html">omni</a></li>
+  <li><a href="../modules/color.html">color</a></li>
+  <li><a href="../modules/proximity.html">proximity</a></li>
+  <li><a href="../modules/laser_ring.html">laser_ring</a></li>
+  <li><a href="../modules/led_ring.html">led_ring</a></li>
+  <li><a href="../modules/cb_list.html">cb_list</a></li>
+  <li><a href="../modules/wifi_net.html">wifi_net</a></li>
+</ul>
+<h2>Scripts</h2>
+<ul class="nowrap">
+  <li><a href="../scripts/autorun.html">autorun</a></li>
+  <li><a href="../scripts/main_ahsm.html">main_ahsm</a></li>
+</ul>
+<h2>Examples</h2>
+<ul class="nowrap">
+  <li><a href="../examples/test_color.lua.html">test_color.lua</a></li>
+  <li><a href="../examples/test_proximity.lua.html">test_proximity.lua</a></li>
+  <li><a href="../examples/test_laser_ring.lua.html">test_laser_ring.lua</a></li>
+  <li><a href="../examples/test_led_ring.lua.html">test_led_ring.lua</a></li>
+  <li><a href="../examples/test_wifi.lua.html">test_wifi.lua</a></li>
+  <li><a href="../examples/test_omni.lua.html">test_omni.lua</a></li>
+  <li><a href="../examples/test_ahsm.lua.html">test_ahsm.lua</a></li>
+  <li><a href="../examples/calibrate_color.lua.html">calibrate_color.lua</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+
+<h1>Non volatile storage parameters</h1>
+
+<p>To set a values, use <code>nvs.write (namespace, key, value)</code> on th console.
+For example, to set the maximum range for the laser rangefinder ring to 55cm,
+call</p>
+
+
+<pre>
+nvs.write (<span class="string">'laser'</span>, <span class="string">'dmax'</span>, <span class="number">550</span>)
+</pre>
+
+
+<p>Most of these parameters are read on initialization, so you probably need to
+reboot for new values to take effect.</p>
+
+<p><a href="https://docs.google.com/spreadsheets/d/1eL5GefRWNlg14SHvchfIQYr1zQamI9k9hRciox3Rq5k/edit?usp=sharing">Spreadsheet format</a></p>
+
+<pre><code>  module          namespace  key                            default
+ ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  autorun.lua     autorun    runonce                        nil                   A program to execute only once. This parameter is set to nil just before running. This can be used to run calibration tools, like "calibrate_color.lua"
+                  autorun    main                           nil                   The program to run. Some examples are "main_ahsm.lua", "test_omni.lua", "test_wifi.lua", etc.
+  color.lua       color      min_sat                        24                    If the saturaion is below this, color is 'unknown'
+                  color      min_val                        40                    If the value is below this, color is 'black'
+                  color      max_val                        270                   If the value is above this, color is 'white'
+                  color      red_h,red_s,red_v              348,170,135           Hue range for 'red'
+                  color      yellow_h,yellow_s,yellow_v     70,226,228            Hue range for 'yellow'
+                  color      green_h,green_s,green_v        181,250,175           Hue range for 'green'
+                  color      blue_h,blue_s,blue_v           214,312,180           Hue range for 'blue'
+                  color      magenta_h,magenta_s,magenta_v  260,170,135           Hue range for 'magenta'
+                  color      gain                           1                     apds9960 light gain parameter
+                  color      period                         100                   integer period Sampling period in ms
+  laser_ring.lua  laser      time_budget                    5000                  The timing budget for the measurements
+                  laser      dmin                           80                    Minimum range for normalization in mm.
+                  laser      dmax                           600                   Maximum range for normalization in mm.
+                  laser      period                         100                   Sampling period in ms
+  led_ring.lua    led_ring   power                          20                    max power to use, in the 0..100% range.
+  main_ahsm.lua   ahsm       debugger                       nil                   the debug output system, like ahsm's "debug_plain"
+                  ahsm       root                           "states.test"         a composite state to be used as root for the state machine. This must be the name of library to be required, which will return an ahsm state.
+                  ahsm       timestep                       10                    ime in ms between sweeps to check for timed out transitions.
+  omni.lua        omni       maxpower                       80                    Limits the maximum power output of the motors as percentage.
+                  omni       kf                             90/1080               Feed-forward parameter of the motor control in (power% / (tics/s) )
+                  omni       kp                             0.1                   P parameter of the PID control.
+                  omni       ki                             0.05                  I parameter of the PID control
+                  omni       kd                             0                     D parameter of the PID control.
+  proximity.lua   proximity  period                         100                   Sampling period in ms
+                  proximity  threshold                      250                   proximity reference value
+                  proximity  hysteresis                     3
+  robot.lua       robot      id                             0                     Serial number. Must be set on installation
+  wifi_net.lua    wifi       node                           "none"                either 'ap' or 'sta', or 'none'
+                  wifi       ssid                           "robotito"..robot.id  the wireless network ssid
+                  wifi       passwd                         robotito              the wireless network password
+                  wifi       channel                        0
+                  wifi       udp_port                       2018                  listening port
+                  wifi       broadcast                      "255,255,255,255"     target address for the announcements
+                  wifi       udp_announce_port              2018                  announcement target port
+                  wifi       udp_announce_interval          10                    time between announcements (in s), -1 mean disabled.
+                  wifi       receive_timeout                -1                    timeout for udp reads (in sec),  -1 mean disabled
+</code></pre>
+
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
+<i style="float:right;">Last updated 2019-01-11 19:26:11 </i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>

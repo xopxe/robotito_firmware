@@ -32,14 +32,9 @@
 
 
 
-<h2>Scripts</h2>
-<ul class="nowrap">
-  <li><a href="../scripts/autorun.html">autorun</a></li>
-  <li><strong>main_ahsm</strong></li>
-</ul>
 <h2>State Machines</h2>
 <ul class="nowrap">
-  <li><a href="../state machines/test.lua.html">test.lua</a></li>
+  <li><strong>test.lua</strong></li>
   <li><a href="../state machines/onoff.lua.html">onoff.lua</a></li>
   <li><a href="../state machines/colorway.lua.html">colorway.lua</a></li>
 </ul>
@@ -53,6 +48,11 @@
   <li><a href="../modules/led_ring.html">led_ring</a></li>
   <li><a href="../modules/cb_list.html">cb_list</a></li>
   <li><a href="../modules/wifi_net.html">wifi_net</a></li>
+</ul>
+<h2>Scripts</h2>
+<ul class="nowrap">
+  <li><a href="../scripts/autorun.html">autorun</a></li>
+  <li><a href="../scripts/main_ahsm.html">main_ahsm</a></li>
 </ul>
 <h2>Topics</h2>
 <ul class="">
@@ -75,23 +75,14 @@
 
 <div id="content">
 
-<h1>Script <code>main_ahsm</code></h1>
-<p>Main program using ahsm.</p>
-<p>
+<h1>Hsm <code>test.lua</code></h1>
+<p>Test ahsm state machine.</p>
+<p> On and Off states, controlled by the floor proximity sensor.
+ When On, there's a led semaphor cycling trough colors.</p>
 
-<p> Uses state machines to control the robot. This program is intended to
- be loaded from the <a href="../scripts/autorun.html#">autorun</a> script. To achieve this, set <code>nvs.write(&quot;autorun&quot;, &quot;main&quot; &quot;main_ahsm.lua&quot;)</code>.
- This program loads and initalizes <a href="../modules/robot.html#">robot</a> and ahsm.  </p>
-
-<p> Configuration is loaded using <code>nvs.read(&quot;ahsm&quot;, parameter)</code> calls, where the
- available parameters are:  </p>
-
-<ul>
-    <li><p><code>&quot;debugger&quot;</code> the debug output system, like ahsm's "debug_plain". Defaults to nil (disabled)  </p></li>
-    <li><p><code>&quot;root&quot;</code> a composite state to be used as root for the state machine. This must be the name of library to be required, which will return an ahsm state. Defaults to "states.test"  </p></li>
-    <li><p><code>&quot;timestep&quot;</code> time in ms between sweeps to check for timed out transitions. Defaults to 10  </p></li>
-</ul>
-</p>
+<p> This is a state machine to be run using <a href="../scripts/main_ahsm.html#">main_ahsm</a>. For this set
+ <code>nvs.write(&quot;ahsm&quot;, &quot;root&quot;, &quot;states.test&quot;)</code> and then run <code>dofile&apos;main_ahsm.lua&apos;</code>,
+ or simply set <code>nvs.write(&quot;autorun&quot;, &quot;main&quot;, &quot;main_ahsm.lua&quot;)</code> for autorun.</p>
 
 
 

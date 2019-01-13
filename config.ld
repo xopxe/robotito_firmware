@@ -2,32 +2,35 @@ project = "robotito firmware"
 description = "microcontrolled robotic platform for research."
 dir='doc/'
 format = 'markdown'
+new_type("hsm","State Machines", true)
 
-readme = "README.md"
 file = {
-    "arquitectura/modules/robot.lua", 
-    "arquitectura/modules/omni.lua", 
-    "arquitectura/modules/color.lua",
-    "arquitectura/modules/proximity.lua",
-    "arquitectura/modules/laser_ring.lua", 
-    "arquitectura/modules/led_ring.lua", 
-    "arquitectura/modules/cb_list.lua", 
-    "arquitectura/modules/wifi_net.lua", 
-    "arquitectura/modules/autorun.lua", 
-    "arquitectura/modules/main_ahsm.lua", 
+  "arquitectura/modules/robot.lua", 
+  "arquitectura/modules/omni.lua", 
+  "arquitectura/modules/color.lua",
+  "arquitectura/modules/proximity.lua",
+  "arquitectura/modules/laser_ring.lua", 
+  "arquitectura/modules/led_ring.lua", 
+  "arquitectura/modules/cb_list.lua", 
+  "arquitectura/modules/wifi_net.lua", 
+  "arquitectura/modules/autorun.lua", 
+  "arquitectura/modules/main_ahsm.lua", 
+  "test/modules_tests/states/test.lua",
+  "arquitectura/modules/states/onoff.lua",
+  "arquitectura/modules/states/colorway.lua",
 }
 examples={
-    "test/modules_tests/test_color.lua", 
-    "test/modules_tests/test_proximity.lua", 
-    "test/modules_tests/test_laser_ring.lua",
-    "test/modules_tests/test_led_ring.lua",
-    "test/modules_tests/test_wifi.lua",
-    "test/modules_tests/test_omni.lua",
-    "test/modules_tests/test_ahsm.lua",
-    "test/modules_tests/calibrate_color.lua",
-    "arquitectura/modules/states/test.lua",
-    "arquitectura/modules/states/onoff.lua",
-    "arquitectura/modules/states/colorway.lua",
+  "test/modules_tests/test_color.lua", 
+  "test/modules_tests/test_proximity.lua", 
+  "test/modules_tests/test_laser_ring.lua",
+  "test/modules_tests/test_led_ring.lua",
+  "test/modules_tests/test_wifi.lua",
+  "test/modules_tests/test_omni.lua",
+  "test/modules_tests/test_ahsm.lua",
+  "test/modules_tests/calibrate_color.lua",
 }
-
+topics = {
+  "README.md", 
+	"nvs_parameters.md", 
+}
 

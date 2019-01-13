@@ -32,15 +32,10 @@
 
 
 
-<h2>Scripts</h2>
-<ul class="nowrap">
-  <li><a href="../scripts/autorun.html">autorun</a></li>
-  <li><strong>main_ahsm</strong></li>
-</ul>
 <h2>State Machines</h2>
 <ul class="nowrap">
   <li><a href="../state machines/test.lua.html">test.lua</a></li>
-  <li><a href="../state machines/onoff.lua.html">onoff.lua</a></li>
+  <li><strong>onoff.lua</strong></li>
   <li><a href="../state machines/colorway.lua.html">colorway.lua</a></li>
 </ul>
 <h2>Modules</h2>
@@ -53,6 +48,11 @@
   <li><a href="../modules/led_ring.html">led_ring</a></li>
   <li><a href="../modules/cb_list.html">cb_list</a></li>
   <li><a href="../modules/wifi_net.html">wifi_net</a></li>
+</ul>
+<h2>Scripts</h2>
+<ul class="nowrap">
+  <li><a href="../scripts/autorun.html">autorun</a></li>
+  <li><a href="../scripts/main_ahsm.html">main_ahsm</a></li>
 </ul>
 <h2>Topics</h2>
 <ul class="">
@@ -75,23 +75,13 @@
 
 <div id="content">
 
-<h1>Script <code>main_ahsm</code></h1>
-<p>Main program using ahsm.</p>
-<p>
-
-<p> Uses state machines to control the robot. This program is intended to
- be loaded from the <a href="../scripts/autorun.html#">autorun</a> script. To achieve this, set <code>nvs.write(&quot;autorun&quot;, &quot;main&quot; &quot;main_ahsm.lua&quot;)</code>.
- This program loads and initalizes <a href="../modules/robot.html#">robot</a> and ahsm.  </p>
-
-<p> Configuration is loaded using <code>nvs.read(&quot;ahsm&quot;, parameter)</code> calls, where the
- available parameters are:  </p>
-
-<ul>
-    <li><p><code>&quot;debugger&quot;</code> the debug output system, like ahsm's "debug_plain". Defaults to nil (disabled)  </p></li>
-    <li><p><code>&quot;root&quot;</code> a composite state to be used as root for the state machine. This must be the name of library to be required, which will return an ahsm state. Defaults to "states.test"  </p></li>
-    <li><p><code>&quot;timestep&quot;</code> time in ms between sweeps to check for timed out transitions. Defaults to 10  </p></li>
-</ul>
-</p>
+<h1>Hsm <code>onoff.lua</code></h1>
+<p>On-floor detecting state machine.</p>
+<p> This state machine is usefull for powering on and off the robot
+ when placed on the floor or picked up. It uses the proximity sensor.
+ To integrate, import t nd add behavior to the states.ON and states.OFF
+ states. Also emits events.FLOOR and events.NOTFLOOR events. <br/>
+ For an example of a state mechine using this, see <a href="../state machines/colorway.lua.html#">colorway.lua</a>  </p>
 
 
 
