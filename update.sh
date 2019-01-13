@@ -25,7 +25,7 @@ $MODULES_DIR/omni.lua
 $MODULES_DIR/proximity.lua
 $MODULES_DIR/robot.lua
 $MODULES_DIR/wifi_net.lua
-$MODULES_AHSM_DIR/test.lua
+$TEST_DIR/states/test.lua
 $MODULES_AHSM_DIR/onoff.lua
 $MODULES_AHSM_DIR/colorway.lua
 $TEST_DIR/test_color_display.lua

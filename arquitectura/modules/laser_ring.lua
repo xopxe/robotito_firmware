@@ -1,5 +1,5 @@
 --- Range sensor ring module.
--- Configuration is loaded using `nvs.read("laser_ring", parameter)` calls, where the
+-- Configuration is loaded using `nvs.read("laser", parameter)` calls, where the
 -- available parameters are:  
 --  
 --* `"time_budget"` The timing budget for the measurements, defaults to 5000.
@@ -12,7 +12,7 @@ local vlring=require('vl53ring')
   -- { {xshutpin, [newadddr]}, ... }
 local sensors = { {13}, {16}, {17}, {2}, {14}, {12} }
 vlring.init(sensors)
-local time_budget = nvs.read("laser_ring","time_budget", 5000) or 5000
+local time_budget = nvs.read("laser","time_budget", 5000) or 5000
 vlring.set_measurement_timing_budget(time_budget) 
 
 local table_sort = table.sort
@@ -42,15 +42,15 @@ do
 end
 
 --- Minimum range for normalization in mm. (See @{norm_d}). Initialized from
--- `nvs.read("laser_range","dmin")`.
+-- `nvs.read("laser","dmin")`.
 -- @tfield[opt=80] integer dmin 
-M.dmin = nvs.read("laser_range","dmin", 80) or 80
+M.dmin = nvs.read("laser","dmin", 80) or 80
 local dmin = M.dmin
 
 --- Maximum range for normalization in mm. (See @{norm_d}). Initialized from
--- `nvs.read("laser_range","dmax")`.
+-- `nvs.read("laser","dmax")`.
 -- @tfield[opt=600] integer dmax
-M.dmax = nvs.read("laser_range","dmax", 600) or 600
+M.dmax = nvs.read("laser","dmax", 600) or 600
 local dmax = M.dmax
 
 --- The last reading, in raw form.
@@ -168,10 +168,10 @@ end
 -- When enabled @{cb} will be triggered periodically. 
 -- @tparam boolean on true value to enable, false value to disable.
 -- @tparam[opt=100] integer period Sampling period in ms, if omitted is read
--- from `nvs.read("laser_range","period")`
+-- from `nvs.read("laser","period")`
 M.enable = function (on, period)
   if on then
-    period = period or nvs.read("laser_range","period", 100) or 100
+    period = period or nvs.read("laser","period", 100) or 100
     vlring.get_continuous(period, M.cb.call)
   else
     vlring.get_continuous(nil)

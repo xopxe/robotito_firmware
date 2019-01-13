@@ -87,9 +87,9 @@ local function create_calibrator (clr)
     _name = 's_capture',
     entry = function () 
       print ('capturing', clr.name, ch, cs, cv)
-      nvs.write('color_sensor', clr.name..'_h', ch)
-      nvs.write('color_sensor', clr.name..'_s', cs)
-      nvs.write('color_sensor', clr.name..'_v', cv)      
+      nvs.write('color', clr.name..'_h', ch)
+      nvs.write('color', clr.name..'_s', cs)
+      nvs.write('color', clr.name..'_v', cv)      
       ledr.set_all(cr, cg, cb, true)
       tmr.delayms(500)
     end,

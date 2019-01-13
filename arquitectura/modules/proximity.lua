@@ -25,16 +25,16 @@ apds9960r.proximity.set_callback(M.cb.call)
 -- When enabled, proximity changes will trigger @{cb}. 
 -- @tparam boolean on true value to enable, false value to disable.
 -- @tparam[opt=100] integer period Sampling period in ms, if omitted is read
--- from `nvs.read("proximity_sensor","period")`. 
+-- from `nvs.read("proximity","period")`. 
 -- @tparam[opt=250] integer threshold proximity reference value, if omitted is 
--- read from `nvs.read("proximity_sensor","threshold")`
+-- read from `nvs.read("proximity","threshold")`
 -- @tparam[opt=3] integer hysteresis if omitted is read from
--- `nvs.read("proximity_sensor","hysteresis")` 
+-- `nvs.read("proximity","hysteresis")` 
 M.enable = function (on, period, threshold, hysteresis)
   if on then
-    period = period or nvs.read("proximity_sensor","period", 100) or 100
-    threshold = threshold or nvs.read("proximity_sensor","threshold", 250) or 250
-    hysteresis = hysteresis or nvs.read("proximity_sensor","hysteresis", 3) or 3
+    period = period or nvs.read("proximity","period", 100) or 100
+    threshold = threshold or nvs.read("proximity","threshold", 250) or 250
+    hysteresis = hysteresis or nvs.read("proximity","hysteresis", 3) or 3
 
     assert(apds9960r.proximity.enable(period, threshold, hysteresis))
   else

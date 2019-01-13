@@ -1,4 +1,6 @@
 --- WiFi network system. 
+-- The announcements have thefollowing format:  
+-- ROBOTITO id my_ip udp_port resetreason uptime  
 -- @module wifi_net
 -- @alias M
 local M = {}
@@ -68,12 +70,12 @@ local start_rc = function (my_ip, conf)
 
   local id = (robot or {}).id or '?'
   local announcement_base = 'ROBOTITO '..tostring(id)..' '
-  ..my_ip..' '..conf.udp_port..' '..os.resetreason()
+  ..my_ip..' '..conf.udp_port..' '..os.resetreason()..' '
 
   if conf.announce_interval>0 then 
     M.thr_announcement = thread.start(function()
         while true do
-          local announcement=announcement_base..' '..os.gettime()
+          local announcement=announcement_base..os.gettime()
           --print('announcing', announcement)
           udp_tx:send(announcement)
           thread.sleep(conf.announce_interval)

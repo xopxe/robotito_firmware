@@ -1,6 +1,11 @@
--- Test ahsm state machine.
+--- Test ahsm state machine.
 -- On and Off states, controlled by the floor proximity sensor.
 -- When On, there's a led semaphor cycling trough colors.
+--  
+-- This is a state machine to be run using @{main_ahsm}. For this set
+-- `nvs.write("ahsm", "root", "states.test")` and then run `dofile'main_ahsm.lua'`, 
+-- or simply set `nvs.write("autorun", "main", "main_ahsm.lua")` for autorun.
+-- @hsm test.lua
 
 local ahsm = require 'ahsm'
 

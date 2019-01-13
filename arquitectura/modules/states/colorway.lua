@@ -2,9 +2,11 @@
 -- The robot will move in the direction indicated by the led lights when 
 -- detects a color patch on the floor of the same color. If you pick the
 -- robot up it powers down.  
+--  
 -- This is a state machine to be run using @{main_ahsm}. For this set
--- `nvs.write("ahsm", "root", "states.colorway")` and then run `dofile'main_ahsm.lua`, 
+-- `nvs.write("ahsm", "root", "states.colorway")` and then run `dofile'main_ahsm.lua'`, 
 -- or simply set `nvs.write("autorun", "main", "main_ahsm.lua")` for autorun.
+-- @hsm colorway.lua
 
 -- color events
 local e_color = {

@@ -5,7 +5,7 @@
 robot = require 'robot'
 local ahsm = require 'ahsm'
 ahsm.get_time = os.gettime
- 
+
 local debugger = require 'debug_plain'
 ahsm.debug = debugger.out
 
@@ -19,8 +19,9 @@ hsm = ahsm.init( root )
 robot.hsm = hsm
 
 -- We must keep looping for reacting to state timeouts
-while true do 
-  hsm.loop()
-  tmr.sleepms(10)
-end
-
+thread.start( function()
+    while true do 
+      hsm.loop()
+      tmr.sleepms(10)
+    end
+  end)

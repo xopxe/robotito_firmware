@@ -1,18 +1,19 @@
 --- Downward facing color sensor. 
--- Color definitions and setings are loaded using `nvs.read("color_sensor", parameter)` 
+-- Color definitions and setings are loaded using `nvs.read("color", parameter)` 
 -- calls, where the available parameters are:  
 --  
--- * `"min_sat"` If the saturaion is below this, color is 'unknown' (default is 24)  
 -- * `"min_val"` If the value is below this, color is 'black' (default is 40)  
 -- * `"max_val"` If the value is above this, color is 'white' (default is 270)  
--- * `"min_h_red"`, `"max_h_red"` Hue range for 'red' (default is 351, 359)  
--- * `"min_h_yellow"`, `"max_h_yellow"` Hue range for 'yellow' (default is 22, 65)   
--- * `"min_h_green"`, `"max_h_green"` ` Hue range for 'green' (default is 159, 180)   
--- * `"min_h_blue"`, `"max_h_blue"` ` Hue range for 'blue' (default is 209, 215)   
--- * `"min_h_magenta"`, `"max_h_magenta"` ` Hue range for 'magenta' (default is 255, 300)  
---
--- These parameters are used in low-level calls, and are the native 
--- 16 bits values FIXME
+-- * `"delta_h"` Maximum acepted h latitude (default is 10)  
+-- * `"delta_s"` Maximum acepted s latitude (default is 50)  
+-- * `"delta_v"` Maximum acepted v latitude (default is 50)  
+-- * `"max_val"` If the value is above this, color is 'white' (default is 270)  
+-- * `"red_h"`, `"red_h"`, `"red_v"` Hue range for 'red' (default is 348, 170, 135)  
+-- * `"yellow_h"`, `"yellow_h"`, `"yellow_v"` Hue range for 'yellow' (default is 70, 226, 228)  
+-- * `"green_h"`, `"green_h"`, `"green_v"` Hue range for 'green' (default is 181, 250, 175)  
+-- * `"blue_h"`, `"blue_h"`, `"blue_v"` Hue range for 'blue' (default is 214, 312, 180)  
+-- * `"magenta_h"`, `"magenta_h"`, `"magenta_v"` Hue range for 'magenta' (default is 260, 170, 135)  
+-- * `"gain"` apds9960 light gain parameter (check datasheet) (default is 1)  
 --
 -- @module color
 -- @alias M
@@ -22,42 +23,42 @@ local M = {}
 local apds9960r = require('apds9960')
 assert(apds9960r.init())
 do
-  --local min_sat = nvs.read("color_sensor","min_sat", 24)
-  local min_val = nvs.read("color_sensor","min_val", 40)
-  local max_val = nvs.read("color_sensor","max_val", 260)
-  local dh = nvs.read("color_sensor","delta_h", 10)
-  local ds = nvs.read("color_sensor","delta_s", 50)
-  local dv = nvs.read("color_sensor","delta_v", 50)
+  --local min_sat = nvs.read("color","min_sat", 24)
+  local min_val = nvs.read("color","min_val", 40)
+  local max_val = nvs.read("color","max_val", 260)
+  local dh = nvs.read("color","delta_h", 10)
+  local ds = nvs.read("color","delta_s", 50)
+  local dv = nvs.read("color","delta_v", 50)
 
   local colors = {
     {"red", 
-      nvs.read("color_sensor","red_h", 348), 
-      nvs.read("color_sensor","red_s", 170), 
-      nvs.read("color_sensor","red_v", 135), 
+      nvs.read("color","red_h", 348), 
+      nvs.read("color","red_s", 170), 
+      nvs.read("color","red_v", 135), 
     },
     {"yellow", 
-      nvs.read("color_sensor","yellow_h", 70), 
-      nvs.read("color_sensor","yellow_s", 226), 
-      nvs.read("color_sensor","yellow_v", 228), 
+      nvs.read("color","yellow_h", 70), 
+      nvs.read("color","yellow_s", 226), 
+      nvs.read("color","yellow_v", 228), 
     },
     {"green", 
-      nvs.read("color_sensor","green_h", 181), 
-      nvs.read("color_sensor","green_s", 250), 
-      nvs.read("color_sensor","green_v", 175), 
+      nvs.read("color","green_h", 181), 
+      nvs.read("color","green_s", 250), 
+      nvs.read("color","green_v", 175), 
     },
     {"blue", 
-      nvs.read("color_sensor","blue_h", 214), 
-      nvs.read("color_sensor","blue_s", 312), 
-      nvs.read("color_sensor","blue_v", 180), 
+      nvs.read("color","blue_h", 214), 
+      nvs.read("color","blue_s", 312), 
+      nvs.read("color","blue_v", 180), 
     },
     {"magenta", 
-      nvs.read("color_sensor","magenta_h", 260), 
-      nvs.read("color_sensor","magenta_s", 170), 
-      nvs.read("color_sensor","magenta_v", 135),
+      nvs.read("color","magenta_h", 260), 
+      nvs.read("color","magenta_s", 170), 
+      nvs.read("color","magenta_v", 135),
     },
   }
   
-  local gain = nvs.read("color_sensor","gain", 1) -- default 2x
+  local gain = nvs.read("color","gain", 1) -- default 2x
 
   assert(apds9960r.color.set_color_table(colors))
   assert(apds9960r.color.set_sv_limits(dh, ds, dv, min_val,max_val))
@@ -115,12 +116,12 @@ pio.pin.setdir(pio.OUTPUT, led_pin)
 --- Enables the callbacks.
 -- When enabled, the driver will trigger @{color_cb} and @{rgb_cb}.  
 -- @tparam boolean on true value to enable, false value to disable.
--- @tparam[opt=200] integer period Sampling period in ms, if omitted is 
--- read from `nvs.read("color_sensor","period")`. 
+-- @tparam[opt=100] integer period Sampling period in ms, if omitted is 
+-- read from `nvs.read("color","period")`. 
 M.enable = function (on, period)
   if on then
     pio.pin.sethigh(led_pin)
-    period = period or nvs.read("color_sensor","period", 200) or 200
+    period = period or nvs.read("color","period", 100) or 100
     apds9960r.color.enable(period)
   else
     apds9960r.color.enable(false)

@@ -5,8 +5,6 @@ local TEST_SEC = 10 -- test for 10 seconds
 local wifi_net = require('wifi_net')
 wifi_net.init()
 
-local table_concat = table.concat
-
 local dump_msg = function(msg, ip, port)
   print(ip..':'..port, msg) 
 end

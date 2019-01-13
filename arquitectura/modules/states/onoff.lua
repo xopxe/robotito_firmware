@@ -3,7 +3,8 @@
 -- when placed on the floor or picked up. It uses the proximity sensor.
 -- To integrate, import t nd add behavior to the states.ON and states.OFF 
 -- states. Also emits events.FLOOR and events.NOTFLOOR events.  
--- For an example usage, see @{colorway.lua}
+-- For an example of a state mechine using this, see @{colorway.lua}  
+-- @hsm onoff.lua
 
 local ahsm = require 'ahsm'
 
