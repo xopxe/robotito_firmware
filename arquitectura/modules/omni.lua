@@ -4,13 +4,21 @@
 --  
 --* `"maxpower"` Limits the maximum power output of the motors as percentage.
 -- Defaults to 80.0
+--  
+--* `"kf"` Feed-forward parameter of the motor control in (power% / (tics/s) ). 
+-- Defaults to 90/1080
+--  
+--* `"kp"` P parameter of the PID control. Defaults to 0.1
+--  
+--* `"ki"` I parameter of the PID control. Defaults to 0.05
+--  
+--* `"kd"` D parameter of the PID control. Defaults to 0.0
 -- @module omni
 -- @alias M
 local omni = {}
 
 local device = require('omni_hbridge')
 
-local MAX_SPEED_POWER, MAX_SPEED_LIN
 do
   local WHEEL_DIAMETER = 0.038   --m
   local ROBOT_RADIUS = 0.0675 --m
@@ -21,26 +29,25 @@ do
   local TICS_PER_REVOLUTION = ENC_CPR*MOTOR_REDUCTION
   local RAD_PER_TICK = 2*math.pi / TICS_PER_REVOLUTION
 
-  MAX_SPEED_POWER = 90 -- power % at which MAX_SPEED_TICS is obtained
+  local MAX_SPEED_POWER = 90 -- power % at which MAX_SPEED_TICS is obtained
   local MAX_SPEED_TICS = 1080 --tics/s at MAX_SPEED_POWER
 
   local MAX_SPEED_RAD = MAX_SPEED_TICS * RAD_PER_TICK  -- rad/s
-  MAX_SPEED_LIN = MAX_SPEED_RAD * WHEEL_DIAMETER / 2 -- m/s
+  local MAX_SPEED_LIN = MAX_SPEED_RAD * WHEEL_DIAMETER / 2 -- m/s
 
 -- forward feed parameter
-  local KF = MAX_SPEED_POWER / TICS_PER_REVOLUTION
-  local KP = 0.1     --0.1/ENC_CPR
-  local KI = 0.05
-  local KD = 0.0
+  local KF = MAX_SPEED_POWER / MAX_SPEED_TICS
+  KF = nvs.read("omni","kf", KF) or KF     
+  local KP = nvs.read("omni","kp", 0.1) or 0.1
+  local KI = nvs.read("omni","ki", 0.05) or 0.05
+  local KD = nvs.read("omni","kd", 0.0) or 0.0
 
 -- initialize with robot radius and drivers' pins
   device.init(ROBOT_RADIUS, 27,26,37,39, 23,18,35,34, 33,25,36,38)
   device.set_pid(KP, KI, KD, KF)
   device.set_set_rad_per_tick(RAD_PER_TICK)
   device.set_set_wheel_diameter(WHEEL_DIAMETER)
-end
-
-do
+  
   local function get_interpolator(x1, y1, x2, y2)
     local p = (y2-y1)/(x2-x1)
     return function (x)
