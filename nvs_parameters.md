@@ -1,11 +1,11 @@
 # Non volatile storage parameters
 
-To set a values, use `nvs.write (namespace, key, value)` on th console. 
+To set a value, use `nvs.write(namespace, key, value)` on the console. 
 For example, to set the maximum range for the laser rangefinder ring to 55cm, 
 call
 
 ```lua
-nvs.write ('laser', 'dmax', 550)
+nvs.write('laser', 'dmax', 550)
 ```
 
 Most of these parameters are read on initialization, so you probably need to
