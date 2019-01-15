@@ -8,7 +8,7 @@
 --* `"kf"` Feed-forward parameter of the motor control in (power% / (tics/s) ). 
 -- Defaults to 90/1080
 --  
---* `"kp"` P parameter of the PID control. Defaults to 0.1
+--* `"kp"` P parameter of the PID control. Defaults to 0.01
 --  
 --* `"ki"` I parameter of the PID control. Defaults to 0.05
 --  
@@ -38,7 +38,7 @@ do
 -- forward feed parameter
   local KF = MAX_SPEED_POWER / MAX_SPEED_TICS
   KF = nvs.read("omni","kf", KF) or KF     
-  local KP = nvs.read("omni","kp", 0.1) or 0.1
+  local KP = nvs.read("omni","kp", 0.01) or 0.01
   local KI = nvs.read("omni","ki", 0.05) or 0.05
   local KD = nvs.read("omni","kd", 0.0) or 0.0
 
