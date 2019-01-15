@@ -9,7 +9,7 @@
 local M = {}
 
 local vlring=require('vl53ring')
-  -- { {xshutpin, [newadddr]}, ... }
+-- { {xshutpin, [newadddr]}, ... }
 local sensors = { {13}, {16}, {17}, {2}, {14}, {12} }
 vlring.init(sensors)
 local time_budget = nvs.read("laser","time_budget", 5000) or 5000
