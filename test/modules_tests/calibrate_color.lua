@@ -3,14 +3,14 @@
 -- This program will first shortly display all the colors that 
 -- will be calibrated (red, yellow, green, blue, and magenta).
 -- Then it will display a color, and you will have to place the
--- robot over a patch othe same color. When a color is detected,
+-- robot over a patch of the same color. When a color is detected,
 -- The robor will briefly flash the leds and display the next color.
 -- Pick up the robot, and place it over the new patch. Repeat until
 -- all colors are calibrated,  
 --  
 -- When all colors are calibrated, the programs ends. The
 -- calibration data will be writen to nvs system (see @{color}).
--- The new calibration data will be used after restart.
+-- The new calibration data will be used after reboot.
 --
 -- A practical way of using the clibrator is setting up as to runconce:
 -- `nvs.write('autorun', 'runonce', 'calibrate_color.lua')

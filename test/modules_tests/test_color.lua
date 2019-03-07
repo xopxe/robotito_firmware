@@ -1,6 +1,6 @@
 --- Test color sensor.
 
-local TEST_SEC = 100000 -- test for 10 seconds
+local TEST_SEC = 10 -- test for 10 seconds
 
 local color = require('color')
 

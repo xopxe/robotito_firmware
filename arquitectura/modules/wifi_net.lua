@@ -1,6 +1,7 @@
 --- WiFi network system. 
--- The announcements have thefollowing format:  
--- ROBOTITO id my_ip udp_port resetreason uptime  
+-- The announcements have the following format:  
+--  
+-- ROBOTITO id my\_ip udp\_port resetreason uptime  
 -- @module wifi_net
 -- @alias M
 local M = {}
