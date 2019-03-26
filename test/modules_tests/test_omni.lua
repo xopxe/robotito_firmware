@@ -40,5 +40,6 @@ tmr.sleepms(dt)
 omni.drive(0,-v,0)
 tmr.sleepms(dt)
 
+omni.encoder.cb.remove(feedback_encoders)
 omni.enable(false)
 
