@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Path where Lua RTOS fs is stored, to use with "make flashfs"
+FS_PATH=fs
+
 # File updated after each run of this script.
 # Only the files newer than this file are copied to de destination
 TMP_FILE=lastrun
@@ -85,6 +88,7 @@ if [ ! -f $TMP_FILE ]; then
 	for i in `seq 0 $LENGTH`; do
 		echo Copying ${LOCAL_FILES[$i]} ........
 		wcc -p /dev/ttyUSB0 -up ${LOCAL_FILES[$i]} ${REMOTE_FILES[$i]}
+		install -D ${LOCAL_FILES[$i]} ${FS_PATH}/${REMOTE_FILES[$i]}
 		echo; echo
 	done
 
@@ -97,6 +101,7 @@ else
 			echo
 			echo FILE ${LOCAL_FILES[$i]} WAS MODIFIED SINCE LAST RUN OF THIS SCRIPT, IT WILL BE COPIED
 			wcc -p /dev/ttyUSB0 -up ${LOCAL_FILES[$i]} ${REMOTE_FILES[$i]}
+	    	install -D ${LOCAL_FILES[$i]} ${FS_PATH}/${REMOTE_FILES[$i]}
 			echo
 
 		fi
