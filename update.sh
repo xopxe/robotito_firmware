@@ -8,11 +8,11 @@ FS_PATH=fs
 TMP_FILE=lastrun
 
 # Information about origin files and dirs
-MODULES_DIR="arquitectura/modules"
-MODULES_AHSM_DIR="arquitectura/modules/states"
+MODULES_DIR="source"
+MODULES_AHSM_DIR="source/states"
 UTILS_DIR="utils"
 AHSM_DIR="../ahsm"
-TEST_DIR="test/modules_tests"
+TEST_DIR="source/tests"
 
 # Array of source files
 declare -a LOCAL_FILES=(
