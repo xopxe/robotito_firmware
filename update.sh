@@ -11,7 +11,7 @@ TMP_FILE=lastrun
 MODULES_DIR="source"
 MODULES_AHSM_DIR="source/states"
 UTILS_DIR="utils"
-AHSM_DIR="../ahsm"
+AHSM_DIR="ahsm"
 TEST_DIR="source/tests"
 
 # Array of source files
