@@ -80,6 +80,13 @@ fi
 LENGTH=${#LOCAL_FILES[@]}
 LENGTH=$((--LENGTH))
 
+echo;echo;echo COPYING ALL FILES TO FS\/; echo;echo
+
+for i in `seq 0 $LENGTH`; do
+	echo Copying ${LOCAL_FILES[$i]} ........
+	install -D ${LOCAL_FILES[$i]} ${FS_PATH}/${REMOTE_FILES[$i]}
+done
+
 
 if [ ! -f $TMP_FILE ]; then
 
@@ -88,7 +95,6 @@ if [ ! -f $TMP_FILE ]; then
 	for i in `seq 0 $LENGTH`; do
 		echo Copying ${LOCAL_FILES[$i]} ........
 		wcc -p /dev/ttyUSB0 -up ${LOCAL_FILES[$i]} ${REMOTE_FILES[$i]}
-		install -D ${LOCAL_FILES[$i]} ${FS_PATH}/${REMOTE_FILES[$i]}
 		echo; echo
 	done
 
@@ -101,7 +107,6 @@ else
 			echo
 			echo FILE ${LOCAL_FILES[$i]} WAS MODIFIED SINCE LAST RUN OF THIS SCRIPT, IT WILL BE COPIED
 			wcc -p /dev/ttyUSB0 -up ${LOCAL_FILES[$i]} ${REMOTE_FILES[$i]}
-	    	install -D ${LOCAL_FILES[$i]} ${FS_PATH}/${REMOTE_FILES[$i]}
 			echo
 
 		fi
