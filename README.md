@@ -15,13 +15,13 @@ The system comprises:
 
 ## Documentation
 
-There is API documentation in the `doc/` folder. 
+There is API documentation in the `doc/` folder.
 
 Other references of interest are the [ahsm](https://github.com/xopxe/ahsm) API, and the [underlying firmware's](https://github.com/whitecatboard/Lua-RTOS-ESP32/wiki)  Lua API for low level calls such as timers and threads.
 
 The configuration non-volatile variables are listed in the [nvs_parameters.md](nvs_parameters.md) file. Theres also a online [spreadsheet](https://docs.google.com/spreadsheets/d/1eL5GefRWNlg14SHvchfIQYr1zQamI9k9hRciox3Rq5k/edit?usp=sharing) avalialble.
 
-## Instalation
+## Installation
 
 After you have you robotito correctly setup and connected, use the `update.sh` script to copy the envoronment to the robot. 
 
@@ -52,7 +52,7 @@ To configure the the robot to autorun, you must set the appropiate configuration
 ```
 This will cause the `test_led_ring.lua` script to be run every time the robot is booted-up.
 
-You can also set a program to be run only once at bootup (it will reset the variable on first run, so it will no run again unless configured again). For example, this can be useful for running `calibrate_color.lua`,  a helper script that calibrates the color sensor and writes calibration data to non-volatile variables. This should be done once when the robot is setup in a new environment or the color marks are changed:
+You can also set a program to be run only once at bootup (it will reset the variable on first run, so it will no run again on reboot). For example, this can be useful for running `calibrate_color.lua`,  a helper script that calibrates the color sensor and writes calibration data to non-volatile variables. This should be done once when the robot is setup in a new environment or the color marks are changed:
 
 ```
 / > nvs.write('autorun', 'runonce', 'calibrate_color.lua')
@@ -66,7 +66,7 @@ To run an application developped as an ahsm state machine, you must setup the st
 
 ```
 / > nvs.write('autorun', 'main', 'main_ahsm.lua')
-/ > nvs.write('ahsm', 'root', 'states.colorway.lua')
+/ > nvs.write('ahsm', 'root', 'states.colorway')
 ```
 
 The `states/colorway.lua`program moves the robot in a direction indicated by color patches on the floor.
