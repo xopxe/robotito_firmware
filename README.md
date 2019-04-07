@@ -38,7 +38,7 @@ We provide several test programs in the `source/tests`directory. You can run the
 To run a test script manually, connect to the robot through the usb link using a serial console, like picocom:
 
 ```
-$ picocom --baud 115200 /dev/tty
+$ picocom --baud 115200 /dev/ttyUSB0
 ``` 
 and load the script using the Lua console:
 ```
