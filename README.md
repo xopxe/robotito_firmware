@@ -23,7 +23,7 @@ The configuration non-volatile variables are listed in the [nvs_parameters.md](n
 
 ## Installation
 
-After you have you robotito correctly setup and connected, use the `update.sh` script to copy the envoronment to the robot. 
+After you have you robotito correctly setup and connected, use the `update.sh` script to copy the environment to the robot. 
 
 This script depends on the `wcc`tool being installed to be ablo to copy files to the robot. Look [here](https://github.com/whitecatboard/Lua-RTOS-ESP32#method-1-get-a-precompiled-firmware) for instructions on installing it. 
 
