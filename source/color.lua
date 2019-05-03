@@ -1,19 +1,19 @@
---- Downward facing color sensor. 
--- Color definitions and setings are loaded using `nvs.read("color", parameter)` 
--- calls, where the available parameters are:  
---  
--- * `"min_val"` If the value is below this, color is 'black' (default is 40)  
--- * `"max_val"` If the value is above this, color is 'white' (default is 270)  
--- * `"delta_h"` Maximum acepted h latitude (default is 10)  
--- * `"delta_s"` Maximum acepted s latitude (default is 50)  
--- * `"delta_v"` Maximum acepted v latitude (default is 50)  
--- * `"max_val"` If the value is above this, color is 'white' (default is 270)  
--- * `"red_h"`, `"red_h"`, `"red_v"` Hue range for 'red' (default is 348, 170, 135)  
--- * `"yellow_h"`, `"yellow_h"`, `"yellow_v"` Hue range for 'yellow' (default is 70, 226, 228)  
--- * `"green_h"`, `"green_h"`, `"green_v"` Hue range for 'green' (default is 181, 250, 175)  
--- * `"blue_h"`, `"blue_h"`, `"blue_v"` Hue range for 'blue' (default is 214, 312, 180)  
--- * `"magenta_h"`, `"magenta_h"`, `"magenta_v"` Hue range for 'magenta' (default is 260, 170, 135)  
--- * `"gain"` apds9960 light gain parameter (check datasheet) (default is 1)  
+--- Downward facing color sensor.
+-- Color definitions and setings are loaded using `nvs.read("color", parameter)`
+-- calls, where the available parameters are:
+--
+-- * `"min_val"` If the value is below this, color is 'black' (default is 40)
+-- * `"max_val"` If the value is above this, color is 'white' (default is 270)
+-- * `"delta_h"` Maximum acepted h latitude (default is 10)
+-- * `"delta_s"` Maximum acepted s latitude (default is 50)
+-- * `"delta_v"` Maximum acepted v latitude (default is 50)
+-- * `"max_val"` If the value is above this, color is 'white' (default is 270)
+-- * `"red_h"`, `"red_h"`, `"red_v"` Hue range for 'red' (default is 348, 170, 135)
+-- * `"yellow_h"`, `"yellow_h"`, `"yellow_v"` Hue range for 'yellow' (default is 70, 226, 228)
+-- * `"green_h"`, `"green_h"`, `"green_v"` Hue range for 'green' (default is 181, 250, 175)
+-- * `"blue_h"`, `"blue_h"`, `"blue_v"` Hue range for 'blue' (default is 214, 312, 180)
+-- * `"magenta_h"`, `"magenta_h"`, `"magenta_v"` Hue range for 'magenta' (default is 260, 170, 135)
+-- * `"gain"` apds9960 light gain parameter (check datasheet) (default is 1)
 --
 -- @module color
 -- @alias M
@@ -31,33 +31,33 @@ do
   local dv = nvs.read("color","delta_v", 50)
 
   local colors = {
-    {"red", 
-      nvs.read("color","red_h", 348), 
-      nvs.read("color","red_s", 170), 
-      nvs.read("color","red_v", 135), 
+    {"red",
+      nvs.read("color","red_h", 348),
+      nvs.read("color","red_s", 170),
+      nvs.read("color","red_v", 135),
     },
-    {"yellow", 
-      nvs.read("color","yellow_h", 70), 
-      nvs.read("color","yellow_s", 226), 
-      nvs.read("color","yellow_v", 228), 
+    {"yellow",
+      nvs.read("color","yellow_h", 70),
+      nvs.read("color","yellow_s", 226),
+      nvs.read("color","yellow_v", 228),
     },
-    {"green", 
-      nvs.read("color","green_h", 181), 
-      nvs.read("color","green_s", 250), 
-      nvs.read("color","green_v", 175), 
+    {"green",
+      nvs.read("color","green_h", 181),
+      nvs.read("color","green_s", 250),
+      nvs.read("color","green_v", 175),
     },
-    {"blue", 
-      nvs.read("color","blue_h", 214), 
-      nvs.read("color","blue_s", 312), 
-      nvs.read("color","blue_v", 180), 
+    {"blue",
+      nvs.read("color","blue_h", 214),
+      nvs.read("color","blue_s", 312),
+      nvs.read("color","blue_v", 180),
     },
-    {"magenta", 
-      nvs.read("color","magenta_h", 260), 
-      nvs.read("color","magenta_s", 170), 
+    {"magenta",
+      nvs.read("color","magenta_h", 260),
+      nvs.read("color","magenta_s", 170),
       nvs.read("color","magenta_v", 135),
     },
   }
-  
+
   local gain = nvs.read("color","gain", 1) -- default 2x
 
   assert(apds9960r.color.set_color_table(colors))
@@ -76,21 +76,21 @@ local color_rgb = {
 -- This is a table where the key is one of 'red', 'yellow', 'green', 'blue'
 -- or 'magenta', and the value is a three-element array with the color's
 -- RGB components.
-M.color_rgb = color_rgb 
+M.color_rgb = color_rgb
 
 
 --- The native C firmware module.
--- This can be used to access low level functionality from `apds9960.color`. FIXME: docs 
+-- This can be used to access low level functionality from `apds9960.color`. FIXME: docs
 M.device = apds9960r.color
 
 --- The callback the color change.
 -- This is a callback list attached to the color sensor, see @{cb_list}.
--- The callback will be called with `(color, h, s, v)` when a color change 
--- is detected  
--- `* color`: one of "red", "yellow", "green", "blue", "magenta", "black", 
--- "white", "unknown"  
--- `* h`: 0..360  
--- `* s,v`: 0..255  
+-- The callback will be called with `(color, h, s, v)` when a color change
+-- is detected
+-- `* color`: one of "red", "yellow", "green", "blue", "magenta", "black",
+-- "white", "unknown"
+-- `* h`: 0..360
+-- `* s,v`: 0..255
 -- @usage local local color = require'color'
 -- color.color_cb.append( function (color, h, s, v) print(color, h, s, v) end )
 -- color.enable(true)
@@ -98,11 +98,11 @@ M.color_cb = require'cb_list'.get_list()
 apds9960r.color.set_color_callback(M.color_cb.call)
 
 --- The callback for the RGBA dump.
--- This is a callback list attached to the color sensor, see @{cb_list}. 
--- The callback will be called with `(r,g,b,a,h,s,v)`  
--- * `r,g,b,a` : 16 bits    
--- `* h`: 0..360  
--- `* s,v`: 0..255  
+-- This is a callback list attached to the color sensor, see @{cb_list}.
+-- The callback will be called with `(r,g,b,a,h,s,v)`
+-- * `r,g,b,a` : 16 bits
+-- `* h`: 0..360
+-- `* s,v`: 0..255
 -- @usage local local color = require'color'
 -- color.continuous.cb.append( function (...) print('color', ...) end )
 -- color.enable(true)
@@ -114,10 +114,10 @@ local led_pin = pio.GPIO32
 pio.pin.setdir(pio.OUTPUT, led_pin)
 
 --- Enables the callbacks.
--- When enabled, the driver will trigger @{color_cb} and @{rgb_cb}.  
+-- When enabled, the driver will trigger @{color_cb} and @{rgb_cb}.
 -- @tparam boolean on true value to enable, false value to disable.
--- @tparam[opt=100] integer period Sampling period in ms, if omitted is 
--- read from `nvs.read("color","period")`. 
+-- @tparam[opt=100] integer period Sampling period in ms, if omitted is
+-- read from `nvs.read("color","period")`.
 M.enable = function (on, period)
   if on then
     pio.pin.sethigh(led_pin)
