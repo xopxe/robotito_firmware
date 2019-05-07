@@ -14,46 +14,11 @@ local LIST_MAINS = 'list_mains'
 local tics_timeout_teleop = 0
 local autonomous = true
 
-local apds = assert(require('apds9960'))
-local ledpin = pio.GPIO19
-local n_pins = 24
-local led_pow = 10
-
-local min_sat = 60
-local min_val = 33
-local max_val = 270
-
-local colors = {
-  -- robotito 5, 2, 0
-  -- {"orange", 12, 17}, -- 12
-  {"yellow", 45, 62},   --53-55,  46 - 48, 61 ;: todos
-  {"green", 159, 185}, -- 162-164, 183, x  ;: todos 159, 185
-  {"blue", 208, 216}, -- 208-210, 212 - 213, x ;: todos 208, 216
-  {"rose", 250, 271}, -- 264 - 268, 257, 250  ;: todos 250, 271
-  {"red", 351 , 353}, -- 355 - 357, 343 - 346, x ;: todos 343 , 359
-
-  -- {"violet", 221, 240},
-}
-
-local offset_led = 2    -- robotito 5 (20), robotito 1,3, 8 (2), robotito 2 (5), robotito 0 (8)
-
-assert(apds.init())
-local distC = apds.proximity
-assert(distC.enable())
-
-local color = apds.color
-assert(color.set_color_table(colors))
-assert(color.set_sv_limits(min_sat,min_val,max_val))
-assert(color.enable())
-
-local led_const = require('led_ring')
-local neo = led_const(ledpin, n_pins, led_pow)
-
 local m = require('omni')
 
 local global_enable = true
 local local_enable = false
-m.set_enable(global_enable and local_enable)
+m.enable(global_enable and local_enable)
 
 local ms_dist = 200
 local ms_color = 80
@@ -82,6 +47,18 @@ end
 
 local VEL_CMD = 'speed'
 
+net.wf.setup(
+  net.wf.mode.AP,
+  "robotito-ls-dev",
+  "12345678",
+  --net.packip(192,168,2,1), net.packip(255,255,255,0),
+  -- net.wf.powersave.MODEM
+  net.wf.powersave.NONE, -- default
+  6 -- channel
+)
+
+net.wf.start()
+
 print("Binding to host '" .. tostring(host) .. "' and port " .. tostring(port) .. "...")
 
 udp:setoption('broadcast', true)
@@ -90,8 +67,6 @@ assert(udp:setsockname(host, port))
 ip, port = udp:getsockname()
 assert(ip, port)
 print("Waiting packets on " .. tostring(ip) .. ":" .. tostring(port) .. "...")
-
-turn_all_leds(0,0,0)
 
 thread.start(function()
   local cmd
