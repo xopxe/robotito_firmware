@@ -18,6 +18,7 @@ TEST_DIR="source/tests"
 declare -a LOCAL_FILES=(
 $AHSM_DIR/ahsm.lua
 $AHSM_DIR/tools/debug_plain.lua
+$AHSM_DIR/tools/to_dot.lua
 $MODULES_DIR/autorun.lua
 $MODULES_DIR/cb_list.lua
 $MODULES_DIR/color.lua
@@ -46,6 +47,7 @@ $TEST_DIR/calibrate_color.lua
 declare -a REMOTE_FILES=(
 ahsm.lua
 debug_plain.lua
+to_dot.lua
 autorun.lua
 cb_list.lua
 color.lua
