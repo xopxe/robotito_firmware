@@ -8,6 +8,8 @@
 --  
 --* `"debugger"` the debug output system, like ahsm's "debug_plain". Defaults to nil (disabled)  
 --  
+--* `"dot_period"` if positive, a period in sec for printing a dot graph of the root state machine. Defaults to -1 (disabled)  
+--  
 --* `"root"` a composite state to be used as root for the state machine. This must be the name of library to be required, which will return an ahsm state. Defaults to "states.test"  
 --  
 --* `"timestep"` time in ms between sweeps to check for timed out transitions. Defaults to 10  
@@ -38,7 +40,24 @@ do
   local root = require( rootname )
   hsm = ahsm.init(root)
   robot.hsm = hsm
+
+  -- state dumper
+  do
+    local period = nvs.read("ahsm", "dot_period", -1) or -1
+    --local count = nvs.read("ahsm", "dot_count", math.huge) or math.huge
+    if period>0 then
+      thread.start(function()
+          local to_dot = require 'to_dot'
+          while true do
+            thread.sleep(period)
+            to_dot.to_function(root, print)
+          end
+        end)
+    end
+  end
+
 end
+
 
 -- We must keep looping for reacting to state timeouts
 local step = nvs.read("ahsm", "timestep", 10) or 10
@@ -49,3 +68,4 @@ thread.start( function()
       tmr.sleepms(step)
     end
   end)
+
