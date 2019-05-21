@@ -81,7 +81,7 @@ local start_rc = function (my_ip, conf)
           udp_tx:send(announcement)
           thread.sleep(conf.announce_interval)
         end
-      end, nil, nil, nil, 'announcer')
+      end, 3072, nil, nil, 'wifi_announcer')
   end
 
   M.thr_receiver = thread.start(function()
@@ -89,7 +89,7 @@ local start_rc = function (my_ip, conf)
         local data, ip, port = udp_rx:receivefrom()
         M.cb.call(data, ip, port)
       end
-    end, nil, nil, nil, 'receiver')
+    end, 4096, nil, nil, 'wifi_receiver')
 end
 
 --- Broadcasts a message.
@@ -129,10 +129,12 @@ M.cb = require'cb_list'.get_list()
 M.init = function (conf)
   conf = conf or {}
   --local iface_config = {}
+  local id = nvs.read("robot","id", 0) or 0
+
   conf.mode = conf.mode or nvs.read("wifi","mode", "none") or "none"
   conf.ssid = conf.ssid or
-    nvs.read("wifi","ssid", "robotito"..((robot or {}).id or ''))
-    or "robotito"..((robot or {}).id or '')
+    nvs.read("wifi","ssid", "robotito"..tostring(id or ''))
+    or "robotito"..tostring(id or '')
   conf.passwd = conf.passwd or nvs.read("wifi","passwd", "robotito")
     or "robotito"
   conf.channel = conf.channel or nvs.read("wifi","channel", 0) or 0
