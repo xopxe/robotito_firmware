@@ -49,8 +49,8 @@ do
       thread.start(function()
           local to_dot = require 'to_dot'
           while true do
-            thread.sleep(period)
             to_dot.to_function(root, print)
+            thread.sleep(period)
           end
         end)
     end
