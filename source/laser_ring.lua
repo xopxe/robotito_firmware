@@ -19,8 +19,6 @@ local table_sort = table.sort
 
 --CONSTANTS
 local N_SENSORS = 6
-local N_SENSORS_2= N_SENSORS/2
-assert(N_SENSORS %2 == 0, 'median optimized for par N_SENSORS')
 local WIN_SIZE = 3  -- store history distance values to compute low pass filter
 local alpha_lpf = 1 -- low pass filter update parameter
 
@@ -108,19 +106,25 @@ M.get_reading_cb = function ()
   return dist_callback
 end
 
---[[
+---[[
 local median = function (numlist)
-  if type(numlist) ~= 'table' then return numlist end
+  --if type(numlist) ~= 'table' then return numlist end
   table.sort(numlist)
-  if #numlist %2 == 0 then return (numlist[#numlist/2] + numlist[#numlist/2+1]) / 2 end
-  return numlist[math.ceil(#numlist/2)]
+  local listlength = #numlist
+  if listlength %2 == 0 then return (numlist[listlength/2] + numlist[listlength/2+1]) / 2 end
+  return numlist[math.ceil(listlength/2)]
 end
 --]]
+--[[
 -- version optimizada para #numlist == N_SENSORS, par
 local median = function (numlist)
+  print ('NUMLIST')
+  for k, v in pairs(numlist) do print ('-', k, v) end
   table_sort(numlist)
+  for i, v in ipairs(numlist) do print ('+', i, v) end
   return (numlist[N_SENSORS_2] + numlist[N_SENSORS_2+1]) / 2
 end
+--]]
 
 --- Factory for a filtering range callback.
 -- The output is written to @{norm_d} and @{raw_d}
