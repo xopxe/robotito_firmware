@@ -58,7 +58,6 @@ do
 
 end
 
-
 -- We must keep looping for reacting to state timeouts
 local step = nvs.read("ahsm", "timestep", 10) or 10
 print('main_ahsm timestep:', step)
@@ -67,5 +66,7 @@ thread.start( function()
       hsm.loop()
       tmr.sleepms(step)
     end
-  end)
+  end, nil, nil, nil, 'ahsm_loop')
 
+print 'ahsm started:'
+thread.list(false, false, true)
