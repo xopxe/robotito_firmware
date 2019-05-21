@@ -34,6 +34,7 @@ $MODULES_AHSM_DIR/onoff.lua
 $MODULES_AHSM_DIR/colorway.lua
 $MODULES_AHSM_DIR/color.lua
 $MODULES_AHSM_DIR/onremoteoff.lua
+$MODULES_AHSM_DIR/distance.lua
 $MODULES_AHSM_DIR/remotecontrol.lua
 $TEST_DIR/test_color_display.lua
 $TEST_DIR/test_laser_ring.lua
@@ -66,6 +67,7 @@ states/onoff.lua
 states/colorway.lua
 states/color.lua
 states/onremoteoff.lua
+states/distance.lua
 states/remotecontrol.lua
 test_color_display.lua
 test_laser_ring.lua
