@@ -82,4 +82,7 @@ end
 --M.laser_ring.enable(true)
 --M.color.enable(true)
 
+print 'Robot started:'
+thread.list(false, false, true)
+
 return M
