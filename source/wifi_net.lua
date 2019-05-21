@@ -1,7 +1,7 @@
---- WiFi network system. 
--- The announcements have the following format:  
---  
--- ROBOTITO id my\_ip udp\_port resetreason uptime  
+--- WiFi network system.
+-- The announcements have the following format:
+--
+-- ROBOTITO id my\_ip udp\_port resetreason uptime
 -- @module wifi_net
 -- @alias M
 local M = {}
@@ -13,15 +13,15 @@ local udp_tx, udp_rx
 local wifi_status = 'offline'
 
 --- Starts the network.
--- @param conf a configuration table, with keys:  
---* mode `'sta'` for client or `'ap'` for AP modes.  
---* ssid string with network name (min length 7?)  
+-- @param conf a configuration table, with keys:
+--* mode `'sta'` for client or `'ap'` for AP modes.
+--* ssid string with network name (min length 7?)
 --* passwd password to use
 --* channel number 0..11, defaults to 0 (auto).
 -- @return string with the ip adress.
 local start_network = function (conf)
   local my_ip
-  if conf.mode == 'sta' then 
+  if conf.mode == 'sta' then
     M.wifi_status = 'associating'
     print("Associating to " .. conf.ssid)
     net.wf.setup(net.wf.mode.STA, conf.ssid, conf.passwd)
@@ -34,11 +34,11 @@ local start_network = function (conf)
   elseif conf.mode == 'ap' then
     M.wifi_status = 'setting up'
     net.wf.setup(
-      net.wf.mode.AP, 
-      conf.ssid, 
-      conf.passwd, 
+      net.wf.mode.AP,
+      conf.ssid,
+      conf.passwd,
       net.wf.powersave.NONE, --net.wf.powersave.MODEM
-      conf.channel or 0, 
+      conf.channel or 0,
       false
     )
     net.wf.start()
@@ -73,7 +73,7 @@ local start_rc = function (my_ip, conf)
   local announcement_base = 'ROBOTITO '..tostring(id)..' '
   ..my_ip..' '..conf.udp_port..' '..os.resetreason()..' '
 
-  if conf.announce_interval>0 then 
+  if conf.announce_interval>0 then
     M.thr_announcement = thread.start(function()
         while true do
           local announcement=announcement_base..os.gettime()
@@ -111,29 +111,29 @@ M.cb = require'cb_list'.get_list()
 
 --- Initialize network.
 -- The system reads the configuration parameters from the config table, and if
--- the table or some parameter is ommitted it will get it from 
--- nvs.read('wifi', parameter). The parameters are:  
---* `'mode'`: either 'ap' or 'sta', defaults ot 'none' (disabled)  
---* `'ssid'`: the wireless network ssid  
---* `'passwd'`: the wireless network password  
---* `'channel'`: defaults to 0 (auto)  
---* `'udp_port'`: listening port, defaults to 2018   
+-- the table or some parameter is ommitted it will get it from
+-- nvs.read('wifi', parameter). The parameters are:
+--* `'mode'`: either 'ap' or 'sta', defaults ot 'none' (disabled)
+--* `'ssid'`: the wireless network ssid
+--* `'passwd'`: the wireless network password
+--* `'channel'`: defaults to 0 (auto)
+--* `'udp_port'`: listening port, defaults to 2018
 --* `'broadcast'`: target address for the announcements (defaults to)
---'255,255,255,255'  
---* `'udp_announce_port'`: announcement port, defaults to 2018  
+--'255,255,255,255'
+--* `'udp_announce_port'`: announcement port, defaults to 2018
 --* `'udp_announce_interval'`: time between announcements (in s),
--- -1 mean disabled. Defaults to 10.  
+-- -1 mean disabled. Defaults to 10.
 --* `'receive_timeout'`: timeout for udp reads (in sec). Defaults to -1
--- (disabled).  
+-- (disabled).
 -- @param conf configuration table
 M.init = function (conf)
   conf = conf or {}
   --local iface_config = {}
   conf.mode = conf.mode or nvs.read("wifi","mode", "none") or "none"
-  conf.ssid = conf.ssid or 
-    nvs.read("wifi","ssid", "robotito"..((robot or {}).id or '')) 
+  conf.ssid = conf.ssid or
+    nvs.read("wifi","ssid", "robotito"..((robot or {}).id or ''))
     or "robotito"..((robot or {}).id or '')
-  conf.passwd = conf.passwd or nvs.read("wifi","passwd", "robotito") 
+  conf.passwd = conf.passwd or nvs.read("wifi","passwd", "robotito")
     or "robotito"
   conf.channel = conf.channel or nvs.read("wifi","channel", 0) or 0
 
@@ -142,15 +142,15 @@ M.init = function (conf)
     ,'passwd:'..conf.passwd)
 
   --local rc_config = {}
-  conf.udp_port = conf.udp_port or 
+  conf.udp_port = conf.udp_port or
     nvs.read("wifi","udp_port", 2018) or 2018
-  conf.udp_announce_port = conf.udp_announce_port or 
+  conf.udp_announce_port = conf.udp_announce_port or
     nvs.read("wifi","udp_announce_port", 2018) or 2018
-  conf.broadcast = conf.broadcast or 
+  conf.broadcast = conf.broadcast or
     nvs.read("wifi","broadcast", '255.255.255.255') or '255.255.255.255'
-  conf.announce_interval = conf.announce_interval or 
+  conf.announce_interval = conf.announce_interval or
     nvs.read("wifi","announce_interval", 10) or 10
-  conf.receive_timeout = conf.receive_timeout or 
+  conf.receive_timeout = conf.receive_timeout or
     nvs.read("wifi","receive_timeout", -1) or -1
 
   print('listen port:'..conf.udp_port
@@ -161,19 +161,19 @@ M.init = function (conf)
 
   if conf.mode ~= "none" then
     try(
-      function() 
+      function()
         local my_ip = start_network(conf) --(iface_config)
         start_rc(my_ip, conf) --rc_config)
       end,
-      print, 
-      function() 
+      print,
+      function()
         print("Network:", wifi_status)
-        print("Announcer:", 
+        print("Announcer:",
           (M.thr_announcement and thread.status(M.thr_announcement)))
-        print("Receiver:", 
+        print("Receiver:",
           (M.thr_receiver and thread.status(M.thr_receiver)))
-        if wifi_status ~= 'online' then 
-          wifi_status = 'offline' 
+        if wifi_status ~= 'online' then
+          wifi_status = 'offline'
         end
       end
     )

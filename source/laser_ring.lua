@@ -1,7 +1,7 @@
 --- Range sensor ring module.
 -- Configuration is loaded using `nvs.read("laser", parameter)` calls, where the
--- available parameters are:  
---  
+-- available parameters are:
+--
 --* `"time_budget"` The timing budget for the measurements, defaults to 5000.
 --
 -- @module laser_ring
@@ -13,7 +13,7 @@ local vlring=require('vl53ring')
 local sensors = { {13}, {16}, {17}, {2}, {14}, {12} }
 vlring.init(sensors)
 local time_budget = nvs.read("laser","time_budget", 5000) or 5000
-vlring.set_measurement_timing_budget(time_budget) 
+vlring.set_measurement_timing_budget(time_budget)
 
 local table_sort = table.sort
 
@@ -31,19 +31,19 @@ local raw_d = {0, 0, 0, 0, 0, 0}
 
 do
   local angles = {6}
-  local intersensor = 2*math.pi/N_SENSORS 
+  local intersensor = 2*math.pi/N_SENSORS
   for i = 1, N_SENSORS do
     angles[i] = math.pi/6 + (i-1)*intersensor
   end
 --- Sensor angles.
--- The angles at which each sensor point. It's and array indexed by the 
+-- The angles at which each sensor point. It's and array indexed by the
 -- sensor number 1..6 --FIXME
   M.sensor_angles = angles
 end
 
 --- Minimum range for normalization in mm. (See @{norm_d}). Initialized from
 -- `nvs.read("laser","dmin")`.
--- @tfield[opt=80] integer dmin 
+-- @tfield[opt=80] integer dmin
 M.dmin = nvs.read("laser","dmin", 80) or 80
 local dmin = M.dmin
 
@@ -99,7 +99,7 @@ M.get_reading_cb = function ()
       if d < dmin then
         norm_d[i] = 0
       elseif d > dmax then
-        norm_d[i] = 100        
+        norm_d[i] = 100
       else
         norm_d[i] = normalize_d(d)   -- 0..100
       end
@@ -131,7 +131,7 @@ end
 M.get_filtering_cb = function ()
   local sensors_win = {}            -- create sensors readings matrix
   local current_wp = 0              -- global, curren position in the sensor readings history window
-  local act_d = {0, 0, 0, 0, 0, 0}  -- measures filtered 
+  local act_d = {0, 0, 0, 0, 0, 0}  -- measures filtered
 
   -- init sensors window
   for i=1,N_SENSORS do
@@ -154,7 +154,7 @@ M.get_filtering_cb = function ()
       if act < dmin then
         norm_d[i] = 0
       elseif act > dmax then
-        norm_d[i] = 100        
+        norm_d[i] = 100
       else
         norm_d[i] = normalize_d(act)   -- 0..100
       end
@@ -164,8 +164,8 @@ M.get_filtering_cb = function ()
   return dist_callback_filter
 end
 
---- Enables the range monitoring callback. 
--- When enabled @{cb} will be triggered periodically. 
+--- Enables the range monitoring callback.
+-- When enabled @{cb} will be triggered periodically.
 -- @tparam boolean on true value to enable, false value to disable.
 -- @tparam[opt=100] integer period Sampling period in ms, if omitted is read
 -- from `nvs.read("laser","period")`
