@@ -1,10 +1,10 @@
 --- Use color patches to select movement direction.
--- The robot will move in the direction indicated by the led lights when
+-- The robot will move in the direction indicated by the led lights when 
 -- detects a color patch on the floor of the same color. If you pick the
--- robot up it powers down.
---
+-- robot up it powers down.  
+--  
 -- This is a state machine to be run using @{main_ahsm}. For this set
--- `nvs.write("ahsm", "root", "states.colorway")` and then run `dofile'main_ahsm.lua'`,
+-- `nvs.write("ahsm", "root", "states.colorway")` and then run `dofile'main_ahsm.lua'`, 
 -- or simply set `nvs.write("autorun", "main", "main_ahsm.lua")` for autorun.
 -- @hsm colorway.lua
 
@@ -14,7 +14,6 @@ local e_color = {
   ['blue'] = {vel = 0.1, dir = math.pi},
   ['green'] = {vel = 0.1, dir = math.pi/2},
   ['red'] = {vel = 0.1, dir = 3*math.pi/2},
-  ['magenta'] = {vel = 0.1, dir = 0.0},
 }
 
 local ahsm = require 'ahsm'
@@ -27,15 +26,8 @@ local onoff = require 'states.onoff'
 for c, e in pairs(e_color) do
   local rgb = color.color_rgb[c]
   e.r, e.g, e.b = rgb[1], rgb[2], rgb[3]
-  if (c == "magenta") then
-    e.x = 0.0
-    e.y = 0.0
-    e.w = 0.1
-  else
-    e.x = e.vel*math.cos(e.dir)
-    e.y = e.vel*math.sin(e.dir)
-    e.w = 0.0
-  end
+  e.x = e.vel*math.cos(e.dir)
+  e.y = e.vel*math.sin(e.dir)
   e.led = math.floor(ledr.n_leds*e.dir/(2*math.pi))
   e._name = "e_"..c
 end
@@ -46,7 +38,6 @@ end
 
 local s_main = ahsm.state {
 }
-
 local transitions = {}
 for c, e in pairs(e_color) do
   local t_change = ahsm.transition {
@@ -54,7 +45,7 @@ for c, e in pairs(e_color) do
     events = {e},
     effect = function (ev)
       --print ('!', c, ev.x, ev.y, ev.r, ev.g, ev.b)
-      robot.omni.drive(ev.x, ev.y, ev.w)
+      robot.omni.drive(ev.x, ev.y, 0.0)
       ledr.set_all(0, 0, 0)
       for ci, e in pairs(e_color) do
         --print ('ARC', c, e.led, e.r, e.g, e.b)
