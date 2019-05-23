@@ -80,7 +80,7 @@ for c, e in pairs(e_color) do
   transitions_color['t_'..c] = t_change
 end
 
-local color = ahsm.state {
+local s_color = ahsm.state {
   events =  e_color,
   states = { COLOR=s_main },
   transitions = transitions_color,
@@ -89,15 +89,15 @@ local color = ahsm.state {
     ledr.clear()
     robot.omni.drive(0, 0, 0)
     paint_leds_empty()
-    color.color_cb.append(produce_color_event)
-    color.enable(true) -- only enable (no dis. because it could be used by others)
+    s_color.color_cb.append(produce_color_event)
+    s_color.enable(true) -- only enable (no dis. because it could be used by others)
   end,
   exit = function ()
     ledr.clear()
     robot.omni.drive(0, 0, 0)
-    color.enable(false)
-    color.color_cb.remove(produce_color_event)
+    s_color.enable(false)
+    s_color.color_cb.remove(produce_color_event)
   end,
 }
 
-return color
+return s_color
