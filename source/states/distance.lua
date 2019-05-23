@@ -2,7 +2,7 @@ local ahsm = require 'ahsm'
 local omni = require('omni')
 local laser = require 'laser_ring'
 local leds = require 'led_ring'
-
+local robot = robot
 
 local v = 0.05
 
@@ -35,7 +35,31 @@ local range = function(num)
   return (num > 0 and num < 100)
 end
 
+local min = function(num1,num2)
+  if(num1 < num2) then
+    return num1
+  else
+    return num2
+  end
+end
+
+local max = function(num1,num2)
+  if(num1 > num2) then
+    return num1
+  else
+    return num2
+  end
+end
+
+local th = function(num,th_dist)
+  local maximo = min(th_dist + num, 99)
+  return maximo
+end
+
 local s_far
+local w2 = 0.3
+
+local cont_direction
 
 local angle
 local t_ms = 100 -- period of distance measurements
@@ -60,7 +84,7 @@ local argmax = function(t)
   return index
 end
 
-local callback_search = function(d1,d2,d3,d4,d5,d6)
+local callback_search = function()
   local norm_d = laser.norm_d
   --print(norm_d[1],norm_d[2],norm_d[3],norm_d[4],norm_d[5],norm_d[6])
   angle = angle + dtheta
@@ -81,21 +105,20 @@ local callback_search = function(d1,d2,d3,d4,d5,d6)
     if (s_far == 0) then --every sensor is out of range
       robot.hsm.queue_event(e_ksearch) --keep state
     else
-      leds.clear()
-      leds.set_segment(s_far, true, nil, nil, true)
       robot.hsm.queue_event(e_back) --change state
     end
   end
 end -- callback_search
 
-local callback_back = function(d1,d2,d3,d4,d5,d6)
+local callback_back = function()
+
   local norm_d = laser.norm_d
   angle = angle + dtheta
   if (angle < math.pi/3) then
     local actual = norm_d[s_far]
     local max = e_dist[s_far].maxdist
     local th_dist = 10
-    if (actual < max + th_dist and actual > max - th_dist) then
+    if (math.abs(actual-max) < th_dist) then
       robot.hsm.queue_event(e_position) --change state
     end
   else
@@ -105,35 +128,38 @@ local callback_back = function(d1,d2,d3,d4,d5,d6)
 end
 
 
-local callback_position = function(d1,d2,d3,d4,d5,d6)
+local callback_position = function()
   local norm_d = laser.norm_d
   local actual = norm_d[s_far]
   local previous = e_dist[s_far].maxdist
-  if (not find_min) then
-    find_min = true
-    if (actual > previous) then
-      omni.drive(0,0,w)
-    end
+  local th_dist = 20
+  --print (actual, previous)
+  if ( math.abs(actual - previous) < th_dist and actual ~= 100) then
+    omni.drive(0,0,0)
+    robot.hsm.queue_event(e_forward)
   else
-    if (actual > previous) then
-      omni.drive(0,0,0)
-      robot.hsm.queue_event(e_forward)
-    end
+    cont_direction = cont_direction + 1
   end
-  e_dist[s_far].maxdist = actual
+
+  if (cont_direction > 20) then
+    cont_direction = -20
+    w2 = -w2
+    omni.drive(0,0,w2)
+  end
 end
 
-local callback_forward = function(d1,d2,d3,d4,d5,d6)
+local callback_forward = function()
   local norm_d = laser.norm_d
   local actual = norm_d[s_far]
   local previous = e_dist[s_far].maxdist
-  if (actual > previous) then
+  local th_dist = 5
+  if (actual > previous + th_dist or actual == 100) then
     robot.hsm.queue_event(e_repos) --change state
-  else if (actual == 0) then
+  elseif (actual == 0) then
     robot.hsm.queue_event(e_search)
+  else
+    e_dist[s_far].maxdist = actual
   end
-end
-e_dist[s_far].maxdist = actual
 
 end
 
@@ -142,6 +168,7 @@ end
 
 local s_search = ahsm.state{
   entry = function()
+    leds.clear()
     angle = 0
     for i,e in ipairs(e_dist) do
       e.maxdist = 0
@@ -152,7 +179,8 @@ local s_search = ahsm.state{
     omni.enable(true)
   end,
   exit = function()
-    --laser.enable(false)
+    leds.clear()
+    leds.set_segment(s_far,10,0,10, true)
     laser.cb.remove(callback_search)
   end
 }
@@ -166,15 +194,17 @@ local s_back = ahsm.state{
   end,
   exit = function()
     omni.drive(0,0,0)
-    --laser.enable(false)
     laser.cb.remove(callback_back)
   end
 }
 
 local s_position = ahsm.state{
   entry = function()
-    find_min = false
-    omni.drive(0,0,-w)
+    leds.clear()
+    leds.set_segment(s_far,0,10,10, true)
+
+    cont_direction = 0
+    omni.drive(0,0,w2)
     laser.cb.append(callback_position)
     --laser.enable(true)
   end,
@@ -187,6 +217,8 @@ local s_position = ahsm.state{
 
 local s_forward = ahsm.state{
   entry = function()
+    leds.clear()
+    leds.set_segment(s_far,10,0,0, true)
     local dirx = e_dist[s_far].dirx
     local diry = e_dist[s_far].diry
     omni.drive(dirx*v,diry*v,0)
@@ -201,6 +233,11 @@ local s_forward = ahsm.state{
 }
 
 --TRANSITIONS
+
+local t_reset = ahsm.transition{
+  src = s_position, tgt = s_search,
+  timeout = 10
+}
 
 local t_ksearch = ahsm.transition {
   src = s_search, tgt = s_search,
@@ -249,6 +286,7 @@ local distance = ahsm.state {
     switch_forw = t_forw,
     switch_repos = t_repos,
     switch_search = t_search,
+    reset_to_search = t_reset,
   },
   events = {
     e_ksearch,
@@ -266,3 +304,5 @@ local distance = ahsm.state {
 }
 
 return distance
+
+--dofile "main_ahsm.lua"
