@@ -141,8 +141,8 @@ local callback_position = function()
     cont_direction = cont_direction + 1
   end
 
-  if (cont_direction > 20) then
-    cont_direction = -20
+  if (cont_direction > 15) then
+    cont_direction = -15
     w2 = -w2
     omni.drive(0,0,w2)
   end
@@ -169,6 +169,7 @@ end
 local s_search = ahsm.state{
   entry = function()
     leds.clear()
+    leds.set_all(37,42, 10, true)
     angle = 0
     for i,e in ipairs(e_dist) do
       e.maxdist = 0
@@ -180,7 +181,7 @@ local s_search = ahsm.state{
   end,
   exit = function()
     leds.clear()
-    leds.set_segment(s_far,10,0,10, true)
+   -- leds.set_segment(s_far,10,0,10, true)
     laser.cb.remove(callback_search)
   end
 }
@@ -300,7 +301,10 @@ local distance = ahsm.state {
   initial = s_search,
   entry = function()
     robot.laser_ring.enable(true)
-  end
+  end,
+ -- exit = function()
+   -- leds.clear()
+  --end,
 }
 
 return distance

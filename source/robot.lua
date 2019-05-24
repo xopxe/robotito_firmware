@@ -80,7 +80,7 @@ M.laser_ring.cb.append(M.laser_ring.get_filtering_cb())
 --M.laser_ring.cb.append(M.laser_ring.get_reading_cb())
 --M.color.color_cb.append(color_cb)
 
-M.laser_ring.enable(true)
+--M.laser_ring.enable(true)
 --M.color.enable(true)
 
 print 'Robot started:'

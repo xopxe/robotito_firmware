@@ -151,7 +151,7 @@ M.init = function (conf)
   conf.broadcast = conf.broadcast or
     nvs.read("wifi","broadcast", '255.255.255.255') or '255.255.255.255'
   conf.announce_interval = conf.announce_interval or
-    nvs.read("wifi","announce_interval", 10) or 10
+    nvs.read("wifi","announce_interval", 0) or 0
   conf.receive_timeout = conf.receive_timeout or
     nvs.read("wifi","receive_timeout", -1) or -1
 
