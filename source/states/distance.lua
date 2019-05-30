@@ -20,7 +20,8 @@ for i, e in ipairs(e_dist) do
   local ang = laser.sensor_angles[i]
   e.dirx = math.cos(ang)
   e.diry = math.sin(ang)
-  e.maxdist = 0
+  e.mindist = 0
+  e.decreasing = 0
 end
 
 
@@ -33,10 +34,14 @@ local e_bsearch = { _name = "BACK_SEARCH" }
 local e_reforward = { _name = "GO_REFORWARD" }
 local e_forward = { _name = "GO_FORWARD" }
 local e_repos = { _name = "RE_POSITION" }
+local e_psearch = { name = "POS_SEARCH" }
 local e_search = { _name = "SEARCH_AGAIN" }
 
 
 --VARIABLES
+
+nvs.write('laser','dmin', nil)
+nvs.write('laser','dmax', 700)
 
 local range = function(num)
   return (num > 0 and num < 100)
@@ -44,13 +49,11 @@ end
 
 local s_far
 
-local cont_direction
-
 local angle
 local t_ms = 80 -- period of distance measurements
 nvs.write('laser','period',t_ms)
 local dtheta = (math.pi/3)/30 -- partition of pi/3
-local w = 1000*dtheta/t_ms -- rad/s
+local w = -1000*dtheta/t_ms -- rad/s
 --[[
 t_ms ms ____ dtheta rad
 1000 ms ____ w = 1000*dtheta/t_ms rad
@@ -75,21 +78,27 @@ local callback_search = function()
     for i = 1,6 do
       if(range(norm_d[i]))then
         leds.set_segment(i,e_dist[i].color[1],e_dist[i].color[2],e_dist[i].color[3],true)
+        --leds.set_segment(i,10,5,0,true)
       end
     end
-  --print(norm_d[1],norm_d[2],norm_d[3],norm_d[4],norm_d[5],norm_d[6])
   angle = angle + dtheta
   if (angle < math.pi/3) then
+    local previous_d = laser.previous_d
     for i = 1,6 do
-      if(range(norm_d[i]) and norm_d[i] < e_dist[i].maxdist) then
-        e_dist[i].maxdist = norm_d[i]
+      if (range(norm_d[i]) and e_dist[i].decreasing ~= -1) then
+        if (norm_d[i] < previous_d[i]) then
+          e_dist[i].decreasing = e_dist[i].decreasing + 1
+        elseif(norm_d[i] > previous_d[i] and e_dist[i].decreasing > 0) then
+          e_dist[i].mindist = norm_d[i]
+          e_dist[i].decreasing = -1
+        end
       end
     end
   else
     omni.drive(0,0,0)
     local d = {}
     for i = 1,6 do
-      d[i] = e_dist[i].maxdist
+      d[i] = e_dist[i].mindist
     end
     s_far = argmax(d)
     if (s_far == 0) then --every sensor is out of range
@@ -106,12 +115,13 @@ local callback_back = function()
     for i = 1,6 do
       if(range(norm_d[i]))then
         leds.set_segment(i,e_dist[i].color[1],e_dist[i].color[2],e_dist[i].color[3],true)
+        --leds.set_segment(i,5,3,10,true)
       end
     end
   angle = angle + dtheta
   if (angle < math.pi/3) then
     local actual = norm_d[s_far]
-    local max = e_dist[s_far].maxdist
+    local max = e_dist[s_far].mindist
     local th_dist = 10
     if (math.abs(actual-max) < th_dist and range(actual)) then
       robot.hsm.queue_event(e_forward) --change state
@@ -128,24 +138,29 @@ local callback_position = function()
     for i = 1,6 do
       if(range(norm_d[i]))then
         leds.set_segment(i,e_dist[i].color[1],e_dist[i].color[2],e_dist[i].color[3],true)
+        --leds.set_segment(i,20,0,10,true)
       end
     end
-  local actual = norm_d[s_far]
-  local previous = e_dist[s_far].maxdist
-  local th_dist = 10
-  --print (actual, previous)
-  if (math.abs(actual - previous) < th_dist and range(actual)) then
+    --leds.set_segment(s_far%6 + 1,20,0,0,true)
+    --leds.set_segment(s_far,0,0,20,true)
+
+  local actual_s_far = norm_d[s_far]
+  local actual_s_far_1 = norm_d[s_far%6 + 1]
+  local previous = e_dist[s_far].mindist
+  local th_dist = 15
+
+  if (actual_s_far ~= 100 and math.abs(actual_s_far - previous) < th_dist) then
     omni.drive(0,0,0)
     robot.hsm.queue_event(e_reforward)
-  else
-    cont_direction = cont_direction + 1
+  elseif (actual_s_far_1 ~= 100 and math.abs(actual_s_far_1 - previous) < th_dist) then
+    omni.drive(0,0,0)
+    s_far = s_far%6 + 1
+    robot.hsm.queue_event(e_reforward)
+  elseif (actual_s_far == 0 or actual_s_far_1 == 0) then
+    omni.drive(0,0,0)
+    robot.hsm.queue_event(e_psearch)
   end
 
-  if (cont_direction > 8) then
-    cont_direction = -8
-    w = -w
-    omni.drive(0,0,w)
-  end
 end
 
 local callback_forward = function()
@@ -154,17 +169,18 @@ local callback_forward = function()
     for i = 1,6 do
       if(range(norm_d[i]))then
         leds.set_segment(i,e_dist[i].color[1],e_dist[i].color[2],e_dist[i].color[3],true)
+        --leds.set_segment(i,0,10,0,true)
       end
     end
-  local actual = norm_d[s_far]
-  local previous = e_dist[s_far].maxdist
+  local actual= norm_d[s_far]
+  local previous = e_dist[s_far].mindist
   local th_dist = 20
   if (actual > previous + th_dist or not range(actual)) then
     robot.hsm.queue_event(e_repos) --change state
   elseif (actual < 5 and range(actual)) then
     robot.hsm.queue_event(e_search)
   else
-    e_dist[s_far].maxdist = actual
+    e_dist[s_far].mindist = actual
   end
 end
 
@@ -175,7 +191,8 @@ local s_search = ahsm.state{
   entry = function()
     angle = 0
     for i,e in ipairs(e_dist) do
-      e.maxdist = 100
+      e.mindist = 100
+      e.decreasing = 0
     end
     omni.drive(0,0,w)
     laser.cb.append(callback_search)
@@ -200,12 +217,10 @@ local s_back = ahsm.state{
 
 local s_position = ahsm.state{
   entry = function()
-    cont_direction = 0
     omni.drive(0,0,w)
     laser.cb.append(callback_position)
   end,
   exit = function()
-    w = -w
     omni.drive(0,0,0)
     laser.cb.remove(callback_position)
   end
@@ -228,7 +243,7 @@ local s_forward = ahsm.state{
 
 local t_reset = ahsm.transition{
   src = s_position, tgt = s_search,
-  timeout = 6
+  timeout = 2
 }
 
 local t_ksearch = ahsm.transition {
@@ -256,6 +271,11 @@ local t_reforw = ahsm.transition {
   events = {e_reforward}
 }
 
+local t_psearch = ahsm.transition {
+  src = s_position, tgt = s_search,
+  events = {e_psearch}
+}
+
 local t_repos = ahsm.transition {
   src = s_forward, tgt = s_position,
   events = {e_repos}
@@ -277,6 +297,7 @@ local distance = ahsm.state {
     switch_reforw = t_reforw,
     switch_forw = t_forw,
     switch_repos = t_repos,
+    switch_psearch = t_psearch,
     switch_search = t_search,
     reset_to_search = t_reset,
   },
@@ -287,6 +308,7 @@ local distance = ahsm.state {
     e_reforward,
     e_forward,
     e_repos,
+    e_psearch,
     e_search,
   },
   initial = s_search,
