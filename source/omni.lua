@@ -1,17 +1,17 @@
 --- Omnidirectional platform.
 -- Configuration is loaded using `nvs.read("omni", parameter)` calls, where the
--- available parameters are:  
---  
+-- available parameters are:
+--
 --* `"maxpower"` Limits the maximum power output of the motors as percentage.
 -- Defaults to 80.0
---  
---* `"kf"` Feed-forward parameter of the motor control in (power% / (tics/s) ). 
+--
+--* `"kf"` Feed-forward parameter of the motor control in (power% / (tics/s) ).
 -- Defaults to 90/1080
---  
+--
 --* `"kp"` P parameter of the PID control. Defaults to 0.01
---  
+--
 --* `"ki"` I parameter of the PID control. Defaults to 0.05
---  
+--
 --* `"kd"` D parameter of the PID control. Defaults to 0.0
 -- @module omni
 -- @alias M
@@ -37,7 +37,7 @@ do
 
 -- forward feed parameter
   local KF = MAX_SPEED_POWER / MAX_SPEED_TICS
-  KF = nvs.read("omni","kf", KF) or KF     
+  KF = nvs.read("omni","kf", KF) or KF
   local KP = nvs.read("omni","kp", 0.01) or 0.01
   local KI = nvs.read("omni","ki", 0.05) or 0.05
   local KD = nvs.read("omni","kd", 0.0) or 0.0
@@ -47,7 +47,7 @@ do
   device.set_pid(KP, KI, KD, KF)
   device.set_set_rad_per_tick(RAD_PER_TICK)
   device.set_set_wheel_diameter(WHEEL_DIAMETER)
-  
+
   local function get_interpolator(x1, y1, x2, y2)
     local p = (y2-y1)/(x2-x1)
     return function (x)
@@ -63,8 +63,11 @@ do
   -- This is computed from the maxpower setting.
   omni.max_speed = normalize(max)
 end
+
+local cont_enables = 0
+
 --- The native C firmware module.
--- This can be used to access low level functionality from `omni_hbridge`. FIXME: docs 
+-- This can be used to access low level functionality from `omni_hbridge`. FIXME: docs
 omni.device = device
 
 --- Move the robot.
@@ -77,7 +80,7 @@ omni.drive = device.drive
 
 --- Enable/disable motors.
 -- @function enable
--- @tparam[opt=true] boolean on if true value or omitted, power up. 
+-- @tparam[opt=true] boolean on if true value or omitted, power up.
 -- If false value then power down.
 omni.enable = device.set_enable
 
@@ -94,13 +97,21 @@ omni.encoder = {}
 omni.encoder.cb = require'cb_list'.get_list()
 
 --- Enables the encoder callback.
--- When enabled, wheel movement will trigger @{omni.encoder.cb}. 
+-- When enabled, wheel movement will trigger @{omni.encoder.cb}.
 -- @tparam boolean on true value to enable, false value to disable.
 omni.encoder.enable = function (on)
-  if on then
+  if on and cont_enables == 0 then
     device.set_encoder_callback(omni.encoder.cb.call)
-  else
+  elseif (not on) and cont_enables == 1 then
     device.set_encoder_callback(nil)
+  end
+
+  if on then
+    cont_enables = cont_enables + 1
+  end
+
+  if (not on) and cont_enables ~= 0 then
+    cont_enables = cont_enables - 1
   end
 end
 

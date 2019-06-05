@@ -58,27 +58,26 @@ if (filter == "filter") then
 end
 
 
---local laser_ring_publisher = function (d1,d2,d3,d4,d5,d6)
---  measure_cb(d1,d2,d3,d4,d5,d6)
---  local sens_str = nil
---  if (filter == nil) then
---    sens_str = LASER_CMD .. DELIMITER .. implode(DELIMITER, M.laser_ring.raw_d)
---  else
---    sens_str = LASER_CMD .. DELIMITER .. implode(DELIMITER, M.laser_ring.norm_d)
---  end
---  M.wifi_net.broadcast(sens_str)
---end
---
---local color_cb = function(color_name, h, s, v)
---  local color_str = COLOR_CMD .. DELIMITER .. color_name .. DELIMITER .. h .. DELIMITER .. s .. DELIMITER .. v
---  M.wifi_net.broadcast(color_str)
---end
---
---
+local laser_ring_publisher = function (d1,d2,d3,d4,d5,d6)
+  measure_cb(d1,d2,d3,d4,d5,d6)
+  local sens_str = nil
+  if (filter == nil) then
+    sens_str = LASER_CMD .. DELIMITER .. implode(DELIMITER, M.laser_ring.raw_d)
+  else
+    sens_str = LASER_CMD .. DELIMITER .. implode(DELIMITER, M.laser_ring.norm_d)
+  end
+  --M.wifi_net.broadcast(sens_str)
+end
 
---M.laser_ring.cb.append(M.laser_ring.get_filtering_cb())
-M.laser_ring.cb.append(M.laser_ring.get_reading_cb())
---M.color.color_cb.append(color_cb)
+local color_cb = function(color_name, h, s, v)
+  local color_str = COLOR_CMD .. DELIMITER .. color_name .. DELIMITER .. h .. DELIMITER .. s .. DELIMITER .. v
+  --M.wifi_net.broadcast(color_str)
+end
+
+
+
+M.laser_ring.cb.append(laser_ring_publisher)
+M.color.color_cb.append(color_cb)
 
 --M.laser_ring.enable(true)
 --M.color.enable(true)

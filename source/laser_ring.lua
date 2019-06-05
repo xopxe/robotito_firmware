@@ -15,6 +15,9 @@ vlring.init(sensors)
 local time_budget = nvs.read("laser","time_budget", 5000) or 5000
 vlring.set_measurement_timing_budget(time_budget)
 
+
+local cont_enables = 0
+
 local table_sort = table.sort
 
 --CONSTANTS
@@ -174,11 +177,21 @@ end
 -- @tparam[opt=100] integer period Sampling period in ms, if omitted is read
 -- from `nvs.read("laser","period")`
 M.enable = function (on, period)
-  if on then
+  if on and cont_enables == 0 then
+
     period = period or nvs.read("laser","period", 100) or 100
     vlring.get_continuous(period, M.cb.call)
-  else
+
+  elseif (not on) and cont_enables == 1 then
     vlring.get_continuous(nil)
+  end
+
+  if on then
+    cont_enables = cont_enables + 1
+  end
+
+  if (not on) and cont_enables ~= 0 then
+    cont_enables = cont_enables - 1
   end
 end
 

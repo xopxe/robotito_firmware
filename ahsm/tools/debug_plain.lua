@@ -1,19 +1,21 @@
 --- Debug formatter that generates readable output.
--- @usage local ahsm = require 'ahsm' 
+-- @usage local ahsm = require 'ahsm'
 -- local debug_plain = require 'tools.debug_plain'
 -- ahsm.debug = debug_plain.out
 
 local M = {}
 
 
+--robot = require 'robot'  -- global
+
 local debug_names = {}
 
 local function pick_debug_name(v, nv)
   if debug_names[v] then return debug_names[v] end
-  if type(nv)=='string' then 
+  if type(nv)=='string' then
     debug_names[v] = nv
-  else 
-    debug_names[v] = tostring(v._name or v) 
+  else
+    debug_names[v] = tostring(v._name or v)
   end
   if v.container and v.container._name ~= '.' then -- build path for states
     debug_names[v] = debug_names[v.container] ..'.' ..debug_names[v]
@@ -24,6 +26,11 @@ end
 --- Function to be used to write.
 -- Defaults to `print`
 M.print = print
+
+-- function(string)
+--   sens_str = "state*" .. string
+--   robot.wifi_net.broadcast(sens_str)
+-- end
 
 -- -- Function to be passed assigned to `ahsm.debug`.
 M.out = function( action, p1, p2, p3, p4 )

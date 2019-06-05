@@ -65,6 +65,8 @@ do
   assert(apds9960r.color.set_ambient_gain(gain))
 end
 
+local cont_enables = 0
+
 local color_rgb = {
   ['red'] = {100,0,0},
   ['yellow'] = {50,50,0},
@@ -119,13 +121,23 @@ pio.pin.setdir(pio.OUTPUT, led_pin)
 -- @tparam[opt=100] integer period Sampling period in ms, if omitted is
 -- read from `nvs.read("color","period")`.
 M.enable = function (on, period)
-  if on then
+  if on and cont_enables == 0 then
+
     pio.pin.sethigh(led_pin)
     period = period or nvs.read("color","period", 100) or 100
     apds9960r.color.enable(period)
-  else
+
+  elseif (not on) and cont_enables == 1 then
     apds9960r.color.enable(false)
     pio.pin.setlow(led_pin)
+  end
+
+  if on then
+    cont_enables = cont_enables + 1
+  end
+
+  if (not on) and cont_enables ~= 0 then
+    cont_enables = cont_enables - 1
   end
 end
 
