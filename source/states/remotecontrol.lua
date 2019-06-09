@@ -19,7 +19,7 @@ local s_remote_control = ahsm.state {
   end,
 }
 
-function split(s, delimiter)
+local function split(s, delimiter)
     local result = {};
     for match in (s..delimiter):gmatch("(.-)"..delimiter) do
         table.insert(result, match)
@@ -49,7 +49,7 @@ local t_command = ahsm.transition {
 }
 
 local event_message = function(data,ip,port)
-  local data = split(data, '*')
+  data = split(data, '*')
   e_msg.data = data
   robot.hsm.queue_event(e_msg)
 end
