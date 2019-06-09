@@ -1,18 +1,18 @@
 --- Main program using ahsm.
 -- Uses state machines to control the robot. This program is intended to
 -- be loaded from the @{autorun} script. To achieve this, set `nvs.write("autorun", "main" "main_ahsm.lua")`.
--- This program loads and initalizes @{robot} and ahsm.  
---  
+-- This program loads and initalizes @{robot} and ahsm.
+--
 -- Configuration is loaded using `nvs.read("ahsm", parameter)` calls, where the
--- available parameters are:  
---  
---* `"debugger"` the debug output system, like ahsm's "debug_plain". Defaults to nil (disabled)  
---  
---* `"dot_period"` if positive, a period in sec for printing a dot graph of the root state machine. Defaults to -1 (disabled)  
---  
---* `"root"` a composite state to be used as root for the state machine. This must be the name of library to be required, which will return an ahsm state. Defaults to "states.test"  
---  
---* `"timestep"` time in ms between sweeps to check for timed out transitions. Defaults to 10  
+-- available parameters are:
+--
+--* `"debugger"` the debug output system, like ahsm's "debug_plain". Defaults to nil (disabled)
+--
+--* `"dot_period"` if positive, a period in sec for printing a dot graph of the root state machine. Defaults to -1 (disabled)
+--
+--* `"root"` a composite state to be used as root for the state machine. This must be the name of library to be required, which will return an ahsm state. Defaults to "states.test"
+--
+--* `"timestep"` time in ms between sweeps to check for timed out transitions. Defaults to 10
 -- @script main_ahsm
 
 
@@ -24,8 +24,9 @@ ahsm.get_time = os.gettime
 local hsm
 
 -- initialize debugging
+
 do
-  local debuggername = nvs.read("ahsm", "debugger", nil)
+  local debuggername = nvs.read("ahsm", "debugger", "debug_plain")
   print('main_ahsm debugger:', debuggername)
   if debuggername then
     local debugger = require( debuggername )

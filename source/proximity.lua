@@ -39,6 +39,7 @@ M.enable = function (on, period, threshold, hysteresis)
     period = period or nvs.read("proximity","period", 100) or 100
     threshold = threshold or nvs.read("proximity","threshold", 250) or 250
     hysteresis = hysteresis or nvs.read("proximity","hysteresis", 3) or 3
+
     assert(apds9960r.proximity.enable(period, threshold, hysteresis))
   elseif not on and enables==1 then
     assert(apds9960r.proximity.enable(nil))

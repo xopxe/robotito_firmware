@@ -89,14 +89,14 @@ local s_color = ahsm.state {
     ledr.clear()
     robot.omni.drive(0, 0, 0)
     paint_leds_empty()
-    s_color.color_cb.append(produce_color_event)
+    color.color_cb.append(produce_color_event)
     s_color.enable(true) -- only enable (no dis. because it could be used by others)
   end,
   exit = function ()
     ledr.clear()
     robot.omni.drive(0, 0, 0)
     s_color.enable(false)
-    s_color.color_cb.remove(produce_color_event)
+    color.color_cb.remove(produce_color_event)
   end,
 }
 

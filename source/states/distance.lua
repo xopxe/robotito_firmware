@@ -149,16 +149,16 @@ local callback_position = function()
   local previous = e_dist[s_far].mindist
   local th_dist = 15
 
-  if (actual_s_far ~= 100 and math.abs(actual_s_far - previous) < th_dist) then
+  if (actual_s_far == 0 or actual_s_far_1 == 0) then
+    omni.drive(0,0,0)
+    robot.hsm.queue_event(e_psearch)
+  elseif (actual_s_far ~= 100 and math.abs(actual_s_far - previous) < th_dist) then
     omni.drive(0,0,0)
     robot.hsm.queue_event(e_reforward)
   elseif (actual_s_far_1 ~= 100 and math.abs(actual_s_far_1 - previous) < th_dist) then
     omni.drive(0,0,0)
     s_far = s_far%6 + 1
-    robot.hsm.queue_event(e_reforward)
-  elseif (actual_s_far == 0 or actual_s_far_1 == 0) then
-    omni.drive(0,0,0)
-    robot.hsm.queue_event(e_psearch)
+    robot.hsm.queue_event(e_reforward)  
   end
 
 end
