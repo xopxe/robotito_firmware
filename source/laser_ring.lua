@@ -16,6 +16,7 @@ local time_budget = nvs.read("laser","time_budget", 5000) or 5000
 vlring.set_measurement_timing_budget(time_budget)
 
 local table_sort = table.sort
+local math_ceil = math.ceil
 
 --CONSTANTS
 local N_SENSORS = 6
@@ -109,10 +110,10 @@ end
 ---[[
 local median = function (numlist)
   --if type(numlist) ~= 'table' then return numlist end
-  table.sort(numlist)
+  table_sort(numlist)
   local listlength = #numlist
   if listlength %2 == 0 then return (numlist[listlength/2] + numlist[listlength/2+1]) / 2 end
-  return numlist[math.ceil(listlength/2)]
+  return numlist[math_ceil(listlength/2)]
 end
 --]]
 --[[
@@ -168,17 +169,26 @@ M.get_filtering_cb = function ()
   return dist_callback_filter
 end
 
+local enables = 0
+
 --- Enables the range monitoring callback.
--- When enabled @{cb} will be triggered periodically.
+-- When enabled @{cb} will be triggered periodically.  
+-- To correctly handle multiple users of the module, please balance enables and 
+-- disables: if you enable, please disable when you stop neededing it.
 -- @tparam boolean on true value to enable, false value to disable.
 -- @tparam[opt=100] integer period Sampling period in ms, if omitted is read
 -- from `nvs.read("laser","period")`
 M.enable = function (on, period)
-  if on then
+  if on and enables==0 then
     period = period or nvs.read("laser","period", 100) or 100
     vlring.get_continuous(period, M.cb.call)
-  else
+  elseif not on and enables==1 then
     vlring.get_continuous(nil)
+  end
+  if on then
+    enables=enables+1
+  elseif enables>0 then
+    enables=enables-1
   end
 end
 

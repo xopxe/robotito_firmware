@@ -21,8 +21,12 @@ M.device = apds9960r.proximity
 M.cb = require'cb_list'.get_list()
 apds9960r.proximity.set_callback(M.cb.call)
 
+local enables = 0
+
 --- Enables the proximity callback.
--- When enabled, proximity changes will trigger @{cb}. 
+-- When enabled, proximity changes will trigger @{cb}.  
+-- To correctly handle multiple users of the module, please balance enables and 
+-- disables: if you enable, please disable when you stop neededing it.
 -- @tparam boolean on true value to enable, false value to disable.
 -- @tparam[opt=100] integer period Sampling period in ms, if omitted is read
 -- from `nvs.read("proximity","period")`. 
@@ -31,14 +35,18 @@ apds9960r.proximity.set_callback(M.cb.call)
 -- @tparam[opt=3] integer hysteresis if omitted is read from
 -- `nvs.read("proximity","hysteresis")` 
 M.enable = function (on, period, threshold, hysteresis)
-  if on then
+  if on and enables==0 then
     period = period or nvs.read("proximity","period", 100) or 100
     threshold = threshold or nvs.read("proximity","threshold", 250) or 250
     hysteresis = hysteresis or nvs.read("proximity","hysteresis", 3) or 3
-
     assert(apds9960r.proximity.enable(period, threshold, hysteresis))
-  else
+  elseif not on and enables==1 then
     assert(apds9960r.proximity.enable(nil))
+  end
+  if on then
+    enables=enables+1
+  elseif enables>0 then
+    enables=enables-1
   end
 end
 
