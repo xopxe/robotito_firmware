@@ -169,6 +169,10 @@ M.get_filtering_cb = function ()
   return dist_callback_filter
 end
 
+--- Sampling period in ms. Initalized from `nvs.read("laser","period")`.
+-- @tfield[opt=100] integer period
+M.period = nvs.read("laser","period", 100) or 100
+
 local enables = 0
 
 --- Enables the range monitoring callback.
@@ -180,7 +184,8 @@ local enables = 0
 -- from `nvs.read("laser","period")`
 M.enable = function (on, period)
   if on and enables==0 then
-    period = period or nvs.read("laser","period", 100) or 100
+    period = period or M.period
+    M.period = period
     vlring.get_continuous(period, M.cb.call)
   elseif not on and enables==1 then
     vlring.get_continuous(nil)
