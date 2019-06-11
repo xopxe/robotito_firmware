@@ -42,7 +42,16 @@ local t_command = ahsm.transition {
             robot.omni.drive(xdot,ydot,w)
         end
       end -- Mas comandos con else if
-    else
+        if data[1] == 'nvswrite' then
+          local namespace = data[2]
+          local variable = data[3]
+          local value = data[4]
+          local type = data[5]
+          if type=='number' then value=tonumber(value) end
+          if type=='nil' then value=nil end
+          nvs.write(namespace, variable, value)
+        end
+      else
       robot.hsm.queue_event(e_fin)
     end
   end
