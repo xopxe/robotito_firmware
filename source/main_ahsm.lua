@@ -26,7 +26,7 @@ local hsm
 -- initialize debugging
 
 do
-  local debuggername = nvs.read("ahsm", "debugger", "debug_plain")
+  local debuggername = nvs.read("ahsm", "debugger", nil)
   print('main_ahsm debugger:', debuggername)
   if debuggername then
     local debugger = require( debuggername )
