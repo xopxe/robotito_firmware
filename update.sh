@@ -30,6 +30,7 @@ $MODULES_DIR/proximity.lua
 $MODULES_DIR/robot.lua
 $MODULES_DIR/wifi_net.lua
 $TEST_DIR/states/test.lua
+$MODULES_AHSM_DIR/ciceaapp.lua
 $MODULES_AHSM_DIR/onoff.lua
 $MODULES_AHSM_DIR/colorway.lua
 $MODULES_AHSM_DIR/color.lua
@@ -63,6 +64,7 @@ proximity.lua
 robot.lua
 wifi_net.lua
 states/test.lua
+states/ciceaapp.lua
 states/onoff.lua
 states/colorway.lua
 states/color.lua
