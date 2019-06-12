@@ -95,7 +95,7 @@ local s_color = ahsm.state {
   exit = function ()
     ledr.clear()
     robot.omni.drive(0, 0, 0)
-    s_color.enable(false)
+    color.enable(false)
     color.color_cb.remove(produce_color_event)
   end,
 }

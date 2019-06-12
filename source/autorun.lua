@@ -21,13 +21,14 @@ if runonce then
   dofile(runonce)
 else
   print ("No run-once program set.")
+
+  print("Looking for a main program into nvs('autorun', 'main')")
+  local main = nvs.read("autorun", "main", nil)
+  if main then 
+    print("Main program:", main)
+    dofile(main)
+  else
+    print ("No main program set.")
+  end
 end
 
-print("Looking for a main program into nvs('autorun', 'main')")
-local main = nvs.read("autorun", "main", nil)
-if main then 
-  print("Main program:", main)
-  dofile(main)
-else
-  print ("No main program set.")
-end
