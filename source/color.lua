@@ -65,8 +65,6 @@ do
   assert(apds9960r.color.set_ambient_gain(gain))
 end
 
-local cont_enables = 0
-
 local color_rgb = {
   ['red'] = {100,0,0},
   ['yellow'] = {50,50,0},
@@ -115,29 +113,28 @@ apds9960r.color.set_rgb_callback(M.rgb_cb.call)
 local led_pin = pio.GPIO32
 pio.pin.setdir(pio.OUTPUT, led_pin)
 
+local enables = 0
+
 --- Enables the callbacks.
--- When enabled, the driver will trigger @{color_cb} and @{rgb_cb}.
+-- When enabled, the driver will trigger @{color_cb} and @{rgb_cb}.  
+-- To correctly handle multiple users of the module, please balance enables and 
+-- disables: if you enable, please disable when you stop neededing it.
 -- @tparam boolean on true value to enable, false value to disable.
 -- @tparam[opt=100] integer period Sampling period in ms, if omitted is
 -- read from `nvs.read("color","period")`.
 M.enable = function (on, period)
-  if on and cont_enables == 0 then
-
+  if on and enables==0 then
     pio.pin.sethigh(led_pin)
     period = period or nvs.read("color","period", 100) or 100
     apds9960r.color.enable(period)
-
-  elseif (not on) and cont_enables == 1 then
+  elseif not on and enables==1 then
     apds9960r.color.enable(false)
     pio.pin.setlow(led_pin)
   end
-
   if on then
-    cont_enables = cont_enables + 1
-  end
-
-  if (not on) and cont_enables ~= 0 then
-    cont_enables = cont_enables - 1
+    enables=enables+1
+  elseif enables>0 then
+    enables=enables-1
   end
 end
 

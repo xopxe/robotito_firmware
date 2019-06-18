@@ -40,8 +40,10 @@ local e_search = { _name = "SEARCH_AGAIN" }
 
 --VARIABLES
 
+--[[
 nvs.write('laser','dmin', nil)
 nvs.write('laser','dmax', 700)
+--]]
 
 local range = function(num)
   return (num > 0 and num < 100)
@@ -50,8 +52,7 @@ end
 local s_far
 
 local angle
-local t_ms = 80 -- period of distance measurements
-nvs.write('laser','period',t_ms)
+local t_ms = laser.period -- period of distance measurements
 local dtheta = (math.pi/3)/30 -- partition of pi/3
 local w = -1000*dtheta/t_ms -- rad/s
 --[[

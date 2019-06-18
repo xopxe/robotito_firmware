@@ -15,7 +15,7 @@ local onoff = require 'states.onoff'
 local remotecontrol = require 'states.remotecontrol'
 
 
-local behavior_name = nvs.read("ahsm", "behavior", nil) or nil
+local behavior_name = nvs.read("ciceaapp", "behavior", nil) or nil
 print('behavior loading:', behavior_name)
 
 local behavior = ahsm.state{
