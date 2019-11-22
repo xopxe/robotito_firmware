@@ -28,6 +28,8 @@ ahsm.get_time = os.gettime
 local debugger = require 'debug_plain'
 --ahsm.debug = debugger.out
 
+local SECURITY_V = 5
+
 local hsm
 
 local n_colors = #colors
@@ -95,6 +97,9 @@ local function create_calibrator (clr)
   local s_capture_calibration = ahsm.state {
     _name = 's_capture',
     entry = function ()
+      if (cv < nvs.read('color','min_val',40)) then
+        nvs.write('color','min_val', cv-SECURITY_V)
+      end
       print ('capturing', clr.name, ch, cs, cv)
       nvs.write('color', clr.name..'_h', ch)
       nvs.write('color', clr.name..'_s', cs)
