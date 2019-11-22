@@ -143,6 +143,7 @@ M.init = function (conf)
     ,'ssid:'..conf.ssid
     ,'passwd:'..conf.passwd)
 
+
   --local rc_config = {}
   conf.udp_port = conf.udp_port or
     nvs.read("wifi","udp_port", 2018) or 2018

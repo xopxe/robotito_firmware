@@ -28,6 +28,7 @@ if (behavior_name ~= nil) then
   behavior = require( behavior_name )
 end
 
+
 local t_control = ahsm.transition {
   src = behavior, tgt = remotecontrol,
   events = { remotecontrol.events.WIFIMESSAGE },
@@ -51,10 +52,12 @@ s_on.initial = remotecontrol
 
 s_on.entry = function ()
   robot.omni.enable(true)
+  remotecontrol.entry()
 end
 
 s_on.exit = function ()
   robot.omni.enable(false)
+  remotecontrol.exit()
 end
 
 

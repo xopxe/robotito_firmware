@@ -38,6 +38,7 @@ M.color = require('color')
 --- Downard facing @{proximity} sensor.
 M.floor = require('proximity')
 
+
 --- Distance sensor ring. This points to @{laser_ring}
 M.laser_ring = require('laser_ring')
 
@@ -66,12 +67,12 @@ local laser_ring_publisher = function (d1,d2,d3,d4,d5,d6)
   else
     sens_str = LASER_CMD .. DELIMITER .. implode(DELIMITER, M.laser_ring.norm_d)
   end
-  --M.wifi_net.broadcast(sens_str)
+  M.wifi_net.broadcast(sens_str)
 end
 
 local color_cb = function(color_name, h, s, v)
   local color_str = COLOR_CMD .. DELIMITER .. color_name .. DELIMITER .. h .. DELIMITER .. s .. DELIMITER .. v
-  --M.wifi_net.broadcast(color_str)
+  M.wifi_net.broadcast(color_str)
 end
 
 

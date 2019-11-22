@@ -23,6 +23,7 @@ local e_color = {
 
 local ahsm = require 'ahsm'
 local color = require('color')
+local laser_ring = require('laser_ring')
 local ledr = require 'led_ring'
 
 --preproccess events
@@ -91,10 +92,12 @@ local s_color = ahsm.state {
     paint_leds_empty()
     color.color_cb.append(produce_color_event)
     color.enable(true)
+    laser_ring.enable(true)
   end,
   exit = function ()
     ledr.clear()
     robot.omni.drive(0, 0, 0)
+    laser_ring.enable(false)
     color.enable(false)
     color.color_cb.remove(produce_color_event)
   end,

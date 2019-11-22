@@ -86,7 +86,8 @@ M.cb = require'cb_list'.get_list()
 -- @usage local laser=require('laser_ring')
 -- laser.cb.append(laser.get_reading_cb())
 -- laser.cb.append(print)
--- laser.enable(true)
+-- laser.enable(true
+
 M.get_reading_cb = function ()
   local dist_callback = function(d1,d2,d3,d4,d5,d6)
     --uart.write(uart.CONSOLE, '!get_reading_cb callback\r\n')
@@ -176,8 +177,8 @@ M.period = nvs.read("laser","period", 100) or 100
 local enables = 0
 
 --- Enables the range monitoring callback.
--- When enabled @{cb} will be triggered periodically.  
--- To correctly handle multiple users of the module, please balance enables and 
+-- When enabled @{cb} will be triggered periodically.
+-- To correctly handle multiple users of the module, please balance enables and
 -- disables: if you enable, please disable when you stop neededing it.
 -- @tparam boolean on true value to enable, false value to disable.
 -- @tparam[opt=100] integer period Sampling period in ms, if omitted is read

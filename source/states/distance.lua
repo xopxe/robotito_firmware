@@ -159,7 +159,7 @@ local callback_position = function()
   elseif (actual_s_far_1 ~= 100 and math.abs(actual_s_far_1 - previous) < th_dist) then
     omni.drive(0,0,0)
     s_far = s_far%6 + 1
-    robot.hsm.queue_event(e_reforward)  
+    robot.hsm.queue_event(e_reforward)
   end
 
 end
@@ -288,7 +288,6 @@ local t_search = ahsm.transition {
 }
 
 
-
 local distance = ahsm.state {
   states = { SEARCH = s_search, BACK = s_back, POSITION = s_position, FORWARD = s_forward},
   transitions = {
@@ -315,10 +314,12 @@ local distance = ahsm.state {
   initial = s_search,
   entry = function()
     robot.laser_ring.enable(true)
+    robot.color.enable(true)
   end,
- -- exit = function()
-   -- leds.clear()
-  --end,
+  exit = function()
+    robot.color.enable(false)
+    robot.laser_ring.enable(false)
+  end,
 }
 
 return distance

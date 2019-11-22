@@ -30,13 +30,14 @@ $MODULES_DIR/proximity.lua
 $MODULES_DIR/robot.lua
 $MODULES_DIR/wifi_net.lua
 $TEST_DIR/states/test.lua
-$MODULES_AHSM_DIR/ciceaapp.lua
 $MODULES_AHSM_DIR/onoff.lua
 $MODULES_AHSM_DIR/colorway.lua
 $MODULES_AHSM_DIR/color.lua
 $MODULES_AHSM_DIR/onremoteoff.lua
 $MODULES_AHSM_DIR/distance.lua
 $MODULES_AHSM_DIR/remotecontrol.lua
+$MODULES_AHSM_DIR/ciceaapp.lua
+$MODULES_AHSM_DIR/beagleboneapp.lua
 $TEST_DIR/test_color_display.lua
 $TEST_DIR/test_laser_ring.lua
 $TEST_DIR/test_omni.lua
@@ -46,6 +47,7 @@ $TEST_DIR/test_color.lua
 $TEST_DIR/test_led_ring.lua
 $TEST_DIR/test_proximity.lua
 $TEST_DIR/calibrate_color.lua
+$TEST_DIR/test_uart_console.lua
 )
 
 # Array of destination files
@@ -64,13 +66,14 @@ proximity.lua
 robot.lua
 wifi_net.lua
 states/test.lua
-states/ciceaapp.lua
 states/onoff.lua
 states/colorway.lua
 states/color.lua
 states/onremoteoff.lua
 states/distance.lua
 states/remotecontrol.lua
+states/ciceaapp.lua
+states/beagleboneapp.lua
 test_color_display.lua
 test_laser_ring.lua
 test_omni.lua
@@ -80,6 +83,7 @@ test_color.lua
 test_led_ring.lua
 test_proximity.lua
 calibrate_color.lua
+test_uart_console.lua
 )
 
 
@@ -123,7 +127,7 @@ else
 
 		fi
 	done
-	
+
 fi
 
 touch $TMP_FILE

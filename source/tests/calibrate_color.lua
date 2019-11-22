@@ -1,13 +1,13 @@
 --- Tool for calibrating the color sensor.
--- Start holding the robot in your hands (not on the floor). 
--- This program will first shortly display all the colors that 
+-- Start holding the robot in your hands (not on the floor).
+-- This program will first shortly display all the colors that
 -- will be calibrated (red, yellow, green, blue, and magenta).
 -- Then it will display a color, and you will have to place the
 -- robot over a patch of the same color. When a color is detected,
 -- The robor will briefly flash the leds and display the next color.
 -- Pick up the robot, and place it over the new patch. Repeat until
--- all colors are calibrated,  
---  
+-- all colors are calibrated,
+--
 -- When all colors are calibrated, the programs ends. The
 -- calibration data will be writen to nvs system (see @{color}).
 -- The new calibration data will be used after reboot.
@@ -74,7 +74,7 @@ local color_event = function(r, g, b, a, h, s, v)
       hsm.queue_event(e_stable)
     end
   else
-    cr, cg, cb = r, g, b
+    cr, cg, cb = r//255, g//255, b//255
     ch, cs, cv = h, s, v
     hsv_count = 0
   end
@@ -94,16 +94,19 @@ local function create_calibrator (clr)
   }
   local s_capture_calibration = ahsm.state {
     _name = 's_capture',
-    entry = function () 
+    entry = function ()
       print ('capturing', clr.name, ch, cs, cv)
       nvs.write('color', clr.name..'_h', ch)
       nvs.write('color', clr.name..'_s', cs)
-      nvs.write('color', clr.name..'_v', cv)      
+      nvs.write('color', clr.name..'_v', cv)
+      print('CR:', cr)
+      print('CG:', cg)
+      print('CB:', cb)
       ledr.set_all(cr, cg, cb, true)
       tmr.delayms(500)
     end,
-    doo = function () 
-      hsm.queue_event(e_calibrated) 
+    doo = function ()
+      hsm.queue_event(e_calibrated)
     end,
   }
   local t_proximity = ahsm.transition {
@@ -118,7 +121,7 @@ local function create_calibrator (clr)
     _name = 's_calib_'..clr.name,
     events = {calibrated = e_calibrated},
     entry = function ()
-      print('calibrating color:', clr.name) 
+      print('calibrating color:', clr.name)
       ledr.set_all(clr.r, clr.g, clr.b, true)
     end,
     exit = function () print('done calibrating color:', clr.name) end,
@@ -146,7 +149,7 @@ for i=1, n_colors-1 do
 end
 states[#states+1] = ahsm.state {
   _name = 'calib_done',
-  entry = function () 
+  entry = function ()
     print 'Finished calibrating'
     ledr.clear()
     prox.enable(false)
@@ -176,9 +179,9 @@ local s_root = ahsm.state {
 }
 
 
-hsm = ahsm.init( s_root ) 
+hsm = ahsm.init( s_root )
 thread.start( function()
-    while true do 
+    while true do
       hsm.loop()
       tmr.sleepms(10)
     end
