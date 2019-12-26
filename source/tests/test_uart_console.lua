@@ -16,18 +16,19 @@ robot.omni.enable(true)
 while true do
   local data = uart.read(uart.CONSOLE, "*l", 500)
   if(data ~= nil) then
-    print(data)
-    data = split(data, '*')
-    if data[1] == VEL_CMD then
-      if #data == 5 then
-        local xdot = data[2]
-        print(xdot)
-        local ydot = data[3]
-        print(ydot)
-        local w = data[4]
-        print(w)
-        robot.omni.drive(xdot,ydot,w)
-      end
-    end
+  	print('LEIDO: ', data)
+  	data = split(data, '*')
+  	if data[1] == VEL_CMD then
+    		if #data == 5 then
+      			local xdot = data[2]
+      			local ydot = data[3]
+     			  local w = data[4]
+      			robot.omni.drive(xdot,ydot,w)
+    		end
+  	end
   end
 end
+
+
+--robot.omni.drive(0.1,0,0)
+--speed*0*0*0*0
