@@ -83,26 +83,27 @@ local t_command = ahsm.transition {
         robot.hsm.queue_event(e_fin)
       end
     end
-  }
-
-  local event_message = function(data,ip,port)
-    data = split(data, '*')
-    e_msg.data = data
-    robot.hsm.queue_event(e_msg)
   end
+}
+
+local event_message = function(data,ip,port)
+  data = split(data, '*')
+  e_msg.data = data
+  robot.hsm.queue_event(e_msg)
+end
 
 -- root state
-  local remote = ahsm.state {
-    events =  { WIFIMESSAGE = e_msg, FINCONTROL = e_fin },
-    states = { REMOTECONTROL=s_remote_control},
-    transitions = { COMMAND=t_command},
-    initial = s_remote_control,
-    entry = function()
-      robot.wifi_net.cb.append(event_message)
-    end,
-    exit = function()
-      robot.wifi_net.cb.remove(event_message)
-    end,
-  }
+local remote = ahsm.state {
+  events =  { WIFIMESSAGE = e_msg, FINCONTROL = e_fin },
+  states = { REMOTECONTROL=s_remote_control},
+  transitions = { COMMAND=t_command},
+  initial = s_remote_control,
+  entry = function()
+    robot.wifi_net.cb.append(event_message)
+  end,
+  exit = function()
+    robot.wifi_net.cb.remove(event_message)
+  end,
+}
 
-  return remote
+return remote
