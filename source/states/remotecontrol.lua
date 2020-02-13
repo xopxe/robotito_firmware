@@ -72,9 +72,9 @@ local t_command = ahsm.transition {
         if #data == 4 then
           local dir = data[2]
           local dt = data[3]
-          local v = data[4]
+          local v = data[4]*5
           local w = v; -- I asume that we turn left
-          if dir=='R' then ydot=-v end
+          if dir=='R' then w=-v end
           robot.omni.drive(0,0,w)
           tmr.sleepms( math.floor(1000*dt) )
           robot.omni.drive(0,0,0)
