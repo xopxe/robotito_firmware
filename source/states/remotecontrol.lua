@@ -3,6 +3,7 @@ local ahsm = require 'ahsm'
 local VEL_CMD = 'speed'
 local NVS_WRITE = 'nvswrite'
 local DO_STEP = 'step'
+local DO_TURN = 'turn'
 
 local e_msg = { _name="WIFI_MESSAGE", cmd = nil,}
 local e_fin = { _name="FINCONTROL", }
@@ -64,6 +65,17 @@ local t_command = ahsm.transition {
           elseif dir=='E' then xdot=v
           elseif dir=='W' then xdot=-v end
           robot.omni.drive(xdot,ydot,0)
+          tmr.sleepms( math.floor(1000*dt) )
+          robot.omni.drive(0,0,0)
+        end
+      elseif data[1] == DO_TURN then
+        if #data == 4 then
+          local dir = data[2]
+          local dt = data[3]
+          local v = data[4]
+          local w = v; -- I asume that we turn left
+          if dir=='R' then ydot=-v end
+          robot.omni.drive(0,0,w)
           tmr.sleepms( math.floor(1000*dt) )
           robot.omni.drive(0,0,0)
         end
