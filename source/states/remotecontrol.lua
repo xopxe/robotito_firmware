@@ -1,24 +1,73 @@
 local ahsm = require 'ahsm'
+local color = require('color')
+local ledr = require 'led_ring'
 
 local VEL_CMD = 'speed'
 local NVS_WRITE = 'nvswrite'
 local DO_STEP = 'step'
 local DO_TURN = 'turn'
+local LIGHT_SWITCHER = 'switcher'
+local LIGHT_MODE = 'mode' --white/color
 
 local e_msg = { _name="WIFI_MESSAGE", cmd = nil,}
 local e_fin = { _name="FINCONTROL", }
 
 local offset_led = 2
 
+local id_local = -1
+local lights_on = false
+local white_on = false
+
+local step_info = {
+  ['N'] = {
+    ['dir'] = math.pi/2, ['color'] = 'green'
+  },
+  ['S'] = {
+    ['dir'] = 3*math.pi/2, ['color'] = 'red'
+  },
+  ['E'] = {
+    ['dir'] = 0, ['color'] = 'yellow'
+  },
+  ['W'] = {
+    ['dir'] = math.pi, ['color'] = 'blue'
+  }
+}
+
+for coord, t in pairs(e_color) do
+  local rgb = color.color_rgb[t['color']]
+
+  t.r, t.g, t.b = rgb[1], rgb[2], rgb[3]
+  t.x = math.cos(t.dir)
+  t.y = math.sin(t.dir)
+  then.led = math.floor(ledr.n_leds*t.dir/(2*math.pi))
+end
+
+local function paint_leds_empty ()
+  ledr.set_all(0, 0, 0)
+  for coord, t in pairs(e_color) do
+    if white_on then
+      ledr.set_arc(t.led, 1, 10, 10, 10)
+    else
+      ledr.set_arc(t.led, 1, t.r, t.g, t.b)
+    end
+  end
+  --ledr.update()
+end
+
 local s_remote_control = ahsm.state {
-  entry = function()
-    robot.led_ring.clear()
-    robot.led_ring.set_led((offset_led + 5)%24, 0,50,0 , true)
-    robot.led_ring.set_led((offset_led + 6)%24, 0,50,0 , true)
-    robot.led_ring.set_led((offset_led + 7)%24, 0,50,0 , true)
-  end,
+  --entry = function()
+    --robot.led_ring.clear()
+    --robot.led_ring.set_led((offset_led + 5)%24, 50,50,0 , true)
+    --robot.led_ring.set_led((offset_led + 6)%24, 50,50,0 , true)
+    --robot.led_ring.set_led((offset_led + 7)%24, 50,50,0 , true)
+  --end,
   exit = function()
-    robot.led_ring.clear()
+    paint_leds_empty()
+    if lights_on then
+      ledr.update()
+    else
+      ledr.clear()
+    end
   end,
 }
 
@@ -44,6 +93,7 @@ local t_command = ahsm.transition {
           local w = data[4]
           robot.omni.drive(xdot,ydot,w)
         end
+
       elseif data[1] == NVS_WRITE then
         if #data == 5 then
           local namespace = data[2]
@@ -54,34 +104,58 @@ local t_command = ahsm.transition {
           if type=='nil' then value=nil end
           nvs.write(namespace, variable, value)
         end
+
       elseif data[1] == DO_STEP then
-        if #data == 4 then
-          local dir = data[2]
+        if #data == 5 then
+          local coord = data[2]
           local dt = data[3]
           local v = data[4]
-          local xdot, ydot = 0, 0
-          if dir=='N' then ydot=v
-          elseif dir=='S' then ydot=-v
-          elseif dir=='E' then xdot=v
-          elseif dir=='W' then xdot=-v end
-          robot.omni.drive(xdot,ydot,0)
-          tmr.sleepms( math.floor(1000*dt) )
-          robot.omni.drive(0,0,0)
+          local id = data[5]
+
+          local t = step_info[coord]
+
+          if id_local ~= id then --havent read this message
+            id_local = id
+            if lights_on then
+              robot.led_ring.set_arc(t.led -2, 5, t.r, t.g, t.b, true)
+            end
+            robot.omni.drive(v*t.x, v*t.y, 0)
+            tmr.sleepms(math.floor(1000*dt))
+            robot.omni.drive(0,0,0)
+          end
         end
+
       elseif data[1] == DO_TURN then
-        if #data == 4 then
+        if #data == 5 then
           local dir = data[2]
           local dt = data[3]
           local v = data[4]*5
-          local w = v; -- I asume that we turn left
-          if dir=='R' then w=-v end
-          robot.omni.drive(0,0,w)
-          tmr.sleepms( math.floor(1000*dt) )
-          robot.omni.drive(0,0,0)
+          local id = data[5]
+
+          if id_local ~= id then
+            id_local = id
+            local w = v; -- I asume that we turn left
+            if dir == 'R' then w = -v end
+            robot.omni.drive(0,0,w)
+            tmr.sleepms( ath.floor(1000*dt))
+            robot.omni.drive(0,0,0)
+          end
         end
+
+      elseif data[1] == LIGHT_SWITCHER then
+        if #data == 2 then
+          lights_on = (data[2] == 'on')         
+        end
+
+      elseif data[1] == LIGHT_MODE then
+        if #data == 2 then
+          white_on = (data[2] == 'white')
+        end
+
       else
         robot.hsm.queue_event(e_fin)
       end
+
     end
   end
 }
