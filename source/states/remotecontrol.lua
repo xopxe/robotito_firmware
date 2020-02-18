@@ -1,6 +1,7 @@
 local ahsm = require 'ahsm'
 local color = require('color')
 local ledr = require 'led_ring'
+local omni = require 'omni'
 
 local VEL_CMD = 'speed'
 local NVS_WRITE = 'nvswrite'
@@ -12,7 +13,7 @@ local LIGHT_MODE = 'mode' --white/color
 local e_msg = { _name="WIFI_MESSAGE", cmd = nil,}
 local e_fin = { _name="FINCONTROL", }
 
-local offset_led = 2
+--local offset_led = 2
 
 local id_local = -1
 local lights_on = false
@@ -33,20 +34,20 @@ local step_info = {
   }
 }
 
-for coord, t in pairs(e_color) do
+for coord, t in pairs(step_info) do
   local rgb = color.color_rgb[t['color']]
 
   t.r, t.g, t.b = rgb[1], rgb[2], rgb[3]
   t.x = math.cos(t.dir)
   t.y = math.sin(t.dir)
-  then.led = math.floor(ledr.n_leds*t.dir/(2*math.pi))
+  t.led = math.floor(ledr.n_leds*t.dir/(2*math.pi))
 end
 
 local function paint_leds_empty ()
   ledr.set_all(0, 0, 0)
-  for coord, t in pairs(e_color) do
+  for coord, t in pairs(step_info) do
     if white_on then
-      ledr.set_arc(t.led, 1, 10, 10, 10)
+      ledr.set_arc(t.led, 1, 20, 20, 20)
     else
       ledr.set_arc(t.led, 1, t.r, t.g, t.b)
     end
@@ -55,13 +56,7 @@ local function paint_leds_empty ()
 end
 
 local s_remote_control = ahsm.state {
-  --entry = function()
-    --robot.led_ring.clear()
-    --robot.led_ring.set_led((offset_led + 5)%24, 50,50,0 , true)
-    --robot.led_ring.set_led((offset_led + 6)%24, 50,50,0 , true)
-    --robot.led_ring.set_led((offset_led + 7)%24, 50,50,0 , true)
-  --end,
-  exit = function()
+  entry = function()
     paint_leds_empty()
     if lights_on then
       ledr.update()
@@ -117,7 +112,11 @@ local t_command = ahsm.transition {
           if id_local ~= id then --havent read this message
             id_local = id
             if lights_on then
-              robot.led_ring.set_arc(t.led -2, 5, t.r, t.g, t.b, true)
+		if white_on then
+			ledr.set_arc(t.led -2, 5, 20, 20, 20, true)
+		else
+			ledr.set_arc(t.led -2, 5, t.r, t.g, t.b, true)
+		end
             end
             robot.omni.drive(v*t.x, v*t.y, 0)
             tmr.sleepms(math.floor(1000*dt))
@@ -137,7 +136,7 @@ local t_command = ahsm.transition {
             local w = v; -- I asume that we turn left
             if dir == 'R' then w = -v end
             robot.omni.drive(0,0,w)
-            tmr.sleepms( ath.floor(1000*dt))
+            tmr.sleepms(math.floor(1000*dt))
             robot.omni.drive(0,0,0)
           end
         end
