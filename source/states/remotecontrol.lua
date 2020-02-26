@@ -103,9 +103,10 @@ local t_command = ahsm.transition {
       elseif data[1] == DO_STEP then
         if #data == 5 then
           local coord = data[2]
-          local dt = data[3]
+          local dt = math.min(data[3],2)
           local v = data[4]
           local id = data[5]
+		print('dt:',dt)
 
           local t = step_info[coord]
 
@@ -119,6 +120,7 @@ local t_command = ahsm.transition {
 		end
             end
             robot.omni.drive(v*t.x, v*t.y, 0)
+            --tmr.sleepms(math.floor(1000))
             tmr.sleepms(math.floor(1000*dt))
             robot.omni.drive(0,0,0)
           end
@@ -150,11 +152,9 @@ local t_command = ahsm.transition {
         if #data == 2 then
           white_on = (data[2] == 'white')
         end
-
-      else
-        robot.hsm.queue_event(e_fin)
       end
-
+    else
+      robot.hsm.queue_event(e_fin)
     end
   end
 }
