@@ -34,6 +34,8 @@ local step_info = {
   }
 }
 
+local buzzer = sound.attach(sound.DAC, pio.GPIO4)
+
 for coord, t in pairs(step_info) do
   local rgb = color.color_rgb[t['color']]
 
@@ -101,6 +103,7 @@ local t_command = ahsm.transition {
         end
 
       elseif data[1] == DO_STEP then
+        buzzer:playtone(440, 500)
         if #data == 5 then
           local coord = data[2]
           local dt = data[3]
@@ -112,11 +115,11 @@ local t_command = ahsm.transition {
           if id_local ~= id then --havent read this message
             id_local = id
             if lights_on then
-		if white_on then
-			ledr.set_arc(t.led -2, 5, 20, 20, 20, true)
-		else
-			ledr.set_arc(t.led -2, 5, t.r, t.g, t.b, true)
-		end
+              if white_on then
+                ledr.set_arc(t.led -2, 5, 20, 20, 20, true)
+              else
+                ledr.set_arc(t.led -2, 5, t.r, t.g, t.b, true)
+              end
             end
             robot.omni.drive(v*t.x, v*t.y, 0)
             --tmr.sleepms(math.floor(1000))
