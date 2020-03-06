@@ -28,7 +28,7 @@ local step_info = {
     ['dir'] = 0, ['color'] = 'yellow', ['sound'] = 600
   },
   ['S'] = {
-    ['dir'] = 3*math.pi/2, ['color'] = 'red', ['sound'] = 1900
+    ['dir'] = 3*math.pi/2, ['color'] = 'red', ['sound'] = 1000
   },
   ['W'] = {
     ['dir'] = math.pi, ['color'] = 'blue', ['sound'] = 800
@@ -185,12 +185,6 @@ baile[5] = function()
 end
 
 
-
-
-
------
-
-
 local s_remote_control = ahsm.state {
 	entry = function()
 		paint_leds_empty()
@@ -296,16 +290,17 @@ local t_command = ahsm.transition {
 				local dt = math.floor(data[2]) --in seconds
 				local id = data[3]
 				
-				print('dt:', dt)
-
+				
 				if id_local ~= id then
 					id_local = id
 					local w = 2*(math.pi)/dt
-					if w < 1.4 then				
-						--omni.drive(0,0,w)
-						--tmr.sleepms(1000*dt)
-						--omni.drive(0,0,0)
-					end
+					print('dt:', dt, "w: ", w)
+
+					--if w < 1.4 then				
+						omni.drive(0,0,w)
+						tmr.sleepms(1000*dt)
+						omni.drive(0,0,0)
+					--end
 				end
 
 			elseif data[1] == DANCE and #data == 3 then ----
