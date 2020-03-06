@@ -34,7 +34,7 @@ local step_info = {
   }
 }
 
-local buzzer = sound.attach(sound.DAC, pio.GPIO4)
+local buzzer = sound.attach(sound.PWM, pio.GPIO4)
 
 for coord, t in pairs(step_info) do
   local rgb = color.color_rgb[t['color']]
