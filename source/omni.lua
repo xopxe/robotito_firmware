@@ -74,7 +74,7 @@ end
 -- @tparam float X_0
 -- @tparam float Y_0
 -- @tparam float Phi_0
-device.set_odometry_callback(odom_publicator,10,0,0,0)
+--device.set_odometry_callback(odom_publicator,10,0,0,0)
 
 
 local cont_enables = 0
