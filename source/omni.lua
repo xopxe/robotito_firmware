@@ -24,7 +24,7 @@ do
   local ROBOT_RADIUS = 0.0675 --m
 
 --WHEEL_PERIMETER = WHEEL_DIAMETER*3.141592654
-  local ENC_CPR = 12  --counts per revolution
+  local ENC_CPR = 3--12  --counts per revolution
   local MOTOR_REDUCTION = 50
   local TICS_PER_REVOLUTION = ENC_CPR*MOTOR_REDUCTION
   local RAD_PER_TICK = 2*math.pi / TICS_PER_REVOLUTION
