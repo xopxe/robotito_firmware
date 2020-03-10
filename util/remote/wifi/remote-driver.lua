@@ -149,7 +149,7 @@ local dist_callback= function(d1, d2, d3, d4, d5, d6)
   udp:sendto(sens_str, ip_broadcast, port)
 end
 
-dump_rgb = function(r,g,b,a,h,s,v, c)
+local dump_rgb = function(r,g,b,a,h,s,v, c)
   -- send color measurements update
   local sens_str = COLOR_CMD .. DELIMITER .. r .. DELIMITER .. g .. DELIMITER .. b .. DELIMITER .. a .. DELIMITER .. h .. DELIMITER .. s .. DELIMITER .. v .. DELIMITER .. c
   udp:sendto(sens_str, ip_broadcast, port)
@@ -213,7 +213,7 @@ thread.start(function()
           parameter = cmd[3]
           value = cmd[4]
           nvs.write(namespace, parameter, value)
-          msg = '[INFO] Set parameter command received (' .. namespace .. ', ' .. parameter .. ', ' .. value .. ')'
+          msg = '[INFO] Set parameter command received (' .. tostring(namespace) .. ', ' .. tostring(parameter) .. ', ' .. tostring(value) .. ')'
         else
           msg = '[ERROR] Malformed command.'
         end
@@ -224,12 +224,12 @@ thread.start(function()
           -- print(parameter, '....', namespace)
 
           value = nvs.read(namespace, parameter, 'key not found')
-          msg = '[INFO] Get parameter command received (' .. namespace .. ', ' .. parameter .. ', ' .. value .. ')'
+          msg = '[INFO] Get parameter command received (' .. tostring(namespace) .. ', ' .. tostring(parameter) .. ', ' .. tostring(value) .. ')'
         else
           msg = '[ERROR] Malformed command.'
         end
       else
-        msg = '[ERROR] Unknown command: ' .. cmd[1]
+        msg = '[ERROR] Unknown command: ' .. tostring(cmd[1])
       end
       -- print(msg)
       udp:sendto(msg, ip_broadcast, port)
