@@ -13,6 +13,8 @@
 --* `"root"` a composite state to be used as root for the state machine. This must be the name of library to be required, which will return an ahsm state. Defaults to "states.test"
 --
 --* `"timestep"` time in ms between sweeps to check for timed out transitions. Defaults to 10
+--
+--* `"stacksize"` ram asigned to ahsm thread in bytes. Defaults to nil, meaning use firmware default (typically 8096)
 -- @script main_ahsm
 
 
@@ -62,12 +64,21 @@ end
 -- We must keep looping for reacting to state timeouts
 local step = nvs.read("ahsm", "timestep", 10) or 10
 print('main_ahsm timestep:', step)
+
+local stacksize = tonumber(nvs.read("ahsm", "stacksize", nil) or nil)
+if stacksize==nil then
+  print('ahsm stack set to firmware default')
+else
+  print('ahsm stack:', stacksize)
+end
+
+
 thread.start( function()
     while true do
       hsm.loop()
       tmr.sleepms(step)
     end
-  end, nil, nil, nil, 'ahsm_loop')
+  end, stacksize, nil, nil, 'ahsm_loop')
 
 print 'ahsm started:'
 thread.list(false, false, true)
