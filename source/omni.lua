@@ -69,11 +69,11 @@ local function odom_publicator(x,y,phi,x_dot,y_dot,phi_dot)
 end
 
 --- The callback module for the odometry.
--- @tparam callback function name
--- @tparam integer factor that is multiplied by 0.05s to determine the odometer check period. Must be greater than 1.
--- @tparam float X_0
--- @tparam float Y_0
--- @tparam float Phi_0
+-- @param func callback
+-- @param number factor that is multiplied by 0.05s to determine the odometer check period. Must be greater than 1.
+-- @param number X_0
+-- @param number Y_0
+-- @param number Phi_0
 device.set_odometry_callback(odom_publicator,10,0,0,0)
 
 

@@ -1,0 +1,281 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>Reference</title>
+    <link rel="stylesheet" href="../ldoc.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>robotito firmware</h1>
+
+<ul>
+  <li><a href="../index.html">Index</a></li>
+</ul>
+
+<h2>Contents</h2>
+<ul>
+<li><a href="#Functions">Functions</a></li>
+<li><a href="#Fields">Fields</a></li>
+</ul>
+
+
+<h2>Modules</h2>
+<ul class="nowrap">
+  <li><a href="../modules/robot.html">robot</a></li>
+  <li><a href="../modules/omni.html">omni</a></li>
+  <li><a href="../modules/color.html">color</a></li>
+  <li><a href="../modules/proximity.html">proximity</a></li>
+  <li><a href="../modules/laser_ring.html">laser_ring</a></li>
+  <li><strong>pixy</strong></li>
+  <li><a href="../modules/led_ring.html">led_ring</a></li>
+  <li><a href="../modules/cb_list.html">cb_list</a></li>
+  <li><a href="../modules/wifi_net.html">wifi_net</a></li>
+</ul>
+<h2>State Machines</h2>
+<ul class="nowrap">
+  <li><a href="../state machines/test.lua.html">test.lua</a></li>
+  <li><a href="../state machines/onoff.lua.html">onoff.lua</a></li>
+  <li><a href="../state machines/colorway.lua.html">colorway.lua</a></li>
+</ul>
+<h2>Scripts</h2>
+<ul class="nowrap">
+  <li><a href="../scripts/autorun.html">autorun</a></li>
+  <li><a href="../scripts/main_ahsm.html">main_ahsm</a></li>
+</ul>
+<h2>Topics</h2>
+<ul class="">
+  <li><a href="../topics/README.md.html">README</a></li>
+  <li><a href="../topics/nvs_parameters.md.html">nvs_parameters</a></li>
+</ul>
+<h2>Examples</h2>
+<ul class="nowrap">
+  <li><a href="../examples/test_color.lua.html">test_color.lua</a></li>
+  <li><a href="../examples/test_proximity.lua.html">test_proximity.lua</a></li>
+  <li><a href="../examples/test_laser_ring.lua.html">test_laser_ring.lua</a></li>
+  <li><a href="../examples/test_led_ring.lua.html">test_led_ring.lua</a></li>
+  <li><a href="../examples/test_wifi.lua.html">test_wifi.lua</a></li>
+  <li><a href="../examples/test_omni.lua.html">test_omni.lua</a></li>
+  <li><a href="../examples/test_ahsm.lua.html">test_ahsm.lua</a></li>
+  <li><a href="../examples/calibrate_color.lua.html">calibrate_color.lua</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+<h1>Module <code>pixy</code></h1>
+<p>Pixy2 camera module.</p>
+<p>
+
+<p> Configuration is loaded using <code>nvs.read(&quot;pixy&quot;, parameter)</code> calls, where the
+ available parameters are:</p>
+
+<ul>
+    <li><code>&quot;block_period&quot;</code> The blocks time step in ms, defaults to 50.</li>
+    <li><code>&quot;line_period&quot;</code> The lines time step in ms, defaults to 50.</li>
+    <li><code>&quot;vector_active&quot;</code> enables vector detecton, defaults to <code>true</code>.</li>
+    <li><code>&quot;intersects_active&quot;</code> enables intersection detecton, defaults to <code>true</code>.</li>
+    <li><code>&quot;bars_active&quot;</code> enables barcode detecton, defaults to <code>true</code>.</li>
+</ul>
+</p>
+
+
+<h2><a href="#Functions">Functions</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#enable">enable (on[, block_period=50[, line_period=50]])</a></td>
+	<td class="summary">Enables the callbacks.</td>
+	</tr>
+</table>
+<h2><a href="#Fields">Fields</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#device">device</a></td>
+	<td class="summary">The native C firmware module.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#block_cb">block_cb</a></td>
+	<td class="summary">The callback the contiguous color block detection.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#line_cb">line_cb</a></td>
+	<td class="summary">The callback the line feature detection.</td>
+	</tr>
+</table>
+
+<br/>
+<br/>
+
+
+    <h2 class="section-header "><a name="Functions"></a>Functions</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "enable"></a>
+    <strong>enable (on[, block_period=50[, line_period=50]])</strong>
+    </dt>
+    <dd>
+    Enables the callbacks.
+ When enabled, the driver will trigger <a href="../modules/pixy.html#block_cb">block_cb</a> and <a href="../modules/pixy.html#line_cb">line_cb</a>. <br/>
+ To correctly handle multiple users of the module, please balance enables and
+ disables: if you enable, disable when you stop neededing it.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">on</span>
+            <span class="types"><span class="type">boolean</span></span>
+         true value to enable, false value to disable.
+        </li>
+        <li><span class="parameter">block_period</span>
+            <span class="types"><span class="type">integer</span></span>
+         Sampling period in ms for the block detection,
+ if omitted is read from <code>nvs.read(&quot;pixy&quot;,&quot;block_period&quot;)</code>.
+         (<em>default</em> 50)
+        </li>
+        <li><span class="parameter">line_period</span>
+            <span class="types"><span class="type">integer</span></span>
+         Sampling period in ms for the line detection,
+ if omitted is read from <code>nvs.read(&quot;pixy&quot;,&quot;line_period&quot;)</code>.
+         (<em>default</em> 50)
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Fields"></a>Fields</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "device"></a>
+    <strong>device</strong>
+    </dt>
+    <dd>
+    The native C firmware module.
+ This can be used to access low level functionality from <code>pixy2</code>. FIXME: docs
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "block_cb"></a>
+    <strong>block_cb</strong>
+    </dt>
+    <dd>
+
+<p>The callback the contiguous color block detection.
+ This is a callback list attached to the camera sensor, see <a href="../modules/cb_list.html#">cb_list</a>.
+ The callback will be called with an array of detected blocks, where each block
+ is a table with the following fields:</p>
+
+<ul>
+    <li><code>x</code>: the x location of the center of the block. The value ranges between 0 and frameWidth (315). </li>
+    <li><code>y</code>: the y location of the center of the block. The value ranges between 0 and frameHeight (207)</li>
+    <li><code>width</code>: the width of the block. The value ranges between 0 and frameWidth (316)</li>
+    <li><code>height</code>: the height of the block. The value ranges between 0 and frameHeight (208) </li>
+    <li><code>angle</code>: the angle of color-code in degrees. The value ranges between -180 and 180. If the block is a regular signature (not a color-code), the angle value will be 0</li>
+    <li><code>index</code>: the tracking index of the block. When Pixy2 detects a new block, it will add it to a table of blocks that it is currently tracking and assign it a tracking index. It will then attempt to find the block (and every block in the table) in the next frame by finding its best match. Each block index will be kept for that block until it either leaves Pixy2's field-of-view, or Pixy2 can no longer find the object in subsequent frames (because of occlusion, lack of lighting, etc.)</li>
+    <li><code>age</code>: the number of frames a given block has been tracked. When the age reaches 255, it remains at 255</li>
+</ul>
+
+
+
+
+
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> <span class="keyword">local</span> pixy = <span class="global">require</span><span class="string">'pixy'</span>
+pixy.line_cb.append( <span class="keyword">function</span> (blocks) <span class="global">print</span>(#(blocks <span class="keyword">or</span> {})) <span class="keyword">end</span> )
+pixy.enable(<span class="keyword">true</span>)</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "line_cb"></a>
+    <strong>line_cb</strong>
+    </dt>
+    <dd>
+
+<p>The callback the line feature detection.
+ This is a callback list attached to the camera sensor, see <a href="../modules/cb_list.html#">cb_list</a>.
+ The callback will be called with three parameters <code>(vector, intersects, bars)</code>. If the detection for some category is disabled through <code>nvs</code> parameters, the return is <code>nil</code>.
+ The <code>vector</code> is the detected main vector (might be <code>nil</code> if none detected). When found is a table with the following fields:</p>
+
+<ul>
+    <li><code>x0, x1</code>: x locations of tail and head (arrow end)  of the Vector or line. The value ranges between 0 and frameHeight (79)</li>
+    <li><code>y0, y1</code>: y locations of tail and head (arrow end)  of the Vector or line. The value ranges between 0 and frameWidth (52). </li>
+    <li><code>index</code>: the tracking index of the Vector. When Pixy2 detects a new line, it will add it to a table of lines that it is currently tracking. It will then attempt to find the line (and every line in the table) in the next frame by finding its best match. Each line index will be kept for that line until the line either leaves Pixy2's field-of-view, or Pixy2 can no longer find the line in subsequent frames (because of occlusion, lack of lighting, etc.) </li>
+</ul>
+
+<p> The <code>intersects</code> parameter is an array with the intersections on the vector. Each intersection is a table with the following fields:</p>
+
+<ul>
+    <li><code>x, y</code>: coordinates of the intersection. The range is 0..79, 0..52</li>
+    <li><code>int_lines</code>: an array with lines on the intersection, where each line is a table with a tracking <code>index</code> and and <code>angle</code> fields.</li>
+</ul>
+
+<p> The <code>bars</code> parameter is an array with the detected barcodes. Each detected barcode is a table with the following fieds:</p>
+
+<ul>
+    <li><code>x,y</code>: coordinates of the barcode. The range is 0..79, 0..52</li>
+    <li><code>code</code>: value of the code. The range is 0..15</li>
+</ul>
+
+
+
+
+
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> <span class="keyword">local</span> pixy = <span class="global">require</span><span class="string">'pixy'</span>
+pixy.line_cb.append( <span class="keyword">function</span> (vector, intersects, bars)
+  <span class="global">print</span>( #(bars <span class="keyword">or</span> {}) )
+<span class="keyword">end</span> )
+pixy.enable(<span class="keyword">true</span>)</pre>
+    </ul>
+
+</dd>
+</dl>
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
+<i style="float:right;">Last updated 2021-01-24 13:03:57 </i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>

@@ -10,6 +10,7 @@ file = {
   "source/color.lua",
   "source/proximity.lua",
   "source/laser_ring.lua", 
+  "source/pixy.lua", 
   "source/led_ring.lua", 
   "source/cb_list.lua", 
   "source/wifi_net.lua", 
